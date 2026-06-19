@@ -1,0 +1,25 @@
+{
+  "name": "linkhub",
+  "version": "1.0.0",
+  "description": "Diretório de grupos de WhatsApp com aprovação por moderação",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "setup": "node src/db/setup.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.3",
+    "express-rate-limit": "^7.2.0",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "nodemailer": "^6.9.12",
+    "sql.js": "^1.14.1",
+    "uuid": "^9.0.1",
+    "validator": "^13.12.0"
+  }
+}

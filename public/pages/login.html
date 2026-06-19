@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — LinkHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-auth {
+      min-height: calc(100vh - 60px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .caixa-auth {
+      background: var(--branco);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .auth-logo a { font-size: 1.6rem; font-weight: 700; color: var(--verde-escuro); }
+    .auth-logo a span { color: var(--verde-claro); }
+    .auth-logo p { font-size: 0.9rem; color: var(--cinza-texto); margin-top: 4px; }
+    .auth-form { display: flex; flex-direction: column; gap: 18px; }
+    .auth-footer { text-align: center; margin-top: 20px; font-size: 0.875rem; color: var(--cinza-texto); }
+    .auth-footer a { color: var(--verde-medio); font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<div class="pagina-auth">
+  <div class="caixa-auth">
+    <div class="auth-logo">
+      <a href="/">Link<span>Hub</span></a>
+      <p>Entre na sua conta</p>
+    </div>
+
+    <div id="aviso-login" class="aviso"></div>
+
+    <form class="auth-form" id="form-login" onsubmit="login(event)">
+      <div class="form-grupo">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="senha">Senha</label>
+        <input class="form-input" type="password" id="senha" name="senha" placeholder="Sua senha" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-bloco" id="btn-login" style="margin-top:4px">
+        Entrar
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Não tem conta? <a href="/pages/cadastro.html">Criar conta grátis</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/utils.js"></script>
+<script>
+  iniciarPagina({ seLogadoIrPara: '/' });
+
+  async function login(e) {
+    e.preventDefault();
+    limparAviso('aviso-login');
+    const btn = document.getElementById('btn-login');
+    btnCarregando(btn, true);
+
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+
+    try {
+      await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, senha })
+      });
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      window.location.href = redirect || '/';
+    } catch (err) {
+      mostrarAviso('aviso-login', err.message);
+      btnCarregando(btn, false);
+    }
+  }
+</script>
+</body>
+</html>

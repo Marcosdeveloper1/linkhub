@@ -1,0 +1,128 @@
+const express = require('express');
+const validator = require('validator');
+const router = express.Router();
+const db = require('../db');
+const { limiterGrupo, requireLogin, sanitizeString, isValidWhatsAppLink } = require('../middleware/security');
+
+router.get('/', (req, res) => {
+  try {
+    const categoria = req.query.categoria ? sanitizeString(req.query.categoria, 50) : null;
+    const busca = req.query.busca ? sanitizeString(req.query.busca, 100) : null;
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const porPagina = 12;
+    const offset = (pagina - 1) * porPagina;
+
+    let where = "g.status = 'aprovado'";
+    const params = [];
+
+    if (categoria) {
+      where += ' AND c.slug = ?';
+      params.push(categoria);
+    }
+
+    if (busca) {
+      where += ' AND (g.nome_grupo LIKE ? OR g.descricao LIKE ?)';
+      params.push(`%${busca}%`, `%${busca}%`);
+    }
+
+    const total = db.queryOne(
+      `SELECT COUNT(*) as total FROM groups g JOIN categories c ON g.categoria_id = c.id WHERE ${where}`,
+      params
+    );
+
+    const grupos = db.query(
+      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.aprovado_em,
+              c.nome as categoria_nome, c.slug as categoria_slug, c.icone as categoria_icone
+       FROM groups g
+       JOIN categories c ON g.categoria_id = c.id
+       WHERE ${where}
+       ORDER BY g.aprovado_em DESC
+       LIMIT ? OFFSET ?`,
+      [...params, porPagina, offset]
+    );
+
+    res.json({
+      grupos,
+      total: total?.total || 0,
+      pagina,
+      totalPaginas: Math.ceil((total?.total || 0) / porPagina)
+    });
+  } catch (err) {
+    console.error('[grupos/listar]', err);
+    res.status(500).json({ erro: 'Erro ao buscar grupos.' });
+  }
+});
+
+router.get('/categorias', (req, res) => {
+  try {
+    const cats = db.query(`
+      SELECT c.id, c.nome, c.slug, c.icone,
+             COUNT(g.id) as total_grupos
+      FROM categories c
+      LEFT JOIN groups g ON g.categoria_id = c.id AND g.status = 'aprovado'
+      GROUP BY c.id
+      ORDER BY c.nome
+    `);
+    res.json(cats);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar categorias.' });
+  }
+});
+
+router.post('/enviar', requireLogin, limiterGrupo, (req, res) => {
+  try {
+    const nomeGrupo = sanitizeString(req.body.nome_grupo, 100);
+    const link = sanitizeString(req.body.link_whatsapp, 300);
+    const descricao = sanitizeString(req.body.descricao, 500);
+    const categoriaId = parseInt(req.body.categoria_id);
+    const nomeContato = sanitizeString(req.body.nome_contato, 100);
+    const emailContato = sanitizeString(req.body.email_contato, 200);
+
+    if (!nomeGrupo || nomeGrupo.length < 3) {
+      return res.status(400).json({ erro: 'Nome do grupo deve ter pelo menos 3 caracteres.' });
+    }
+
+    if (!isValidWhatsAppLink(link)) {
+      return res.status(400).json({ erro: 'Link do WhatsApp inválido. Use o formato: https://chat.whatsapp.com/CODIGO' });
+    }
+
+    if (!descricao || descricao.length < 20) {
+      return res.status(400).json({ erro: 'Descrição deve ter pelo menos 20 caracteres.' });
+    }
+
+    if (!categoriaId || isNaN(categoriaId)) {
+      return res.status(400).json({ erro: 'Selecione uma categoria.' });
+    }
+
+    const cat = db.queryOne('SELECT id FROM categories WHERE id = ?', [categoriaId]);
+    if (!cat) {
+      return res.status(400).json({ erro: 'Categoria inválida.' });
+    }
+
+    if (!nomeContato || nomeContato.length < 2) {
+      return res.status(400).json({ erro: 'Nome de contato obrigatório.' });
+    }
+
+    if (!emailContato || !validator.isEmail(emailContato)) {
+      return res.status(400).json({ erro: 'Email de contato inválido.' });
+    }
+
+    const linkExistente = db.queryOne('SELECT id FROM groups WHERE link_whatsapp = ?', [link]);
+    if (linkExistente) {
+      return res.status(409).json({ erro: 'Este link já foi cadastrado.' });
+    }
+
+    db.run(
+      `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente')`,
+      [nomeGrupo, link, descricao, categoriaId, req.session.usuario.id, nomeContato, validator.normalizeEmail(emailContato)]
+    );
+
+    res.json({ ok: true, mensagem: 'Grupo enviado! Nossa equipe irá analisá-lo em breve.' });
+  } catch (err) {
+    console.error('[grupos/enviar]', err);
+    res.status(500).json({ erro: 'Erro ao enviar grupo. Tente novamente.' });
+  }
+});
+
+module.exports = router;

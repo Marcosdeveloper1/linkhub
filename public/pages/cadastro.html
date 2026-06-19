@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar conta — LinkHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-auth {
+      min-height: calc(100vh - 60px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .caixa-auth {
+      background: var(--branco);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      width: 100%;
+      max-width: 440px;
+    }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo a { font-size: 1.6rem; font-weight: 700; color: var(--verde-escuro); }
+    .auth-logo a span { color: var(--verde-claro); }
+    .auth-logo p { font-size: 0.9rem; color: var(--cinza-texto); margin-top: 4px; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .auth-footer { text-align: center; margin-top: 20px; font-size: 0.875rem; color: var(--cinza-texto); }
+    .auth-footer a { color: var(--verde-medio); font-weight: 500; }
+    .requisitos-senha { font-size: 0.8rem; color: var(--cinza-texto); margin-top: 4px; }
+    .req { display: inline-block; padding: 2px 0; }
+    .req.ok { color: var(--verde-medio); }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<div class="pagina-auth">
+  <div class="caixa-auth">
+    <div class="auth-logo">
+      <a href="/">Link<span>Hub</span></a>
+      <p>Crie sua conta gratuita</p>
+    </div>
+
+    <div id="aviso-cadastro" class="aviso"></div>
+
+    <form class="auth-form" id="form-cadastro" onsubmit="cadastrar(event)">
+      <div class="form-grupo">
+        <label class="form-label" for="nome">Nome completo</label>
+        <input class="form-input" type="text" id="nome" name="nome" placeholder="Seu nome" required minlength="2" maxlength="100" autocomplete="name">
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="senha">Senha</label>
+        <input class="form-input" type="password" id="senha" name="senha" placeholder="Crie uma senha forte" required minlength="8" autocomplete="new-password" oninput="validarSenha(this.value)">
+        <div class="requisitos-senha">
+          <span class="req" id="req-tamanho">✗ Mínimo 8 caracteres</span> ·
+          <span class="req" id="req-maiuscula">✗ Uma letra maiúscula</span> ·
+          <span class="req" id="req-numero">✗ Um número</span>
+        </div>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="confirmar-senha">Confirmar senha</label>
+        <input class="form-input" type="password" id="confirmar-senha" placeholder="Repita a senha" required autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-bloco" id="btn-cadastro" style="margin-top:4px">
+        Criar conta
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Já tem conta? <a href="/pages/login.html">Entrar</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/utils.js"></script>
+<script>
+  iniciarPagina({ seLogadoIrPara: '/' });
+
+  function validarSenha(valor) {
+    const tamanho = document.getElementById('req-tamanho');
+    const maiuscula = document.getElementById('req-maiuscula');
+    const numero = document.getElementById('req-numero');
+
+    const temTamanho = valor.length >= 8;
+    const temMaiuscula = /[A-Z]/.test(valor);
+    const temNumero = /[0-9]/.test(valor);
+
+    tamanho.textContent = (temTamanho ? '✓' : '✗') + ' Mínimo 8 caracteres';
+    tamanho.className = 'req' + (temTamanho ? ' ok' : '');
+
+    maiuscula.textContent = (temMaiuscula ? '✓' : '✗') + ' Uma letra maiúscula';
+    maiuscula.className = 'req' + (temMaiuscula ? ' ok' : '');
+
+    numero.textContent = (temNumero ? '✓' : '✗') + ' Um número';
+    numero.className = 'req' + (temNumero ? ' ok' : '');
+  }
+
+  async function cadastrar(e) {
+    e.preventDefault();
+    limparAviso('aviso-cadastro');
+
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+    const confirmar = document.getElementById('confirmar-senha').value;
+
+    if (senha !== confirmar) {
+      return mostrarAviso('aviso-cadastro', 'As senhas não coincidem.');
+    }
+
+    const btn = document.getElementById('btn-cadastro');
+    btnCarregando(btn, true);
+
+    try {
+      await apiFetch('/auth/cadastro', {
+        method: 'POST',
+        body: JSON.stringify({ nome, email, senha })
+      });
+      window.location.href = '/';
+    } catch (err) {
+      mostrarAviso('aviso-cadastro', err.message);
+      btnCarregando(btn, false);
+    }
+  }
+</script>
+</body>
+</html>

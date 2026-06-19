@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar grupo — LinkHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-envio {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .cabecalho-pagina { margin-bottom: 28px; }
+    .cabecalho-pagina h1 { font-size: 1.6rem; }
+    .cabecalho-pagina p { color: var(--cinza-texto); margin-top: 6px; font-size: 0.95rem; }
+    .formulario-grupo { display: flex; flex-direction: column; gap: 20px; }
+    .diretrizes {
+      background: var(--verde-pale);
+      border: 1px solid #b7e4c7;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .diretrizes h3 { color: var(--verde-escuro); font-size: 0.95rem; margin-bottom: 10px; }
+    .diretrizes ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .diretrizes li { font-size: 0.875rem; color: var(--verde-escuro); }
+    .diretrizes li::before { content: '✓ '; font-weight: 600; }
+    .contador-desc {
+      font-size: 0.8rem;
+      color: var(--cinza-texto);
+      text-align: right;
+      margin-top: 4px;
+    }
+    .sucesso-container {
+      text-align: center;
+      padding: 60px 20px;
+      display: none;
+    }
+    .sucesso-icone { font-size: 4rem; margin-bottom: 16px; }
+    .sucesso-container h2 { margin-bottom: 10px; color: var(--verde-escuro); }
+    .sucesso-container p { color: var(--cinza-texto); margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<main class="pagina-envio">
+
+  <div id="formulario-area">
+    <div class="cabecalho-pagina">
+      <h1>Enviar grupo</h1>
+      <p>Preencha os dados abaixo para submeter seu grupo. Nossa equipe irá analisar e responder por email.</p>
+    </div>
+
+    <div class="diretrizes">
+      <h3>Diretrizes para aprovação</h3>
+      <ul>
+        <li>O grupo deve ter link público (chat.whatsapp.com/...)</li>
+        <li>Conteúdo relevante e de acordo com o tema cadastrado</li>
+        <li>Sem spam, conteúdo ofensivo ou ilegal</li>
+        <li>Descrição clara e honesta sobre o grupo</li>
+      </ul>
+    </div>
+
+    <div id="aviso-envio" class="aviso"></div>
+
+    <form class="formulario-grupo" id="form-grupo" onsubmit="enviarGrupo(event)">
+
+      <div class="form-grupo">
+        <label class="form-label" for="nome-grupo">Nome do grupo <span style="color:var(--vermelho)">*</span></label>
+        <input class="form-input" type="text" id="nome-grupo" placeholder="Ex: Investimentos para iniciantes" required minlength="3" maxlength="100">
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="link-whatsapp">Link do grupo WhatsApp <span style="color:var(--vermelho)">*</span></label>
+        <input class="form-input" type="url" id="link-whatsapp" placeholder="https://chat.whatsapp.com/CODIGO" required>
+        <p class="form-dica">Vá nas configurações do grupo → Link de convite → Copiar link</p>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="categoria">Categoria <span style="color:var(--vermelho)">*</span></label>
+        <select class="form-select" id="categoria" required>
+          <option value="">Selecione uma categoria...</option>
+        </select>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="descricao">Descrição do grupo <span style="color:var(--vermelho)">*</span></label>
+        <textarea class="form-textarea" id="descricao" placeholder="Descreva o que é o grupo, quem pode participar e que tipo de conteúdo é compartilhado..." required minlength="20" maxlength="500" oninput="contarCaracteres(this)"></textarea>
+        <div class="contador-desc" id="contador-desc">0 / 500 caracteres</div>
+      </div>
+
+      <div style="border-top: 1px solid var(--cinza-borda); padding-top: 20px;">
+        <p style="font-size: 0.875rem; color: var(--cinza-texto); margin-bottom: 16px;">
+          Dados de contato (para enviarmos a resposta sobre seu grupo)
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-grupo">
+            <label class="form-label" for="nome-contato">Seu nome <span style="color:var(--vermelho)">*</span></label>
+            <input class="form-input" type="text" id="nome-contato" placeholder="Nome para contato" required minlength="2" maxlength="100">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="email-contato">Email de contato <span style="color:var(--vermelho)">*</span></label>
+            <input class="form-input" type="email" id="email-contato" placeholder="seu@email.com" required>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-lg" id="btn-enviar">
+        Enviar para aprovação
+      </button>
+
+    </form>
+  </div>
+
+  <div class="sucesso-container" id="sucesso-container">
+    <div class="sucesso-icone">✅</div>
+    <h2>Grupo enviado com sucesso!</h2>
+    <p>Nossa equipe irá analisar seu grupo e você receberá uma resposta no email cadastrado em até 48 horas.</p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="/" class="btn btn-contorno">Ver grupos aprovados</a>
+      <button class="btn btn-primario" onclick="enviarOutro()">Enviar outro grupo</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp</p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  iniciarPagina({ requerLogin: true });
+
+  async function carregarCategorias() {
+    try {
+      const cats = await apiFetch('/grupos/categorias');
+      const sel = document.getElementById('categoria');
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.nome;
+        sel.appendChild(opt);
+      });
+    } catch {}
+  }
+
+  function contarCaracteres(el) {
+    document.getElementById('contador-desc').textContent = `${el.value.length} / 500 caracteres`;
+  }
+
+  async function enviarGrupo(e) {
+    e.preventDefault();
+    limparAviso('aviso-envio');
+
+    const link = document.getElementById('link-whatsapp').value.trim();
+    if (!link.startsWith('https://chat.whatsapp.com/')) {
+      return mostrarAviso('aviso-envio', 'O link deve ser um link válido de grupo do WhatsApp (https://chat.whatsapp.com/...)');
+    }
+
+    const btn = document.getElementById('btn-enviar');
+    btnCarregando(btn, true);
+
+    const dados = {
+      nome_grupo: document.getElementById('nome-grupo').value,
+      link_whatsapp: link,
+      categoria_id: document.getElementById('categoria').value,
+      descricao: document.getElementById('descricao').value,
+      nome_contato: document.getElementById('nome-contato').value,
+      email_contato: document.getElementById('email-contato').value
+    };
+
+    try {
+      await apiFetch('/grupos/enviar', {
+        method: 'POST',
+        body: JSON.stringify(dados)
+      });
+      document.getElementById('formulario-area').style.display = 'none';
+      document.getElementById('sucesso-container').style.display = 'block';
+    } catch (err) {
+      mostrarAviso('aviso-envio', err.message);
+      btnCarregando(btn, false);
+    }
+  }
+
+  function enviarOutro() {
+    document.getElementById('form-grupo').reset();
+    document.getElementById('contador-desc').textContent = '0 / 500 caracteres';
+    document.getElementById('sucesso-container').style.display = 'none';
+    document.getElementById('formulario-area').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  carregarCategorias();
+</script>
+</body>
+</html>
