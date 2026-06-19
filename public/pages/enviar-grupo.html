@@ -67,7 +67,7 @@
 
     <div id="aviso-envio" class="aviso"></div>
 
-    <form class="formulario-grupo" id="form-grupo" onsubmit="enviarGrupo(event)">
+    <form class="formulario-grupo" id="form-grupo">
 
       <div class="form-grupo">
         <label class="form-label" for="nome-grupo">Nome do grupo <span style="color:var(--vermelho)">*</span></label>
@@ -89,8 +89,14 @@
 
       <div class="form-grupo">
         <label class="form-label" for="descricao">Descrição do grupo <span style="color:var(--vermelho)">*</span></label>
-        <textarea class="form-textarea" id="descricao" placeholder="Descreva o que é o grupo, quem pode participar e que tipo de conteúdo é compartilhado..." required minlength="20" maxlength="500" oninput="contarCaracteres(this)"></textarea>
+        <textarea class="form-textarea" id="descricao" placeholder="Descreva o que é o grupo, quem pode participar e que tipo de conteúdo é compartilhado..." required minlength="20" maxlength="500"></textarea>
         <div class="contador-desc" id="contador-desc">0 / 500 caracteres</div>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label" for="regras">Regras do grupo (opcional)</label>
+        <textarea class="form-textarea" id="regras" placeholder="Uma regra por linha. Ex:&#10;Respeitar os participantes&#10;Sem spam de links&#10;Focar no tema do grupo" maxlength="2000"></textarea>
+        <p class="form-dica">Insira uma regra por linha. Deixe em branco se o grupo não tiver regras específicas.</p>
       </div>
 
       <div style="border-top: 1px solid var(--cinza-borda); padding-top: 20px;">
@@ -122,7 +128,7 @@
     <p>Nossa equipe irá analisar seu grupo e você receberá uma resposta no email cadastrado em até 48 horas.</p>
     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
       <a href="/" class="btn btn-contorno">Ver grupos aprovados</a>
-      <button class="btn btn-primario" onclick="enviarOutro()">Enviar outro grupo</button>
+      <button class="btn btn-primario" id="btn-enviar-outro">Enviar outro grupo</button>
     </div>
   </div>
 
@@ -135,6 +141,13 @@
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ requerLogin: true });
+
+  document.getElementById('descricao').addEventListener('input', function () {
+    contarCaracteres(this);
+  });
+
+  document.getElementById('form-grupo').addEventListener('submit', enviarGrupo);
+  document.getElementById('btn-enviar-outro').addEventListener('click', enviarOutro);
 
   async function carregarCategorias() {
     try {
@@ -158,8 +171,9 @@
     limparAviso('aviso-envio');
 
     const link = document.getElementById('link-whatsapp').value.trim();
-    if (!link.startsWith('https://chat.whatsapp.com/')) {
-      return mostrarAviso('aviso-envio', 'O link deve ser um link válido de grupo do WhatsApp (https://chat.whatsapp.com/...)');
+    const padraoLink = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{20,}$/;
+    if (!padraoLink.test(link)) {
+      return mostrarAviso('aviso-envio', 'Link inválido. Copie o link de convite completo nas configurações do grupo (Link de convite → Copiar link).');
     }
 
     const btn = document.getElementById('btn-enviar');
@@ -171,7 +185,8 @@
       categoria_id: document.getElementById('categoria').value,
       descricao: document.getElementById('descricao').value,
       nome_contato: document.getElementById('nome-contato').value,
-      email_contato: document.getElementById('email-contato').value
+      email_contato: document.getElementById('email-contato').value,
+      regras: document.getElementById('regras').value
     };
 
     try {

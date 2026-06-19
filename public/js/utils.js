@@ -41,13 +41,16 @@ function montarNavbar(sessao) {
       <div class="navbar-actions">
         ${logado
           ? `<span class="navbar-user">Olá, ${usuario.nome.split(' ')[0]}</span>
-             <button class="btn btn-contorno-branco btn-sm" onclick="fazerLogout()">Sair</button>`
+             <button class="btn btn-contorno-branco btn-sm" id="btn-logout-navbar">Sair</button>`
           : `<a href="/pages/login.html" class="btn btn-contorno-branco btn-sm">Entrar</a>
              <a href="/pages/cadastro.html" class="btn btn-primario btn-sm">Cadastrar</a>`
         }
       </div>
     </div>
   `;
+
+  const btnLogout = document.getElementById('btn-logout-navbar');
+  if (btnLogout) btnLogout.addEventListener('click', fazerLogout);
 }
 
 async function fazerLogout() {

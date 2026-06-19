@@ -2,6 +2,7 @@ const express = require('express');
 const validator = require('validator');
 const router = express.Router();
 const db = require('../db');
+const { buscarPreviewGrupo, baixarFotoGrupo } = require('../utils/whatsappPreview');
 const { limiterGrupo, requireLogin, sanitizeString, isValidWhatsAppLink } = require('../middleware/security');
 
 router.get('/', (req, res) => {
@@ -69,7 +70,7 @@ router.get('/categorias', (req, res) => {
   }
 });
 
-router.post('/enviar', requireLogin, limiterGrupo, (req, res) => {
+router.post('/enviar', requireLogin, limiterGrupo, async (req, res) => {
   try {
     const nomeGrupo = sanitizeString(req.body.nome_grupo, 100);
     const link = sanitizeString(req.body.link_whatsapp, 300);
@@ -77,6 +78,7 @@ router.post('/enviar', requireLogin, limiterGrupo, (req, res) => {
     const categoriaId = parseInt(req.body.categoria_id);
     const nomeContato = sanitizeString(req.body.nome_contato, 100);
     const emailContato = sanitizeString(req.body.email_contato, 200);
+    const regras = req.body.regras ? sanitizeString(req.body.regras, 2000) : null;
 
     if (!nomeGrupo || nomeGrupo.length < 3) {
       return res.status(400).json({ erro: 'Nome do grupo deve ter pelo menos 3 caracteres.' });
@@ -112,16 +114,78 @@ router.post('/enviar', requireLogin, limiterGrupo, (req, res) => {
       return res.status(409).json({ erro: 'Este link já foi cadastrado.' });
     }
 
-    db.run(
-      `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente')`,
-      [nomeGrupo, link, descricao, categoriaId, req.session.usuario.id, nomeContato, validator.normalizeEmail(emailContato)]
+    const preview = await buscarPreviewGrupo(link);
+
+    const id = db.run(
+      `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, regras, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendente')`,
+      [nomeGrupo, link, descricao, categoriaId, req.session.usuario.id, nomeContato, validator.normalizeEmail(emailContato), regras]
     );
+
+    if (preview.foto) {
+      const fotoLocal = await baixarFotoGrupo(preview.foto, id);
+      if (fotoLocal) {
+        db.run('UPDATE groups SET foto_url = ? WHERE id = ?', [fotoLocal, id]);
+      }
+    }
 
     res.json({ ok: true, mensagem: 'Grupo enviado! Nossa equipe irá analisá-lo em breve.' });
   } catch (err) {
     console.error('[grupos/enviar]', err);
     res.status(500).json({ erro: 'Erro ao enviar grupo. Tente novamente.' });
+  }
+});
+
+// GET /api/grupos/:id — detalhes de um grupo aprovado + incrementa contador de acessos
+router.get('/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const grupo = db.queryOne(`
+      SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE g.id = ? AND g.status = 'aprovado'
+    `, [id]);
+
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+
+    // Incrementa o contador de acessos a cada visualização da página de detalhes
+    db.run('UPDATE groups SET total_acessos = total_acessos + 1 WHERE id = ?', [id]);
+    grupo.total_acessos = (grupo.total_acessos || 0) + 1; // reflete na resposta sem precisar reconsultar
+
+    res.json(grupo);
+  } catch (err) {
+    console.error('[grupos/detalhe]', err);
+    res.status(500).json({ erro: 'Erro ao carregar grupo.' });
+  }
+});
+
+// GET /api/grupos/:id/relacionados — outros grupos aprovados da mesma categoria
+router.get('/:id/relacionados', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const grupo = db.queryOne('SELECT categoria_id FROM groups WHERE id = ?', [id]);
+    if (!grupo) return res.json([]);
+
+    const relacionados = db.query(`
+      SELECT g.id, g.nome_grupo, g.descricao, g.foto_url, c.nome as categoria_nome
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE g.categoria_id = ? AND g.status = 'aprovado' AND g.id != ?
+      ORDER BY g.aprovado_em DESC
+      LIMIT 6
+    `, [grupo.categoria_id, id]);
+
+    res.json(relacionados);
+  } catch (err) {
+    console.error('[grupos/relacionados]', err);
+    res.status(500).json({ erro: 'Erro ao carregar grupos relacionados.' });
   }
 });
 

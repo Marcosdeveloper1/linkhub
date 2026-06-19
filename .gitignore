@@ -4,3 +4,7 @@ data/
 *.log
 .DS_Store
 Thumbs.db
+
+# WhatsApp group images
+public/img/grupos/*
+!public/img/grupos/.gitkeep

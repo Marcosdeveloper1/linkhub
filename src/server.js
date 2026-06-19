@@ -33,9 +33,15 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(sessionConfig);
-app.use(limiterGeral);
 
+// Arquivos estáticos servidos ANTES do rate limiter e sem passar por ele —
+// HTML, CSS, JS e fontes não devem contar contra o limite de requisições.
 app.use(express.static(path.join(__dirname, '../public')));
+
+// O rate limiter agora protege só as rotas de API (login, cadastro,
+// envio de grupo etc.), que são as que de fato precisam de proteção
+// contra abuso e força bruta.
+app.use('/api', limiterGeral);
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/grupos', require('./routes/groups'));

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Grupo — LinkHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-detalhes {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+    
+    .btn-voltar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--cinza-texto);
+      margin-bottom: 20px;
+      font-weight: 500;
+      transition: color var(--transicao);
+    }
+    
+    .btn-voltar:hover {
+      color: var(--verde-medio);
+    }
+    
+    .detalhe-card {
+      background: var(--branco);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--sombra-leve);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .detalhe-foto {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      background: var(--cinza-fundo);
+    }
+    
+    .detalhe-cabecalho {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid var(--cinza-borda);
+      padding-bottom: 20px;
+    }
+    
+    .detalhe-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--cinza-texto);
+    }
+    
+    .detalhe-titulo {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--preto);
+    }
+    
+    .detalhe-desc {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--preto);
+      white-space: pre-line;
+    }
+    
+    .regras-caixa {
+      background: var(--cinza-fundo);
+      border-left: 4px solid var(--verde-claro);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 10px 0;
+    }
+    
+    .regras-caixa h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--verde-escuro);
+      margin-bottom: 12px;
+    }
+    
+    .regras-lista {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .regras-lista li {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--preto);
+    }
+    
+    .area-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+    
+    .btn-entrar {
+      background: #25d366; /* WhatsApp Green */
+      color: var(--branco);
+      border-color: #25d366;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 14px 32px;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+    }
+    
+    .btn-entrar:hover {
+      background: #20ba5a;
+      border-color: #20ba5a;
+      color: var(--branco);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+    }
+    
+    .secao-relacionados {
+      margin-top: 48px;
+    }
+    
+    .secao-relacionados h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--preto);
+    }
+    
+    /* Layout responsivo */
+    @media (max-width: 600px) {
+      .detalhe-card {
+        padding: 20px;
+      }
+      .detalhe-titulo {
+        font-size: 1.5rem;
+      }
+      .btn-entrar {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<main class="pagina-detalhes">
+  
+  <a href="/" class="btn-voltar">← Voltar para a home</a>
+  
+  <div id="aviso-erro" class="aviso"></div>
+  
+  <div id="conteudo-grupo" style="display: none;">
+    <article class="detalhe-card">
+      <img id="grupo-foto" class="detalhe-foto" alt="" style="display: none;">
+      
+      <div class="detalhe-cabecalho">
+        <div>
+          <span class="tag tag-verde" id="grupo-categoria"></span>
+        </div>
+        <h1 class="detalhe-titulo" id="grupo-nome"></h1>
+        <div class="detalhe-meta">
+          <span id="grupo-data"></span>
+          <span>·</span>
+          <span id="grupo-acessos" style="font-weight: 500; color: var(--verde-medio)"></span>
+        </div>
+      </div>
+      
+      <div class="detalhe-desc" id="grupo-desc"></div>
+      
+      <div class="regras-caixa" id="grupo-regras-container" style="display: none;">
+        <h3>Regras do grupo</h3>
+        <ol class="regras-lista" id="grupo-regras-lista"></ol>
+      </div>
+      
+      <div class="area-cta">
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-entrar btn-lg" id="btn-entrar-whatsapp">
+          Entrar no Grupo
+        </a>
+        <p style="font-size: 0.8rem; color: var(--cinza-texto);">
+          Ao clicar, você será redirecionado para o convite do WhatsApp.
+        </p>
+      </div>
+    </article>
+    
+    <section class="secao-relacionados" id="secao-relacionados" style="display: none;">
+      <h2>Mais grupos da categoria</h2>
+      <div id="lista-relacionados" class="grid-3"></div>
+    </section>
+  </div>
+  
+  <div id="estado-carregando" class="estado-vazio">
+    <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
+    <p>Carregando detalhes do grupo...</p>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp</p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  // Inicialização da página pública
+  iniciarPagina();
+
+  // Obter o ID do grupo na URL
+  const queryParams = new URLSearchParams(window.location.search);
+  const grupoId = parseInt(queryParams.get('id'), 10);
+
+  function escaparHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  async function carregarDetalhes() {
+    const loadingEl = document.getElementById('estado-carregando');
+    const contentEl = document.getElementById('conteudo-grupo');
+    const errorEl = document.getElementById('aviso-erro');
+
+    if (!grupoId || isNaN(grupoId)) {
+      loadingEl.style.display = 'none';
+      mostrarAviso('aviso-erro', 'ID do grupo inválido ou ausente.');
+      return;
+    }
+
+    try {
+      // 1. Carrega os dados do grupo principal
+      const grupo = await apiFetch(`/grupos/${grupoId}`);
+      
+      // Atualizar o título do navegador
+      document.title = `${grupo.nome_grupo} — LinkHub`;
+
+      // Renderizar imagem com fallback de erro
+      const fotoImg = document.getElementById('grupo-foto');
+      if (grupo.foto_url) {
+        fotoImg.src = grupo.foto_url;
+        fotoImg.style.display = 'block';
+        fotoImg.addEventListener('error', () => {
+          fotoImg.style.display = 'none';
+        });
+      } else {
+        fotoImg.style.display = 'none';
+      }
+
+      // Preencher campos de texto
+      document.getElementById('grupo-categoria').textContent = grupo.categoria_nome;
+      document.getElementById('grupo-nome').textContent = grupo.nome_grupo;
+      document.getElementById('grupo-data').textContent = `Publicado em ${formatarData(grupo.aprovado_em)}`;
+      document.getElementById('grupo-acessos').textContent = `🔥 ${grupo.total_acessos} acesso${grupo.total_acessos !== 1 ? 's' : ''}`;
+      document.getElementById('grupo-desc').textContent = grupo.descricao;
+
+      // Renderizar regras, se houver
+      const regrasContainer = document.getElementById('grupo-regras-container');
+      const regrasLista = document.getElementById('grupo-regras-lista');
+      regrasLista.innerHTML = '';
+      
+      if (grupo.regras && grupo.regras.trim()) {
+        const regrasItens = grupo.regras.split('\n').map(r => r.trim()).filter(Boolean);
+        if (regrasItens.length > 0) {
+          regrasItens.forEach(regra => {
+            const li = document.createElement('li');
+            li.textContent = regra;
+            regrasLista.appendChild(li);
+          });
+          regrasContainer.style.display = 'block';
+        } else {
+          regrasContainer.style.display = 'none';
+        }
+      } else {
+        regrasContainer.style.display = 'none';
+      }
+
+      // Configurar link do botão do WhatsApp
+      const ctaBtn = document.getElementById('btn-entrar-whatsapp');
+      ctaBtn.href = grupo.link_whatsapp;
+
+      // Exibir os dados e ocultar o loading
+      loadingEl.style.display = 'none';
+      contentEl.style.display = 'block';
+
+      // 2. Carrega os grupos relacionados
+      carregarRelacionados(grupo.id);
+
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      mostrarAviso('aviso-erro', err.message || 'Erro ao carregar detalhes do grupo.');
+    }
+  }
+
+  async function carregarRelacionados(id) {
+    const sectionRel = document.getElementById('secao-relacionados');
+    const container = document.getElementById('lista-relacionados');
+    
+    try {
+      const relacionados = await apiFetch(`/grupos/${id}/relacionados`);
+      
+      if (relacionados.length === 0) {
+        sectionRel.style.display = 'none';
+        return;
+      }
+      
+      container.innerHTML = relacionados.map(g => `
+        <article class="card-grupo">
+          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
+          <div class="card-grupo-cabecalho">
+            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
+          </div>
+          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
+          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
+          <div class="card-grupo-rodape">
+            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+              Ver grupo →
+            </a>
+          </div>
+        </article>
+      `).join('');
+      
+      container.querySelectorAll('.card-grupo-foto').forEach(img => {
+        img.addEventListener('error', () => { img.style.display = 'none'; });
+      });
+      
+      sectionRel.style.display = 'block';
+    } catch (err) {
+      console.error('Falha ao carregar relacionados:', err);
+      sectionRel.style.display = 'none';
+    }
+  }
+
+  carregarDetalhes();
+</script>
+</body>
+</html>

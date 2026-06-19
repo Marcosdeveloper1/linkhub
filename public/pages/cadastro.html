@@ -48,7 +48,7 @@
 
     <div id="aviso-cadastro" class="aviso"></div>
 
-    <form class="auth-form" id="form-cadastro" onsubmit="cadastrar(event)">
+    <form class="auth-form" id="form-cadastro">
       <div class="form-grupo">
         <label class="form-label" for="nome">Nome completo</label>
         <input class="form-input" type="text" id="nome" name="nome" placeholder="Seu nome" required minlength="2" maxlength="100" autocomplete="name">
@@ -61,7 +61,7 @@
 
       <div class="form-grupo">
         <label class="form-label" for="senha">Senha</label>
-        <input class="form-input" type="password" id="senha" name="senha" placeholder="Crie uma senha forte" required minlength="8" autocomplete="new-password" oninput="validarSenha(this.value)">
+        <input class="form-input" type="password" id="senha" name="senha" placeholder="Crie uma senha forte" required minlength="8" autocomplete="new-password">
         <div class="requisitos-senha">
           <span class="req" id="req-tamanho">✗ Mínimo 8 caracteres</span> ·
           <span class="req" id="req-maiuscula">✗ Uma letra maiúscula</span> ·
@@ -88,6 +88,12 @@
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ seLogadoIrPara: '/' });
+
+  document.getElementById('senha').addEventListener('input', (e) => {
+    validarSenha(e.target.value);
+  });
+
+  document.getElementById('form-cadastro').addEventListener('submit', cadastrar);
 
   function validarSenha(valor) {
     const tamanho = document.getElementById('req-tamanho');

@@ -1,166 +1,198 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { requireAdmin, sanitizeString } = require('../middleware/security');
+const { requireAdmin, sanitizeString, isValidWhatsAppLink } = require('../middleware/security');
 const { emailGrupoAprovado, emailGrupoRejeitado } = require('../email');
+const { buscarPreviewGrupo, baixarFotoGrupo } = require('../utils/whatsappPreview');
 
+// Todas as rotas deste arquivo exigem admin
 router.use(requireAdmin);
 
+// Lista solicitações pendentes, mais antigas primeiro (fila de atendimento)
 router.get('/pendentes', (req, res) => {
   try {
-    const grupos = db.query(`
-      SELECT g.id, g.nome_grupo, g.link_whatsapp, g.descricao, g.nome_contato,
-             g.email_contato, g.criado_em, c.nome as categoria_nome,
-             u.nome as usuario_nome
+    const pendentes = db.query(`
+      SELECT g.*, c.nome as categoria_nome
       FROM groups g
-      JOIN categories c ON g.categoria_id = c.id
-      LEFT JOIN users u ON g.usuario_id = u.id
+      JOIN categories c ON c.id = g.categoria_id
       WHERE g.status = 'pendente'
       ORDER BY g.criado_em ASC
     `);
-    res.json(grupos);
+    res.json(pendentes);
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao buscar pendentes.' });
+    console.error('[admin/pendentes]', err);
+    res.status(500).json({ erro: 'Erro ao carregar solicitações.' });
   }
 });
 
+// Lista grupos por status (aprovado/rejeitado/pendente) — usado na aba de gestão/remoção
 router.get('/grupos', (req, res) => {
   try {
-    const status = req.query.status || 'aprovado';
-    const validos = ['aprovado', 'pendente', 'rejeitado'];
-    const filtroStatus = validos.includes(status) ? status : 'aprovado';
-
-    const grupos = db.query(`
-      SELECT g.id, g.nome_grupo, g.link_whatsapp, g.descricao, g.nome_contato,
-             g.email_contato, g.status, g.criado_em, g.aprovado_em,
-             c.nome as categoria_nome, u.nome as usuario_nome
+    const status = sanitizeString(req.query.status, 20);
+    let sql = `
+      SELECT g.*, c.nome as categoria_nome
       FROM groups g
-      JOIN categories c ON g.categoria_id = c.id
-      LEFT JOIN users u ON g.usuario_id = u.id
-      WHERE g.status = ?
-      ORDER BY g.criado_em DESC
-    `, [filtroStatus]);
-    res.json(grupos);
+      JOIN categories c ON c.id = g.categoria_id
+    `;
+    const params = [];
+    if (status) {
+      sql += ' WHERE g.status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY g.criado_em DESC';
+    res.json(db.query(sql, params));
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao buscar grupos.' });
+    console.error('[admin/grupos]', err);
+    res.status(500).json({ erro: 'Erro ao carregar grupos.' });
   }
 });
 
-router.get('/stats', (req, res) => {
+// Aprova uma solicitação pendente e dispara email automático
+router.post('/grupos/:id/aprovar', (req, res) => {
   try {
-    const pendentes = db.queryOne("SELECT COUNT(*) as n FROM groups WHERE status = 'pendente'");
-    const aprovados = db.queryOne("SELECT COUNT(*) as n FROM groups WHERE status = 'aprovado'");
-    const rejeitados = db.queryOne("SELECT COUNT(*) as n FROM groups WHERE status = 'rejeitado'");
-    const usuarios = db.queryOne("SELECT COUNT(*) as n FROM users WHERE role = 'user'");
+    const id = parseInt(req.params.id, 10);
+    const grupo = db.queryOne('SELECT * FROM groups WHERE id = ?', [id]);
 
-    res.json({
-      pendentes: pendentes?.n || 0,
-      aprovados: aprovados?.n || 0,
-      rejeitados: rejeitados?.n || 0,
-      usuarios: usuarios?.n || 0
-    });
-  } catch (err) {
-    res.status(500).json({ erro: 'Erro ao buscar stats.' });
-  }
-});
-
-router.post('/aprovar/:id', (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
-
-    const grupo = db.queryOne(
-      "SELECT id, nome_grupo, link_whatsapp, email_contato FROM groups WHERE id = ? AND status = 'pendente'",
-      [id]
-    );
-
-    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado ou já processado.' });
-
-    db.run(
-      "UPDATE groups SET status = 'aprovado', aprovado_em = datetime('now'), motivo_rejeicao = NULL WHERE id = ?",
-      [id]
-    );
-
-    emailGrupoAprovado(grupo.email_contato, grupo.nome_grupo, grupo.link_whatsapp).catch(() => {});
-
-    res.json({ ok: true, mensagem: 'Grupo aprovado com sucesso.' });
-  } catch (err) {
-    console.error('[admin/aprovar]', err);
-    res.status(500).json({ erro: 'Erro ao aprovar.' });
-  }
-});
-
-router.post('/rejeitar/:id', (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const motivo = sanitizeString(req.body.motivo, 500);
-
-    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
-    if (!motivo || motivo.length < 10) {
-      return res.status(400).json({ erro: 'Informe o motivo da rejeição (mínimo 10 caracteres).' });
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+    if (grupo.status !== 'pendente') {
+      return res.status(400).json({ erro: 'Esta solicitação já foi analisada.' });
     }
 
-    const grupo = db.queryOne(
-      "SELECT id, nome_grupo, email_contato FROM groups WHERE id = ? AND status = 'pendente'",
+    db.run(
+      `UPDATE groups SET status = 'aprovado', aprovado_em = datetime('now'), motivo_rejeicao = NULL WHERE id = ?`,
       [id]
     );
 
-    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado ou já processado.' });
+    emailGrupoAprovado(grupo.email_contato, grupo.nome_grupo, grupo.link_whatsapp).catch((err) => {
+      console.error('[admin/aprovar] falha ao enviar email:', err.message);
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/aprovar]', err);
+    res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
+  }
+});
+
+// Rejeita uma solicitação pendente — motivo é obrigatório e vai no email pro usuário
+router.post('/grupos/:id/rejeitar', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const motivo = sanitizeString(req.body.motivo, 500);
+
+    if (!motivo || motivo.length < 5) {
+      return res.status(400).json({ erro: 'Informe um motivo para a rejeição (mínimo 5 caracteres).' });
+    }
+
+    const grupo = db.queryOne('SELECT * FROM groups WHERE id = ?', [id]);
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+    if (grupo.status !== 'pendente') {
+      return res.status(400).json({ erro: 'Esta solicitação já foi analisada.' });
+    }
 
     db.run(
-      "UPDATE groups SET status = 'rejeitado', motivo_rejeicao = ? WHERE id = ?",
+      `UPDATE groups SET status = 'rejeitado', motivo_rejeicao = ? WHERE id = ?`,
       [motivo, id]
     );
 
-    emailGrupoRejeitado(grupo.email_contato, grupo.nome_grupo, motivo).catch(() => {});
+    emailGrupoRejeitado(grupo.email_contato, grupo.nome_grupo, motivo).catch((err) => {
+      console.error('[admin/rejeitar] falha ao enviar email:', err.message);
+    });
 
-    res.json({ ok: true, mensagem: 'Grupo rejeitado.' });
+    res.json({ ok: true });
   } catch (err) {
     console.error('[admin/rejeitar]', err);
-    res.status(500).json({ erro: 'Erro ao rejeitar.' });
+    res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
   }
 });
 
-router.delete('/grupo/:id', (req, res) => {
+// Remove um grupo já publicado (ex: denúncia ou problema encontrado depois da aprovação)
+router.delete('/grupos/:id', (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
-
+    const id = parseInt(req.params.id, 10);
     const grupo = db.queryOne('SELECT id FROM groups WHERE id = ?', [id]);
-    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado.' });
-
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
     db.run('DELETE FROM groups WHERE id = ?', [id]);
-    res.json({ ok: true, mensagem: 'Grupo removido.' });
+    res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao remover grupo.' });
+    console.error('[admin/remover]', err);
+    res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
   }
 });
 
-router.get('/usuarios', (req, res) => {
+// Importa vários grupos de uma vez — cada linha: link,categoria_slug
+// Já entra como aprovado, pois é o próprio admin inserindo (não passa por moderação).
+router.post('/grupos/importar-lote', async (req, res) => {
   try {
-    const usuarios = db.query(
-      'SELECT id, nome, email, role, ativo, criado_em FROM users ORDER BY criado_em DESC'
-    );
-    res.json(usuarios);
-  } catch (err) {
-    res.status(500).json({ erro: 'Erro ao buscar usuários.' });
-  }
-});
+    const linhas = (req.body.linhas || '').split('\n').map(l => l.trim()).filter(Boolean);
 
-router.post('/usuario/:id/toggle-ativo', (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (id === req.session.usuario.id) {
-      return res.status(400).json({ erro: 'Você não pode desativar sua própria conta.' });
+    if (linhas.length === 0) {
+      return res.status(400).json({ erro: 'Cole ao menos uma linha no formato: link,categoria' });
     }
 
-    const u = db.queryOne('SELECT id, ativo FROM users WHERE id = ?', [id]);
-    if (!u) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    if (linhas.length > 50) {
+      return res.status(400).json({ erro: 'Máximo de 50 grupos por importação. Divida em lotes menores.' });
+    }
 
-    db.run('UPDATE users SET ativo = ? WHERE id = ?', [u.ativo ? 0 : 1, id]);
-    res.json({ ok: true, ativo: !u.ativo });
+    const resultados = [];
+
+    for (const linha of linhas) {
+      const [linkBruto, categoriaSlugBruto] = linha.split(',');
+      const link = (linkBruto || '').trim();
+      const categoriaSlug = (categoriaSlugBruto || '').trim();
+
+      if (!isValidWhatsAppLink(link)) {
+        resultados.push({ linha, ok: false, erro: 'Link inválido' });
+        continue;
+      }
+
+      const categoria = db.queryOne('SELECT id FROM categories WHERE slug = ?', [categoriaSlug]);
+      if (!categoria) {
+        resultados.push({ linha, ok: false, erro: `Categoria "${categoriaSlug}" não encontrada` });
+        continue;
+      }
+
+      const duplicado = db.queryOne('SELECT id FROM groups WHERE link_whatsapp = ?', [link]);
+      if (duplicado) {
+        resultados.push({ linha, ok: false, erro: 'Link já cadastrado' });
+        continue;
+      }
+
+      const preview = await buscarPreviewGrupo(link);
+      const nomeGrupo = preview.nome || 'Grupo sem nome (editar depois)';
+      const descricao = 'Grupo importado automaticamente. Acesse o link para mais detalhes.';
+
+      const id = db.run(
+        `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, status, aprovado_em)
+         VALUES (?, ?, ?, ?, NULL, ?, ?, 'aprovado', datetime('now'))`,
+        [nomeGrupo, link, descricao, categoria.id, 'Importação LinkHub', 'admin@linkhub.com.br']
+      );
+
+      let fotoLocal = null;
+      if (preview.foto) {
+        fotoLocal = await baixarFotoGrupo(preview.foto, id);
+        if (fotoLocal) {
+          db.run('UPDATE groups SET foto_url = ? WHERE id = ?', [fotoLocal, id]);
+        }
+      }
+
+      resultados.push({ linha, ok: true, id, nome: nomeGrupo, foto: fotoLocal });
+    }
+
+    res.json({
+      resultados,
+      total: linhas.length,
+      sucesso: resultados.filter(r => r.ok).length
+    });
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao atualizar usuário.' });
+    console.error('[admin/importar-lote]', err);
+    res.status(500).json({ erro: 'Erro interno na importação.' });
   }
 });
 

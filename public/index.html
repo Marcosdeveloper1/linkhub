@@ -84,7 +84,7 @@
   <div class="container">
     <h1>Encontre seu grupo</h1>
     <p>O maior diretório de grupos de WhatsApp do Brasil. Busque por tema e entre agora.</p>
-    <form class="busca-hero" id="form-busca" onsubmit="buscar(event)">
+    <form class="busca-hero" id="form-busca">
       <input type="search" id="campo-busca" placeholder="Buscar grupos por nome ou assunto..." autocomplete="off" maxlength="100">
       <button type="submit">Buscar</button>
     </form>
@@ -94,7 +94,7 @@
 <main class="container">
 
   <div class="filtro-categorias" id="filtro-categorias">
-    <button class="filtro-btn ativo" data-slug="" onclick="filtrarCategoria(this, '')">Todos</button>
+    <button class="filtro-btn ativo" data-slug="">Todos</button>
   </div>
 
   <div id="banner-enviar-container"></div>
@@ -111,6 +111,11 @@
       </div>
     </div>
     <div class="paginacao" id="paginacao"></div>
+  </section>
+
+  <section class="secao-destaque-categoria" id="secao-destaque-categoria" style="display: none; margin-top: 40px; border-top: 1px solid var(--cinza-borda); padding-top: 30px; margin-bottom: 20px;">
+    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 20px;" id="titulo-destaque-categoria"></h2>
+    <div id="lista-destaque-categoria" class="grid-3"></div>
   </section>
 
 </main>
@@ -135,7 +140,6 @@
           btn.className = 'filtro-btn';
           btn.dataset.slug = cat.slug;
           btn.textContent = `${cat.nome} (${cat.total_grupos})`;
-          btn.onclick = () => filtrarCategoria(btn, cat.slug);
           container.appendChild(btn);
         }
       });
@@ -169,19 +173,24 @@
 
       lista.innerHTML = grupos.map(g => `
         <article class="card-grupo">
-          <div>
+          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
+          <div class="card-grupo-cabecalho">
             <span class="tag tag-verde">${g.categoria_nome}</span>
           </div>
           <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
           <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
           <div class="card-grupo-rodape">
             <span style="font-size:0.78rem;color:var(--cinza-texto)">${g.aprovado_em ? formatarData(g.aprovado_em) : ''}</span>
-            <a href="${escaparHtml(g.link_whatsapp)}" target="_blank" rel="noopener noreferrer" class="card-grupo-entrada">
-              Entrar →
+            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+              Ver grupo →
             </a>
           </div>
         </article>
       `).join('');
+
+      lista.querySelectorAll('.card-grupo-foto').forEach(img => {
+        img.addEventListener('error', () => { img.style.display = 'none'; });
+      });
 
       montarPaginacao(paginaAtual, totalPaginas);
     } catch (err) {
@@ -217,15 +226,15 @@
     if (total <= 1) { container.innerHTML = ''; return; }
 
     let html = '';
-    html += `<button class="paginacao-btn" ${atual === 1 ? 'disabled' : ''} onclick="irPagina(${atual - 1})">‹</button>`;
+    html += `<button class="paginacao-btn" data-page="${atual - 1}" ${atual === 1 ? 'disabled' : ''}>‹</button>`;
     for (let i = 1; i <= total; i++) {
       if (i === 1 || i === total || Math.abs(i - atual) <= 1) {
-        html += `<button class="paginacao-btn ${i === atual ? 'ativo' : ''}" onclick="irPagina(${i})">${i}</button>`;
+        html += `<button class="paginacao-btn ${i === atual ? 'ativo' : ''}" data-page="${i}">${i}</button>`;
       } else if (Math.abs(i - atual) === 2) {
         html += `<button class="paginacao-btn" disabled>…</button>`;
       }
     }
-    html += `<button class="paginacao-btn" ${atual === total ? 'disabled' : ''} onclick="irPagina(${atual + 1})">›</button>`;
+    html += `<button class="paginacao-btn" data-page="${atual + 1}" ${atual === total ? 'disabled' : ''}>›</button>`;
     container.innerHTML = html;
   }
 
@@ -235,10 +244,69 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  document.getElementById('paginacao').addEventListener('click', (e) => {
+    const btn = e.target.closest('.paginacao-btn');
+    if (!btn || btn.disabled) return;
+    irPagina(parseInt(btn.dataset.page, 10));
+  });
+
+  document.getElementById('form-busca').addEventListener('submit', buscar);
+
+  document.getElementById('filtro-categorias').addEventListener('click', (e) => {
+    const btn = e.target.closest('.filtro-btn');
+    if (!btn) return;
+    filtrarCategoria(btn, btn.dataset.slug);
+  });
+
   function escaparHtml(str) {
     const d = document.createElement('div');
     d.appendChild(document.createTextNode(str || ''));
     return d.innerHTML;
+  }
+
+  async function carregarDestaqueCategoria() {
+    try {
+      const cats = await apiFetch('/grupos/categorias');
+      const catDestaque = cats.find(c => c.total_grupos > 0 && c.slug !== categoriaAtiva);
+      if (!catDestaque) {
+        document.getElementById('secao-destaque-categoria').style.display = 'none';
+        return;
+      }
+
+      const resp = await apiFetch(`/grupos?categoria=${catDestaque.slug}`);
+      const grupos = resp.grupos || [];
+      if (grupos.length === 0) {
+        document.getElementById('secao-destaque-categoria').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('titulo-destaque-categoria').textContent = `Mais grupos em ${catDestaque.nome}`;
+      const container = document.getElementById('lista-destaque-categoria');
+      container.innerHTML = grupos.slice(0, 3).map(g => `
+        <article class="card-grupo">
+          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
+          <div class="card-grupo-cabecalho">
+            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
+          </div>
+          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
+          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
+          <div class="card-grupo-rodape">
+            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+              Ver grupo →
+            </a>
+          </div>
+        </article>
+      `).join('');
+
+      container.querySelectorAll('.card-grupo-foto').forEach(img => {
+        img.addEventListener('error', () => { img.style.display = 'none'; });
+      });
+
+      document.getElementById('secao-destaque-categoria').style.display = 'block';
+    } catch (err) {
+      console.error('Erro ao carregar destaque da categoria:', err);
+      document.getElementById('secao-destaque-categoria').style.display = 'none';
+    }
   }
 
   async function montar() {
@@ -261,6 +329,7 @@
 
     await carregarCategorias();
     carregarGrupos();
+    carregarDestaqueCategoria();
   }
 
   montar();

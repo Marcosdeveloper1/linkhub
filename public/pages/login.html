@@ -74,6 +74,8 @@
 <script>
   iniciarPagina({ seLogadoIrPara: '/' });
 
+  document.getElementById('form-login').addEventListener('submit', login);
+
   async function login(e) {
     e.preventDefault();
     limparAviso('aviso-login');
