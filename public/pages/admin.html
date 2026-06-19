@@ -150,6 +150,19 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
           Link: <a href="${g.link_whatsapp}" target="_blank" rel="noopener">${g.link_whatsapp}</a><br>
           Contato: ${escaparHtml(g.nome_contato)} — ${escaparHtml(g.email_contato)}
         </div>
+        ${g.status === 'pendente' ? `
+          <div class="solicitacao-detalhe-expandido" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--cinza-borda); font-size:0.85rem;">
+            <p><strong>Nome do grupo:</strong> ${escaparHtml(g.nome_grupo)}</p>
+            <p><strong>Categoria:</strong> ${escaparHtml(g.categoria_nome)}</p>
+            <p><strong>Descrição completa:</strong> ${escaparHtml(g.descricao)}</p>
+            ${g.regras ? `<p><strong>Regras informadas:</strong><br>${escaparHtml(g.regras).replace(/\n/g, '<br>')}</p>` : ''}
+            <p><strong>Link:</strong> <a href="${escaparHtml(g.link_whatsapp)}" target="_blank" rel="noopener">${escaparHtml(g.link_whatsapp)}</a></p>
+            <p><strong>Nome do solicitante:</strong> ${escaparHtml(g.nome_contato)}</p>
+            <p><strong>Email do solicitante:</strong> ${escaparHtml(g.email_contato)}</p>
+            <p><strong>Enviado em:</strong> ${formatarData(g.criado_em)}</p>
+          </div>
+          <button class="btn btn-contorno btn-sm btn-ver-detalhes" data-id="${g.id}" style="margin-top:8px;">Ver detalhes completos</button>
+        ` : ''}
         ${g.status === 'rejeitado' && g.motivo_rejeicao ? `
           <div class="motivo-rejeicao-exibido">Motivo: ${escaparHtml(g.motivo_rejeicao)}</div>
         ` : ''}
@@ -178,6 +191,16 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
 
   // Delegação de eventos — funciona mesmo com a lista sendo recriada a cada carregamento
   document.getElementById('lista-area').addEventListener('click', (e) => {
+    const btnDetalhe = e.target.closest('.btn-ver-detalhes');
+    if (btnDetalhe) {
+      const card = btnDetalhe.closest('.solicitacao-card');
+      const painel = card.querySelector('.solicitacao-detalhe-expandido');
+      const aberto = painel.style.display !== 'none';
+      painel.style.display = aberto ? 'none' : 'block';
+      btnDetalhe.textContent = aberto ? 'Ver detalhes completos' : 'Ocultar detalhes';
+      return;
+    }
+
     const btn = e.target.closest('button[data-acao]');
     if (!btn) return;
 

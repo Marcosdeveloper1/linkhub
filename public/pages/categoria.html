@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="meta-titulo">Grupos no WhatsApp — LinkHub</title>
+  <meta name="description" id="meta-descricao" content="Encontre os melhores grupos de WhatsApp organizados por categoria no LinkHub.">
+  <link rel="canonical" id="meta-canonical" href="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .categoria-hero {
+      background: linear-gradient(135deg, var(--verde-escuro) 0%, var(--verde-medio) 100%);
+      color: var(--branco);
+      padding: 48px 24px 40px;
+    }
+
+    .categoria-hero-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    .categoria-hero-breadcrumb {
+      font-size: 0.83rem;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 14px;
+    }
+
+    .categoria-hero-breadcrumb a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+    }
+
+    .categoria-hero-breadcrumb a:hover {
+      color: var(--branco);
+    }
+
+    .categoria-hero h1 {
+      color: var(--branco);
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+    }
+
+    .categoria-hero p {
+      color: rgba(255,255,255,0.8);
+      font-size: 1rem;
+      max-width: 560px;
+    }
+
+    .categoria-corpo {
+      padding: 32px 0 60px;
+    }
+
+    .categoria-topo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .categoria-topo h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .contagem {
+      font-size: 0.875rem;
+      color: var(--cinza-texto);
+    }
+
+    .outras-categorias {
+      margin-top: 56px;
+      padding-top: 32px;
+      border-top: 1px solid var(--cinza-borda);
+    }
+
+    .outras-categorias h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .lista-categorias {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip-categoria {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1.5px solid var(--cinza-borda);
+      background: var(--branco);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--preto);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .chip-categoria:hover {
+      border-color: var(--verde-claro);
+      color: var(--verde-medio);
+    }
+
+    .chip-categoria .chip-count {
+      font-size: 0.75rem;
+      color: var(--cinza-texto);
+    }
+
+    .card-grupo-entrada {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--verde-escuro);
+      color: var(--branco);
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .card-grupo-entrada:hover {
+      background: var(--verde-medio);
+      color: var(--branco);
+    }
+
+    @media (max-width: 600px) {
+      .categoria-hero h1 { font-size: 1.5rem; }
+      .categoria-topo { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<section class="categoria-hero">
+  <div class="categoria-hero-inner">
+    <div class="categoria-hero-breadcrumb">
+      <a href="/">Início</a> › <span id="breadcrumb-nome">Categoria</span>
+    </div>
+    <h1 id="titulo-pagina">Grupos no WhatsApp</h1>
+    <p id="descricao-pagina">Encontre os melhores grupos desta categoria e participe agora.</p>
+  </div>
+</section>
+
+<main class="container categoria-corpo">
+
+  <div class="categoria-topo">
+    <h2 id="subtitulo-lista">Todos os grupos</h2>
+    <span class="contagem" id="contagem"></span>
+  </div>
+
+  <div id="lista-grupos" class="grid-3">
+    <div class="estado-vazio">
+      <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
+      <p>Carregando grupos...</p>
+    </div>
+  </div>
+
+  <div class="paginacao" id="paginacao"></div>
+
+  <section class="outras-categorias" id="secao-outras-cats" style="display:none">
+    <h2>Explorar outras categorias</h2>
+    <div class="lista-categorias" id="lista-outras-cats"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  // Lê o slug da URL: /pages/categoria.html?slug=esportes
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug') || '';
+
+  if (!slug) {
+    window.location.href = '/';
+  }
+
+  let paginaAtual = 1;
+  let totalPaginas = 1;
+  let nomeCategoria = '';
+
+  function escaparHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  async function carregarCategoria() {
+    try {
+      const cats = await apiFetch('/grupos/categorias');
+      const cat = cats.find(c => c.slug === slug);
+
+      if (!cat) {
+        window.location.href = '/';
+        return;
+      }
+
+      nomeCategoria = cat.nome;
+
+      // Atualiza metas e títulos
+      const titulo = `Grupos de ${cat.nome} no WhatsApp`;
+      document.title = `${titulo} — LinkHub`;
+      document.getElementById('meta-titulo').textContent = `${titulo} — LinkHub`;
+      document.getElementById('meta-descricao').setAttribute('content',
+        `Encontre os melhores grupos de WhatsApp de ${cat.nome}. Entre agora e participe da comunidade no LinkHub.`
+      );
+      document.getElementById('meta-canonical').setAttribute('href', window.location.href);
+      document.getElementById('breadcrumb-nome').textContent = cat.nome;
+      document.getElementById('titulo-pagina').textContent = titulo;
+      document.getElementById('descricao-pagina').textContent =
+        `Entre nos melhores grupos de ${cat.nome} do WhatsApp. ${cat.total_grupos} grupo${cat.total_grupos !== 1 ? 's' : ''} disponíve${cat.total_grupos !== 1 ? 'is' : 'l'}.`;
+      document.getElementById('subtitulo-lista').textContent = `Grupos de ${cat.nome}`;
+
+      // Carrega outras categorias
+      const outras = cats.filter(c => c.slug !== slug && c.total_grupos > 0);
+      if (outras.length > 0) {
+        const container = document.getElementById('lista-outras-cats');
+        container.innerHTML = outras.map(c => `
+          <a href="/pages/categoria.html?slug=${c.slug}" class="chip-categoria">
+            ${escaparHtml(c.nome)}
+            <span class="chip-count">${c.total_grupos}</span>
+          </a>
+        `).join('');
+        document.getElementById('secao-outras-cats').style.display = 'block';
+      }
+
+    } catch (err) {
+      console.error('Erro ao carregar categoria:', err);
+    }
+  }
+
+  async function carregarGrupos() {
+    const lista = document.getElementById('lista-grupos');
+    lista.innerHTML = '<div style="text-align:center;padding:40px"><span class="spinner spinner-verde" style="display:inline-block"></span></div>';
+
+    try {
+      const resp = await apiFetch(`/grupos?categoria=${slug}&pagina=${paginaAtual}`);
+      const { grupos, total } = resp;
+      totalPaginas = resp.totalPaginas || 1;
+
+      document.getElementById('contagem').textContent =
+        total > 0 ? `${total} grupo${total !== 1 ? 's' : ''}` : '';
+
+      if (grupos.length === 0) {
+        lista.innerHTML = `
+          <div class="estado-vazio" style="grid-column: 1/-1">
+            <div class="estado-vazio-icone">📭</div>
+            <h3>Nenhum grupo nesta categoria ainda</h3>
+            <p>Seja o primeiro a enviar um grupo aqui!</p>
+            <a href="/pages/enviar-grupo.html" class="btn btn-primario" style="margin-top:16px">Enviar grupo</a>
+          </div>`;
+        document.getElementById('paginacao').innerHTML = '';
+        return;
+      }
+
+      lista.innerHTML = grupos.map(g => `
+        <article class="card-grupo">
+          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="${escaparHtml(g.nome_grupo)}" loading="lazy">` : ''}
+          <div class="card-grupo-cabecalho">
+            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
+          </div>
+          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
+          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
+          <div class="card-grupo-rodape">
+            <span style="font-size:0.78rem;color:var(--cinza-texto)">${g.aprovado_em ? formatarData(g.aprovado_em) : ''}</span>
+            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+              Ver grupo →
+            </a>
+          </div>
+        </article>
+      `).join('');
+
+      lista.querySelectorAll('.card-grupo-foto').forEach(img => {
+        img.addEventListener('error', () => { img.style.display = 'none'; });
+      });
+
+      montarPaginacao();
+
+    } catch (err) {
+      lista.innerHTML = '<div class="estado-vazio" style="grid-column:1/-1"><p>Erro ao carregar grupos. Tente novamente.</p></div>';
+    }
+  }
+
+  function montarPaginacao() {
+    const container = document.getElementById('paginacao');
+    if (totalPaginas <= 1) { container.innerHTML = ''; return; }
+
+    let html = '';
+    html += `<button class="paginacao-btn" data-page="${paginaAtual - 1}" ${paginaAtual === 1 ? 'disabled' : ''}>‹</button>`;
+    for (let i = 1; i <= totalPaginas; i++) {
+      if (i === 1 || i === totalPaginas || Math.abs(i - paginaAtual) <= 1) {
+        html += `<button class="paginacao-btn ${i === paginaAtual ? 'ativo' : ''}" data-page="${i}">${i}</button>`;
+      } else if (Math.abs(i - paginaAtual) === 2) {
+        html += `<button class="paginacao-btn" disabled>…</button>`;
+      }
+    }
+    html += `<button class="paginacao-btn" data-page="${paginaAtual + 1}" ${paginaAtual === totalPaginas ? 'disabled' : ''}>›</button>`;
+    container.innerHTML = html;
+  }
+
+  document.getElementById('paginacao').addEventListener('click', (e) => {
+    const btn = e.target.closest('.paginacao-btn');
+    if (!btn || btn.disabled) return;
+    paginaAtual = parseInt(btn.dataset.page, 10);
+    carregarGrupos();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  async function montar() {
+    await iniciarPagina();
+    await carregarCategoria();
+    await carregarGrupos();
+  }
+
+  montar();
+</script>
+</body>
+</html>

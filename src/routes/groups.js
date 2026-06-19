@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
     );
 
     const grupos = db.query(
-      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.aprovado_em,
+      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url, g.aprovado_em,
               c.nome as categoria_nome, c.slug as categoria_slug, c.icone as categoria_icone
        FROM groups g
        JOIN categories c ON g.categoria_id = c.id

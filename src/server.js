@@ -65,8 +65,22 @@ async function iniciar() {
   try {
     await getDb();
     console.log('[db] Banco de dados carregado.');
-    app.listen(PORT, () => {
+
+    const servidor = app.listen(PORT, () => {
       console.log(`[server] LinkHub rodando em http://localhost:${PORT}`);
+    });
+
+    servidor.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`\n[server] ❌ A porta ${PORT} já está em uso por outro processo.`);
+        console.error('[server] Isso geralmente acontece quando o servidor anterior não foi fechado corretamente.');
+        console.error('[server] No Windows, rode: netstat -ano | findstr :' + PORT);
+        console.error('[server] Depois: taskkill /PID <numero_do_pid> /F\n');
+        process.exit(1);
+      } else {
+        console.error('[server] Erro inesperado ao iniciar:', err);
+        process.exit(1);
+      }
     });
   } catch (err) {
     console.error('[server] Falha ao iniciar:', err.message);

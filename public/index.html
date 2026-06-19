@@ -31,6 +31,24 @@
     .filtro-btn:hover { border-color: var(--verde-claro); color: var(--verde-medio); }
     .filtro-btn.ativo { background: var(--verde-escuro); color: var(--branco); border-color: var(--verde-escuro); }
 
+    /* wrapper de cada filtro: botão + link "Ver tudo" */
+    .filtro-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .filtro-ver-tudo {
+      font-size: 0.75rem;
+      color: var(--cinza-texto);
+      text-decoration: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+    .filtro-ver-tudo:hover { color: var(--verde-medio); }
+
     .secao-grupos { padding: 8px 0 40px; }
     .secao-titulo {
       display: flex;
@@ -114,7 +132,10 @@
   </section>
 
   <section class="secao-destaque-categoria" id="secao-destaque-categoria" style="display: none; margin-top: 40px; border-top: 1px solid var(--cinza-borda); padding-top: 30px; margin-bottom: 20px;">
-    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 20px;" id="titulo-destaque-categoria"></h2>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px;">
+      <h2 style="font-size: 1.25rem; font-weight: 600;" id="titulo-destaque-categoria"></h2>
+      <a id="link-destaque-categoria" href="#" style="font-size:0.85rem; color:var(--verde-medio); white-space:nowrap;">Ver todos →</a>
+    </div>
     <div id="lista-destaque-categoria" class="grid-3"></div>
   </section>
 
@@ -136,11 +157,24 @@
       const container = document.getElementById('filtro-categorias');
       cats.forEach(cat => {
         if (cat.total_grupos > 0) {
+          // wrapper que agrupa o botão de filtro + link "Ver tudo"
+          const item = document.createElement('span');
+          item.className = 'filtro-item';
+
           const btn = document.createElement('button');
           btn.className = 'filtro-btn';
           btn.dataset.slug = cat.slug;
           btn.textContent = `${cat.nome} (${cat.total_grupos})`;
-          container.appendChild(btn);
+
+          const link = document.createElement('a');
+          link.className = 'filtro-ver-tudo';
+          link.href = `/pages/categoria.html?slug=${cat.slug}`;
+          link.title = `Ver página de ${cat.nome}`;
+          link.textContent = '↗';
+
+          item.appendChild(btn);
+          item.appendChild(link);
+          container.appendChild(item);
         }
       });
     } catch {}
@@ -281,6 +315,8 @@
       }
 
       document.getElementById('titulo-destaque-categoria').textContent = `Mais grupos em ${catDestaque.nome}`;
+      document.getElementById('link-destaque-categoria').href = `/pages/categoria.html?slug=${catDestaque.slug}`;
+
       const container = document.getElementById('lista-destaque-categoria');
       container.innerHTML = grupos.slice(0, 3).map(g => `
         <article class="card-grupo">

@@ -77,34 +77,27 @@ function htmlBase(titulo, conteudo) {
 async function emailGrupoAprovado(para, nomeGrupo, linkWhatsApp) {
   const html = htmlBase('Seu grupo foi aprovado!', `
     <h2 style="margin:0 0 16px;color:#1a472a;font-size:20px;">🎉 Grupo aprovado!</h2>
-    <p style="color:#444;line-height:1.6;">Boa notícia! Seu grupo <strong>${nomeGrupo}</strong> foi aprovado e já está visível no LinkHub.</p>
-    <p style="color:#444;line-height:1.6;">Link do grupo: <a href="${linkWhatsApp}" style="color:#1a472a;">${linkWhatsApp}</a></p>
+    <p style="color:#444;line-height:1.6;">Seu grupo foi aprovado! Logo logo estará em nosso sistema.</p>
     <div style="margin:24px 0;">
       <a href="${SITE_URL}" style="background:#1a472a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">
         Ver no site
       </a>
     </div>
-    <p style="color:#888;font-size:14px;">Compartilhe o LinkHub com seus amigos para mais visibilidade!</p>
   `);
-  return enviarEmail(para, `✅ Grupo "${nomeGrupo}" aprovado no LinkHub`, html);
+  return enviarEmail(para, 'SUPORTE LinkHub', html);
 }
 
 async function emailGrupoRejeitado(para, nomeGrupo, motivo) {
   const html = htmlBase('Atualização sobre seu grupo', `
     <h2 style="margin:0 0 16px;color:#c0392b;font-size:20px;">Grupo não aprovado</h2>
-    <p style="color:#444;line-height:1.6;">Infelizmente o grupo <strong>${nomeGrupo}</strong> não foi aprovado por nossa equipe de moderação.</p>
-    <div style="background:#fff5f5;border-left:4px solid #c0392b;padding:16px;border-radius:4px;margin:16px 0;">
-      <p style="margin:0;color:#666;font-size:14px;font-weight:600;">Motivo:</p>
-      <p style="margin:8px 0 0;color:#444;">${motivo}</p>
-    </div>
-    <p style="color:#444;line-height:1.6;">Você pode corrigir os problemas indicados e submeter novamente seu grupo.</p>
+    <p style="color:#444;line-height:1.6;">Lamentamos informar que seu Grupo não foi aceito pelo seguinte motivo: ${motivo}</p>
     <div style="margin:24px 0;">
       <a href="${SITE_URL}/pages/enviar-grupo.html" style="background:#1a472a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">
         Enviar novamente
       </a>
     </div>
   `);
-  return enviarEmail(para, `ℹ️ Atualização sobre o grupo "${nomeGrupo}"`, html);
+  return enviarEmail(para, 'SUPORTE LinkHub', html);
 }
 
 async function emailBoasVindas(para, nome) {

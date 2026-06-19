@@ -201,9 +201,11 @@ p { margin-bottom: 0; }
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 6px;
 }
 
 .card-grupo-foto {
+  display: block;
   width: 100%;
   height: 140px;
   object-fit: cover;
