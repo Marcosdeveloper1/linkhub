@@ -9,6 +9,7 @@
 
 Diretório web de grupos de WhatsApp organizados por categoria, com cadastro de usuário, envio de grupo para moderação, painel admin de aprovação/rejeição, e importação em lote para o admin adicionar grupos de outros sites direto (já aprovados, sem fila).
 
+Objetivo de negócio: gerar volume inicial de grupos via importação em lote (feita pelo sócio), e depois captar novos cadastros organicamente pelo fluxo de usuário comum.
 
 ---
 
