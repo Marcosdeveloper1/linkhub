@@ -18,7 +18,7 @@
     <div class="home-topo-grid">
       <div class="home-topo-texto">
         <span class="home-label">Diretório brasileiro de comunidades</span>
-        <h1>Encontre grupos de WhatsApp por categoria, cidade ou interesse</h1>
+        <h1>Encontre grupos de WhatsApp por tema, cidade ou interesse</h1>
         <p>Explore comunidades ativas, filtre por categoria e entre nos grupos que fazem sentido para você.</p>
       </div>
 
@@ -46,18 +46,13 @@
         <span class="home-secao-label">Categorias</span>
         <h2>Explore por assunto</h2>
       </div>
-      <p>Escolha um tema para filtrar os grupos disponíveis.</p>
+      <p>Escolha um tema para ver grupos e páginas específicas.</p>
     </div>
 
-    <div class="categorias-grid" id="filtro-categorias">
-      <button class="categoria-card ativo" type="button" data-slug="">
-        <span class="categoria-icone categoria-icone-texto">☰</span>
-        <span class="categoria-nome">Todos</span>
-      </button>
-    </div>
+    <div class="categorias-grid" id="filtro-categorias"></div>
 
     <div class="categorias-acoes">
-      <button class="btn-ver-mais-categorias" type="button" id="btn-ver-mais-categorias">
+      <button class="btn-ver-mais-categorias" type="button" id="btn-ver-mais-categorias" aria-expanded="false">
         + Ver mais categorias
       </button>
     </div>
@@ -69,7 +64,7 @@
   <section class="secao-grupos">
     <div class="secao-titulo">
       <div>
-        <span class="home-secao-label">Diretório</span>
+        <span class="home-secao-label" id="label-secao">Diretório</span>
         <h1 id="titulo-secao">Todos os grupos</h1>
       </div>
       <span class="contagem-resultados" id="contagem"></span>
@@ -107,71 +102,181 @@
 
 <script src="/js/utils.js"></script>
 <script>
+  const CATEGORIAS_MENU = [
+    {
+      nome: 'Amizade',
+      slug: 'amizade',
+      apiSlug: 'amizade',
+      icone: '/img/icones_categorias/amizade.png',
+      descricao: 'Encontre grupos de WhatsApp de amizade, conversas e novas conexões.'
+    },
+    {
+      nome: 'Relacionamento',
+      slug: 'relacionamento',
+      apiSlug: 'relacionamento',
+      icone: '/img/icones_categorias/relacionamento.png',
+      descricao: 'Encontre grupos de WhatsApp sobre relacionamento, amor e romance.'
+    },
+    {
+      nome: 'Carros e Motos',
+      slug: 'carros',
+      apiSlug: 'carros',
+      icone: '/img/icones_categorias/carros.png',
+      descricao: 'Encontre grupos de WhatsApp sobre carros, motos, mecânica e veículos.'
+    },
+    {
+      nome: 'Cidades',
+      slug: 'cidade',
+      apiSlug: 'cidade',
+      icone: '/img/icones_categorias/cidade.png',
+      descricao: 'Encontre grupos de WhatsApp por cidade, região e comunidade local.'
+    },
+    {
+      nome: 'Compra e Venda',
+      slug: 'compras-e-vendas',
+      apiSlug: 'compras-e-vendas',
+      icone: '/img/icones_categorias/compras_e_vendas.png',
+      descricao: 'Encontre grupos de WhatsApp para compra, venda, ofertas e negócios locais.'
+    },
+    {
+      nome: 'Concursos',
+      slug: 'concursos',
+      apiSlug: 'concursos',
+      icone: '/img/icones_categorias/concursos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre concursos, estudos e preparação.'
+    },
+    {
+      nome: 'Desenhos e Animes',
+      slug: 'desenhos',
+      apiSlug: 'desenhos',
+      icone: '/img/icones_categorias/desenhos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre desenhos, animes e cultura geek.'
+    },
+    {
+      nome: 'Divulgação',
+      slug: 'divulgacao',
+      apiSlug: 'divulgacao',
+      icone: '/img/icones_categorias/divulgacao.png',
+      descricao: 'Encontre grupos de WhatsApp para divulgação, links e comunidades.'
+    },
+    {
+      nome: 'Educação',
+      slug: 'educacao',
+      apiSlug: 'educacao',
+      emoji: '🎓',
+      descricao: 'Encontre grupos de WhatsApp de educação, cursos, estudos e conhecimento.'
+    },
+    {
+      nome: 'Emagrecimento',
+      slug: 'emagrecimento',
+      apiSlug: 'emagrecimento',
+      icone: '/img/icones_categorias/emagrecimento.png',
+      descricao: 'Encontre grupos de WhatsApp sobre emagrecimento, saúde e rotina fitness.'
+    },
+    {
+      nome: 'Dinheiro',
+      slug: 'dinheiro',
+      apiSlug: 'financas',
+      icone: '/img/icones_categorias/dinheiro.png',
+      descricao: 'Encontre grupos de WhatsApp sobre dinheiro, finanças, renda e oportunidades.'
+    },
+    {
+      nome: 'Investimentos',
+      slug: 'investimentos',
+      apiSlug: 'investimentos',
+      icone: '/img/icones_categorias/investimentos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre investimentos, mercado e finanças.'
+    },
+    {
+      nome: 'Links',
+      slug: 'links',
+      apiSlug: 'links',
+      icone: '/img/icones_categorias/links.png',
+      descricao: 'Encontre grupos de WhatsApp para links úteis, comunidades e indicações.'
+    },
+    {
+      nome: 'Receitas',
+      slug: 'receitas',
+      apiSlug: 'receitas',
+      icone: '/img/icones_categorias/receitas.png',
+      descricao: 'Encontre grupos de WhatsApp sobre receitas, culinária e comida.'
+    },
+    {
+      nome: 'Religião',
+      slug: 'religiao',
+      apiSlug: 'religiao',
+      icone: '/img/icones_categorias/religiao.png',
+      descricao: 'Encontre grupos de WhatsApp sobre religião, fé e comunidades religiosas.'
+    },
+    {
+      nome: 'Turismo',
+      slug: 'turismo',
+      apiSlug: 'turismo',
+      icone: '/img/icones_categorias/turismo.png',
+      descricao: 'Encontre grupos de WhatsApp sobre turismo, viagens e passeios.'
+    },
+    {
+      nome: 'Política',
+      slug: 'politica',
+      apiSlug: 'politica',
+      emoji: '🏛️',
+      descricao: 'Encontre grupos de WhatsApp sobre política, debates e notícias.'
+    },
+    {
+      nome: 'Tecnologia',
+      slug: 'tecnologia',
+      apiSlug: 'tecnologia',
+      emoji: '💻',
+      descricao: 'Encontre grupos de WhatsApp sobre tecnologia, programação e inovação.'
+    },
+    {
+      nome: 'Saúde',
+      slug: 'saude',
+      apiSlug: 'saude',
+      emoji: '🩺',
+      descricao: 'Encontre grupos de WhatsApp sobre saúde, bem-estar e qualidade de vida.'
+    },
+    {
+      nome: 'Entretenimento',
+      slug: 'entretenimento',
+      apiSlug: 'entretenimento',
+      emoji: '🎬',
+      descricao: 'Encontre grupos de WhatsApp sobre entretenimento, vídeos e diversão.'
+    },
+    {
+      nome: 'Empregos',
+      slug: 'empregos',
+      apiSlug: 'empregos',
+      emoji: '💼',
+      descricao: 'Encontre grupos de WhatsApp sobre empregos, vagas e oportunidades.'
+    },
+    {
+      nome: 'Negócios',
+      slug: 'negocios',
+      apiSlug: 'negocios',
+      emoji: '📈',
+      descricao: 'Encontre grupos de WhatsApp sobre negócios, empreendedorismo e vendas.'
+    },
+    {
+      nome: 'Esportes',
+      slug: 'esportes',
+      apiSlug: 'esportes',
+      emoji: '⚽',
+      descricao: 'Encontre grupos de WhatsApp de esportes, futebol e torcida.'
+    },
+    {
+      nome: 'Outros',
+      slug: 'outros',
+      apiSlug: 'outros',
+      emoji: '•••',
+      descricao: 'Encontre outros grupos de WhatsApp de vários temas.'
+    }
+  ];
+
   let paginaAtual = 1;
   let categoriaAtiva = '';
   let buscaAtiva = '';
   let tempoBusca = null;
-
-  const iconesCategorias = {
-    amizade: '/img/icones_categorias/amizade.png',
-
-    amor: '/img/icones_categorias/relacionamento.png',
-    romance: '/img/icones_categorias/relacionamento.png',
-    relacionamento: '/img/icones_categorias/relacionamento.png',
-    'amor-e-romance': '/img/icones_categorias/relacionamento.png',
-
-    carros: '/img/icones_categorias/carros.png',
-    motos: '/img/icones_categorias/carros.png',
-    'carros-e-motos': '/img/icones_categorias/carros.png',
-
-    cidades: '/img/icones_categorias/cidade.png',
-    cidade: '/img/icones_categorias/cidade.png',
-
-    compra: '/img/icones_categorias/compras_e_vendas.png',
-    venda: '/img/icones_categorias/compras_e_vendas.png',
-    compras: '/img/icones_categorias/compras_e_vendas.png',
-    vendas: '/img/icones_categorias/compras_e_vendas.png',
-    'compra-e-venda': '/img/icones_categorias/compras_e_vendas.png',
-    'compras-e-vendas': '/img/icones_categorias/compras_e_vendas.png',
-
-    concursos: '/img/icones_categorias/concursos.png',
-    concurso: '/img/icones_categorias/concursos.png',
-
-    desenhos: '/img/icones_categorias/desenhos.png',
-    desenho: '/img/icones_categorias/desenhos.png',
-    anime: '/img/icones_categorias/desenhos.png',
-    animes: '/img/icones_categorias/desenhos.png',
-    'desenhos-e-animes': '/img/icones_categorias/desenhos.png',
-
-    divulgacao: '/img/icones_categorias/divulgacao.png',
-    divulgação: '/img/icones_categorias/divulgacao.png',
-
-    emagrecimento: '/img/icones_categorias/emagrecimento.png',
-    fitness: '/img/icones_categorias/emagrecimento.png',
-
-    dinheiro: '/img/icones_categorias/dinheiro.png',
-    renda: '/img/icones_categorias/dinheiro.png',
-
-    investimentos: '/img/icones_categorias/investimentos.png',
-    investimento: '/img/icones_categorias/investimentos.png',
-    financas: '/img/icones_categorias/investimentos.png',
-    finanças: '/img/icones_categorias/investimentos.png',
-
-    links: '/img/icones_categorias/links.png',
-    link: '/img/icones_categorias/links.png',
-
-    receitas: '/img/icones_categorias/receitas.png',
-    receita: '/img/icones_categorias/receitas.png',
-    culinaria: '/img/icones_categorias/receitas.png',
-    culinária: '/img/icones_categorias/receitas.png',
-
-    religiao: '/img/icones_categorias/religiao.png',
-    religião: '/img/icones_categorias/religiao.png',
-
-    turismo: '/img/icones_categorias/turismo.png',
-    viagem: '/img/icones_categorias/turismo.png',
-    viagens: '/img/icones_categorias/turismo.png'
-  };
 
   function normalizarSlug(texto) {
     return String(texto || '')
@@ -182,20 +287,72 @@
       .replace(/^-|-$/g, '');
   }
 
+  function obterSlugDaUrl() {
+    const caminho = decodeURIComponent(window.location.pathname || '/')
+      .replace(/^\/+|\/+$/g, '');
+
+    if (!caminho || caminho === 'index.html') return '';
+
+    const slug = normalizarSlug(caminho);
+    return CATEGORIAS_MENU.some(cat => cat.slug === slug) ? slug : '';
+  }
+
+  function obterCategoriaAtual() {
+    if (!categoriaAtiva) return null;
+    return CATEGORIAS_MENU.find(cat => cat.slug === categoriaAtiva) || null;
+  }
+
   function obterIconeCategoria(cat) {
-    const slugOriginal = String(cat?.slug || '').toLowerCase();
-    const slugNormalizado = normalizarSlug(cat?.slug || cat?.nome || '');
-    const nomeNormalizado = normalizarSlug(cat?.nome || '');
-
-    const caminho = iconesCategorias[slugOriginal]
-      || iconesCategorias[slugNormalizado]
-      || iconesCategorias[nomeNormalizado];
-
-    if (caminho) {
-      return `<img src="${caminho}" alt="" loading="lazy" onerror="this.parentElement.classList.add('categoria-icone-sem-img'); this.remove();">`;
+    if (cat.icone) {
+      return `<img src="${cat.icone}" alt="" loading="lazy" onerror="this.parentElement.classList.add('categoria-icone-sem-img'); this.remove();">`;
     }
 
-    return `<span class="categoria-icone-fallback">•••</span>`;
+    return `<span class="categoria-icone-texto">${escaparHtml(cat.emoji || '•••')}</span>`;
+  }
+
+  function atualizarSeoCategoria() {
+    const categoria = obterCategoriaAtual();
+    const metaDescription = document.querySelector('meta[name="description"]');
+
+    if (!categoria) {
+      document.title = 'WhatsApp Grupos — Diretório de grupos';
+      if (metaDescription) {
+        metaDescription.setAttribute('content', 'Encontre grupos de WhatsApp por tema. Diretório de grupos com categorias, busca, destaques e divulgação gratuita.');
+      }
+      return;
+    }
+
+    document.title = `Grupos de WhatsApp de ${categoria.nome} — WhatsApp Grupos`;
+    if (metaDescription) {
+      metaDescription.setAttribute('content', categoria.descricao);
+    }
+  }
+
+  function montarCategorias() {
+    const container = document.getElementById('filtro-categorias');
+    const todosAtivo = !categoriaAtiva ? 'ativo' : '';
+
+    let html = `
+      <a class="categoria-card ${todosAtivo}" href="/" data-slug="">
+        <span class="categoria-icone categoria-icone-texto">☰</span>
+        <span class="categoria-nome">Todos</span>
+      </a>
+    `;
+
+    html += CATEGORIAS_MENU.map((cat, index) => {
+      const ativo = categoriaAtiva === cat.slug ? 'ativo' : '';
+      const extra = index >= 9 ? 'categoria-extra' : '';
+
+      return `
+        <a class="categoria-card ${ativo} ${extra}" href="/${cat.slug}" data-slug="${cat.slug}">
+          <span class="categoria-icone">${obterIconeCategoria(cat)}</span>
+          <span class="categoria-nome">${escaparHtml(cat.nome)}</span>
+        </a>
+      `;
+    }).join('');
+
+    container.innerHTML = html;
+    atualizarBotaoMaisCategorias();
   }
 
   function atualizarBotaoMaisCategorias() {
@@ -217,38 +374,6 @@
 
     btn.textContent = aberto ? '− Ver menos categorias' : '+ Ver mais categorias';
     btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
-  }
-
-  async function carregarCategorias() {
-    try {
-      const cats = await apiFetch('/grupos/categorias');
-      const container = document.getElementById('filtro-categorias');
-
-      cats.forEach((cat, index) => {
-        if (cat.total_grupos > 0) {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'categoria-card';
-          btn.dataset.slug = cat.slug;
-
-          if (index >= 9) {
-            btn.classList.add('categoria-extra');
-          }
-
-          btn.innerHTML = `
-            <span class="categoria-icone">${obterIconeCategoria(cat)}</span>
-            <span class="categoria-nome">${escaparHtml(cat.nome)}</span>
-          `;
-
-          container.appendChild(btn);
-        }
-      });
-
-      atualizarBotaoMaisCategorias();
-    } catch (err) {
-      console.error('Erro ao carregar categorias:', err);
-      atualizarBotaoMaisCategorias();
-    }
   }
 
   function grupoTemDestaque(g) {
@@ -296,8 +421,10 @@
     const lista = document.getElementById('lista-grupos');
     lista.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px"><span class="spinner spinner-verde" style="display:inline-block"></span></div>';
 
+    const categoria = obterCategoriaAtual();
     const params = new URLSearchParams({ pagina: paginaAtual });
-    if (categoriaAtiva) params.set('categoria', categoriaAtiva);
+
+    if (categoria) params.set('categoria', categoria.apiSlug || categoria.slug);
     if (buscaAtiva) params.set('busca', buscaAtiva);
 
     try {
@@ -310,8 +437,8 @@
         lista.innerHTML = `
           <div class="estado-vazio" style="grid-column: 1/-1">
             <div class="estado-vazio-icone">🔍</div>
-            <h3>${buscaAtiva ? 'Nenhum grupo encontrado' : 'Nenhum grupo nesta categoria'}</h3>
-            <p>${buscaAtiva ? 'Tente buscar com outras palavras.' : 'Seja o primeiro a enviar um grupo aqui!'}</p>
+            <h3>${buscaAtiva ? 'Nenhum grupo encontrado' : 'Nenhum grupo nesta categoria ainda'}</h3>
+            <p>${buscaAtiva ? 'Tente buscar com outras palavras.' : 'Seja o primeiro a enviar um grupo para esta página.'}</p>
           </div>`;
         document.getElementById('paginacao').innerHTML = '';
         return;
@@ -329,20 +456,25 @@
     }
   }
 
-  function filtrarCategoria(btn, slug) {
-    document.querySelectorAll('.categoria-card').forEach(b => b.classList.remove('ativo'));
-    btn.classList.add('ativo');
+  function atualizarTituloSecao() {
+    const categoria = obterCategoriaAtual();
+    const titulo = document.getElementById('titulo-secao');
+    const label = document.getElementById('label-secao');
 
-    categoriaAtiva = slug;
-    paginaAtual = 1;
-    buscaAtiva = '';
+    if (buscaAtiva) {
+      titulo.textContent = `Resultados para "${buscaAtiva}"`;
+      label.textContent = 'Busca';
+      return;
+    }
 
-    document.getElementById('campo-busca').value = '';
+    if (categoria) {
+      titulo.textContent = `Grupos de WhatsApp de ${categoria.nome}`;
+      label.textContent = 'Categoria';
+      return;
+    }
 
-    const nomeCategoria = btn.querySelector('.categoria-nome')?.textContent?.trim();
-    document.getElementById('titulo-secao').textContent = slug ? nomeCategoria : 'Todos os grupos';
-
-    carregarGrupos();
+    titulo.textContent = 'Todos os grupos';
+    label.textContent = 'Diretório';
   }
 
   function buscar(e) {
@@ -355,13 +487,17 @@
   function aplicarBusca(termo) {
     buscaAtiva = termo;
     paginaAtual = 1;
-    categoriaAtiva = '';
 
-    document.querySelectorAll('.categoria-card').forEach(b => b.classList.remove('ativo'));
-    document.querySelector('[data-slug=""]').classList.add('ativo');
+    if (termo) {
+      categoriaAtiva = '';
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+      montarCategorias();
+    }
 
-    document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Todos os grupos';
-
+    atualizarTituloSecao();
+    atualizarSeoCategoria();
     carregarGrupos();
   }
 
@@ -370,7 +506,9 @@
     const termo = e.target.value.trim();
 
     if (!termo) {
-      aplicarBusca('');
+      buscaAtiva = '';
+      atualizarTituloSecao();
+      carregarGrupos();
       return;
     }
 
@@ -414,13 +552,6 @@
   });
 
   document.getElementById('form-busca').addEventListener('submit', buscar);
-
-  document.getElementById('filtro-categorias').addEventListener('click', (e) => {
-    const btn = e.target.closest('.categoria-card');
-    if (!btn) return;
-    filtrarCategoria(btn, btn.dataset.slug);
-  });
-
   document.getElementById('btn-ver-mais-categorias').addEventListener('click', alternarCategorias);
 
   function escaparHtml(str) {
@@ -431,15 +562,16 @@
 
   async function carregarDestaqueCategoria() {
     try {
-      const cats = await apiFetch('/grupos/categorias');
-      const catDestaque = cats.find(c => c.total_grupos > 0 && c.slug !== categoriaAtiva);
+      const categoriaAtual = obterCategoriaAtual();
+      const categoriasPossiveis = CATEGORIAS_MENU.filter(cat => !categoriaAtual || cat.slug !== categoriaAtual.slug);
+      const catDestaque = categoriasPossiveis.find(cat => ['esportes', 'dinheiro', 'educacao', 'tecnologia', 'negocios'].includes(cat.slug)) || categoriasPossiveis[0];
 
       if (!catDestaque) {
         document.getElementById('secao-destaque-categoria').style.display = 'none';
         return;
       }
 
-      const resp = await apiFetch(`/grupos?categoria=${catDestaque.slug}`);
+      const resp = await apiFetch(`/grupos?categoria=${catDestaque.apiSlug || catDestaque.slug}`);
       const grupos = resp.grupos || [];
 
       if (grupos.length === 0) {
@@ -448,7 +580,7 @@
       }
 
       document.getElementById('titulo-destaque-categoria').textContent = `Mais grupos em ${catDestaque.nome}`;
-      document.getElementById('link-destaque-categoria').href = `/pages/categoria.html?slug=${catDestaque.slug}`;
+      document.getElementById('link-destaque-categoria').href = `/${catDestaque.slug}`;
 
       const container = document.getElementById('lista-destaque-categoria');
       container.innerHTML = grupos.slice(0, 3).map(g => montarCardGrupo(g)).join('');
@@ -465,8 +597,12 @@
   }
 
   async function montar() {
-    const sessao = await iniciarPagina();
+    categoriaAtiva = obterSlugDaUrl();
+    atualizarSeoCategoria();
+    atualizarTituloSecao();
+    montarCategorias();
 
+    const sessao = await iniciarPagina();
     const ctaContainer = document.getElementById('banner-enviar-container');
 
     if (sessao?.logado) {
@@ -489,7 +625,6 @@
         </aside>`;
     }
 
-    await carregarCategorias();
     carregarGrupos();
     carregarDestaqueCategoria();
   }

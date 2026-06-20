@@ -445,6 +445,7 @@ p {
 }
 
 .categoria-card {
+  text-decoration: none;
   border: 0;
   background: transparent;
   color: #1f2937;
@@ -465,13 +466,14 @@ p {
 }
 
 .categoria-card:hover {
+  color: #1f2937;
   background: #f4f7f6;
   transform: translateY(-1px);
 }
 
 .categoria-card.ativo {
-  background: #eefbf4;
   color: var(--verde-escuro);
+  background: #eefbf4;
 }
 
 .categoria-icone {
@@ -498,6 +500,9 @@ p {
 
 .categoria-icone-texto,
 .categoria-icone-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.45rem;
   line-height: 1;
   font-weight: 900;

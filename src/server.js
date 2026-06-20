@@ -8,6 +8,37 @@ const { limiterGeral, sessionConfig } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const CATEGORIAS_PUBLICAS = new Set([
+  'amizade',
+  'relacionamento',
+  'carros',
+  'cidade',
+  'compras-e-vendas',
+  'concursos',
+  'desenhos',
+  'divulgacao',
+  'educacao',
+  'emagrecimento',
+  'dinheiro',
+  'investimentos',
+  'links',
+  'receitas',
+  'religiao',
+  'turismo',
+  'politica',
+  'tecnologia',
+  'saude',
+  'entretenimento',
+  'empregos',
+  'negocios',
+  'esportes',
+  'outros'
+]);
+
+function enviarHome(req, res) {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+}
+
 
 app.set('trust proxy', 1);
 
@@ -48,6 +79,19 @@ app.use('/api/grupos', require('./routes/groups'));
 app.use('/api/admin', require('./routes/admin'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+
+// URLs públicas de categorias, ex: /dinheiro, /turismo, /religiao.
+// A rota fica depois dos arquivos estáticos e da API para não quebrar /css, /js, /img, /pages ou /api.
+app.get('/:categoriaSlug', (req, res, next) => {
+  const categoriaSlug = String(req.params.categoriaSlug || '').toLowerCase();
+
+  if (!CATEGORIAS_PUBLICAS.has(categoriaSlug)) {
+    return next();
+  }
+
+  return enviarHome(req, res);
+});
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
