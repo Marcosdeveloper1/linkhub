@@ -13,7 +13,10 @@ router.get('/', (req, res) => {
     const porPagina = 12;
     const offset = (pagina - 1) * porPagina;
 
-    let where = "g.status = 'aprovado'";
+    const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
+    const incluirIndisponiveis = isAdmin && req.query.incluirIndisponiveis === 'true';
+
+    let where = incluirIndisponiveis ? "g.status IN ('aprovado', 'indisponivel')" : "g.status = 'aprovado'";
     const params = [];
 
     if (categoria) {
@@ -32,7 +35,7 @@ router.get('/', (req, res) => {
     );
 
     const grupos = db.query(
-      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url, g.aprovado_em,
+      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url, g.aprovado_em, g.status, g.regras, g.categoria_id,
               c.nome as categoria_nome, c.slug as categoria_slug, c.icone as categoria_icone
        FROM groups g
        JOIN categories c ON g.categoria_id = c.id
@@ -56,11 +59,15 @@ router.get('/', (req, res) => {
 
 router.get('/categorias', (req, res) => {
   try {
+    const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
+    const incluirIndisponiveis = isAdmin && req.query.incluirIndisponiveis === 'true';
+    const statusSql = incluirIndisponiveis ? "g.status IN ('aprovado', 'indisponivel')" : "g.status = 'aprovado'";
+
     const cats = db.query(`
       SELECT c.id, c.nome, c.slug, c.icone,
              COUNT(g.id) as total_grupos
       FROM categories c
-      LEFT JOIN groups g ON g.categoria_id = c.id AND g.status = 'aprovado'
+      LEFT JOIN groups g ON g.categoria_id = c.id AND ${statusSql}
       GROUP BY c.id
       ORDER BY c.nome
     `);
@@ -187,19 +194,24 @@ router.get('/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).json({ erro: 'ID inválido.' });
 
+    const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
+    const statusSql = isAdmin ? "g.status IN ('aprovado', 'indisponivel')" : "g.status = 'aprovado'";
+
     const grupo = db.queryOne(`
       SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
-      WHERE g.id = ? AND g.status = 'aprovado'
+      WHERE g.id = ? AND ${statusSql}
     `, [id]);
 
     if (!grupo) {
       return res.status(404).json({ erro: 'Grupo não encontrado.' });
     }
 
-    db.run('UPDATE groups SET total_acessos = total_acessos + 1 WHERE id = ?', [id]);
-    grupo.total_acessos = (grupo.total_acessos || 0) + 1;
+    if (grupo.status === 'aprovado' && !isAdmin) {
+      db.run('UPDATE groups SET total_acessos = total_acessos + 1 WHERE id = ?', [id]);
+      grupo.total_acessos = (grupo.total_acessos || 0) + 1;
+    }
 
     res.json(grupo);
   } catch (err) {

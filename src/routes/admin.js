@@ -282,4 +282,118 @@ router.post('/grupos/importar-lote', async (req, res) => {
   }
 });
 
+// PUT /admin/grupos/:id — Edita um grupo existente
+router.put('/grupos/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const grupo = db.queryOne('SELECT * FROM groups WHERE id = ?', [id]);
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+
+    const nomeGrupo = sanitizeString(req.body.nome_grupo, 100);
+    const link = sanitizeString(req.body.link_whatsapp, 300);
+    const descricao = sanitizeString(req.body.descricao, 500);
+    const categoriaId = parseInt(req.body.categoria_id);
+    const regras = req.body.regras ? sanitizeString(req.body.regras, 2000) : null;
+    const status = sanitizeString(req.body.status, 20);
+
+    if (!nomeGrupo || nomeGrupo.length < 3) {
+      return res.status(400).json({ erro: 'Nome do grupo deve ter pelo menos 3 caracteres.' });
+    }
+
+    if (!isValidWhatsAppLink(link)) {
+      return res.status(400).json({ erro: 'Link do WhatsApp inválido. Use o formato: https://chat.whatsapp.com/CODIGO' });
+    }
+
+    if (!descricao || descricao.length < 20) {
+      return res.status(400).json({ erro: 'Descrição deve ter pelo menos 20 caracteres.' });
+    }
+
+    if (!categoriaId || isNaN(categoriaId)) {
+      return res.status(400).json({ erro: 'Selecione uma categoria.' });
+    }
+
+    const cat = db.queryOne('SELECT id FROM categories WHERE id = ?', [categoriaId]);
+    if (!cat) {
+      return res.status(400).json({ erro: 'Categoria inválida.' });
+    }
+
+    if (status && !['aprovado', 'indisponivel', 'pendente', 'rejeitado'].includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido.' });
+    }
+
+    // Se o link de WhatsApp mudou, verifica duplicidade
+    if (link !== grupo.link_whatsapp) {
+      const duplicado = db.queryOne('SELECT id FROM groups WHERE link_whatsapp = ?', [link]);
+      if (duplicado) {
+        return res.status(409).json({ erro: 'Este link de WhatsApp já está cadastrado em outro grupo.' });
+      }
+    }
+
+    db.run(
+      `UPDATE groups 
+       SET nome_grupo = ?, link_whatsapp = ?, descricao = ?, categoria_id = ?, regras = ?, status = ?
+       WHERE id = ?`,
+      [nomeGrupo, link, descricao, categoriaId, regras, status || grupo.status, id]
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/editar-grupo]', err);
+    res.status(500).json({ erro: 'Erro ao editar o grupo.' });
+  }
+});
+
+// POST /admin/grupos/status-lote — Atualiza status de vários grupos em lote
+router.post('/grupos/status-lote', (req, res) => {
+  try {
+    const ids = req.body.ids;
+    const status = sanitizeString(req.body.status, 20);
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ erro: 'Nenhum grupo selecionado.' });
+    }
+
+    if (!['aprovado', 'indisponivel', 'pendente', 'rejeitado'].includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido.' });
+    }
+
+    const placeholders = ids.map(() => '?').join(',');
+    db.run(
+      `UPDATE groups SET status = ? WHERE id IN (${placeholders})`,
+      [status, ...ids]
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/status-lote]', err);
+    res.status(500).json({ erro: 'Erro ao atualizar status dos grupos.' });
+  }
+});
+
+// POST /admin/grupos/deletar-lote — Deleta vários grupos em lote
+router.post('/grupos/deletar-lote', (req, res) => {
+  try {
+    const ids = req.body.ids;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ erro: 'Nenhum grupo selecionado.' });
+    }
+
+    const placeholders = ids.map(() => '?').join(',');
+    db.run(
+      `DELETE FROM groups WHERE id IN (${placeholders})`,
+      ids
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/deletar-lote]', err);
+    res.status(500).json({ erro: 'Erro ao deletar grupos.' });
+  }
+});
+
 module.exports = router;
