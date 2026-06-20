@@ -27,6 +27,7 @@ function montarNavbar(sessao) {
 
   const { logado, usuario } = sessao;
   const paginaAtual = window.location.pathname;
+  const ehAdmin = logado && usuario?.role === 'admin';
 
   const linkAtivo = (href) => paginaAtual === href || paginaAtual.endsWith(href) ? 'ativo' : '';
 
@@ -41,9 +42,9 @@ function montarNavbar(sessao) {
       </a>
 
       <nav class="navbar-links" aria-label="Menu principal">
-        ${logado ? `<a href="/pages/meus-grupos.html" class="navbar-link ${linkAtivo('/pages/meus-grupos.html')}">Meus grupos</a>` : ''}
+        ${logado && !ehAdmin ? `<a href="/pages/meus-grupos.html" class="navbar-link ${linkAtivo('/pages/meus-grupos.html')}">Meus grupos</a>` : ''}
         ${logado ? `<a href="/pages/enviar-grupo.html" class="navbar-link ${linkAtivo('/pages/enviar-grupo.html')}">Enviar grupo</a>` : ''}
-        ${logado && usuario?.role === 'admin' ? `<a href="/pages/admin.html" class="navbar-link ${linkAtivo('/pages/admin.html')}">Painel Admin</a>` : ''}
+        ${ehAdmin ? `<a href="/pages/admin.html" class="navbar-link ${linkAtivo('/pages/admin.html')}">Painel Admin</a>` : ''}
       </nav>
 
       <div class="navbar-actions">
@@ -84,17 +85,17 @@ function montarNavbar(sessao) {
               <span class="menu-lateral-icone">＋</span>
               <span>Enviar grupo</span>
             </a>
-            <a href="/pages/meus-grupos.html" class="menu-lateral-link ${linkAtivo('/pages/meus-grupos.html')}">
+            ${!ehAdmin ? `<a href="/pages/meus-grupos.html" class="menu-lateral-link ${linkAtivo('/pages/meus-grupos.html')}">
               <span class="menu-lateral-icone">▣</span>
               <span>Meus grupos</span>
-            </a>`
+            </a>` : ''}`
           : `<a href="/pages/cadastro.html" class="menu-lateral-link ${linkAtivo('/pages/cadastro.html')}">
               <span class="menu-lateral-icone">＋</span>
               <span>Divulgar grupo</span>
             </a>`
         }
 
-        ${logado && usuario?.role === 'admin'
+        ${ehAdmin
           ? `<a href="/pages/admin.html" class="menu-lateral-link ${linkAtivo('/pages/admin.html')}">
               <span class="menu-lateral-icone">⚙</span>
               <span>Painel Admin</span>
