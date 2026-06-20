@@ -32,13 +32,20 @@ function montarNavbar(sessao) {
 
   nav.innerHTML = `
     <div class="navbar-inner">
-      <a href="/" class="navbar-logo">Link<span>Hub</span></a>
+      <a href="/" class="navbar-logo" aria-label="WhatsApp Grupos - Página inicial">
+        <img src="/img/icon.png" alt="" class="navbar-logo-icone" width="48" height="48">
+        <span class="navbar-logo-texto">
+          <span class="navbar-logo-whatsapp">WhatsApp</span>
+          <span class="navbar-logo-grupos">Grupos</span>
+        </span>
+      </a>
+
       <nav class="navbar-links">
-        <a href="/" class="navbar-link ${linkAtivo('/') || linkAtivo('/index.html')}">Grupos</a>
         ${logado ? `<a href="/pages/meus-grupos.html" class="navbar-link ${linkAtivo('/pages/meus-grupos.html')}">Meus grupos</a>` : ''}
         ${logado ? `<a href="/pages/enviar-grupo.html" class="navbar-link ${linkAtivo('/pages/enviar-grupo.html')}">Enviar grupo</a>` : ''}
         ${logado && usuario?.role === 'admin' ? `<a href="/pages/admin.html" class="navbar-link ${linkAtivo('/pages/admin.html')}">Painel Admin</a>` : ''}
       </nav>
+
       <div class="navbar-actions">
         ${logado
           ? `<span class="navbar-user">Olá, ${usuario.nome.split(' ')[0]}</span>

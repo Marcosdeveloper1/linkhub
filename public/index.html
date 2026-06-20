@@ -3,20 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkHub — Grupos de WhatsApp</title>
+  <title>WhatsApp Grupos — Diretório de grupos</title>
   <meta name="description" content="Encontre grupos de WhatsApp por tema. Diretório de grupos com categorias, busca, destaques e divulgação gratuita.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
 </head>
 <body>
 
 <header class="navbar" id="navbar"></header>
 
+<section class="home-topo">
+  <div class="container">
+    <div class="home-topo-grid">
+      <div class="home-topo-texto">
+        <span class="home-label">Diretório brasileiro de comunidades</span>
+        <h1>Encontre grupos de WhatsApp por tema, cidade ou interesse</h1>
+        <p>Explore comunidades ativas, filtre por categoria e entre nos grupos que fazem sentido para você.</p>
+      </div>
+
+      <div class="home-topo-card">
+        <strong>Divulgação gratuita</strong>
+        <span>Cadastre sua comunidade e apareça no diretório após aprovação.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="home-busca">
   <div class="container">
     <form class="busca-diretorio" id="form-busca">
-      <input type="search" id="campo-busca" placeholder="Buscar um grupo..." autocomplete="off" maxlength="100">
+      <input type="search" id="campo-busca" placeholder="Buscar por nome, tema ou assunto..." autocomplete="off" maxlength="100">
       <button type="submit">Buscar</button>
     </form>
   </div>
@@ -24,6 +41,14 @@
 
 <section class="home-categorias">
   <div class="container">
+    <div class="home-categorias-cabecalho">
+      <div>
+        <span class="home-secao-label">Categorias</span>
+        <h2>Explore por assunto</h2>
+      </div>
+      <p>Escolha um tema para filtrar os grupos disponíveis.</p>
+    </div>
+
     <div class="categorias-grid" id="filtro-categorias">
       <button class="categoria-card ativo" type="button" data-slug="">
         <span class="categoria-icone">☰</span>
@@ -45,7 +70,10 @@
 
   <section class="secao-grupos">
     <div class="secao-titulo">
-      <h1 id="titulo-secao">Grupos de WhatsApp</h1>
+      <div>
+        <span class="home-secao-label">Diretório</span>
+        <h1 id="titulo-secao">Todos os grupos</h1>
+      </div>
       <span class="contagem-resultados" id="contagem"></span>
     </div>
 
@@ -61,7 +89,10 @@
 
   <section class="secao-destaque-categoria" id="secao-destaque-categoria">
     <div class="secao-titulo secao-titulo-secundaria">
-      <h2 id="titulo-destaque-categoria"></h2>
+      <div>
+        <span class="home-secao-label">Mais opções</span>
+        <h2 id="titulo-destaque-categoria"></h2>
+      </div>
       <a id="link-destaque-categoria" href="#">Ver todos →</a>
     </div>
 
@@ -71,7 +102,7 @@
 </main>
 
 <footer class="footer">
-  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
 
 <script src="/js/utils.js"></script>
@@ -220,7 +251,7 @@
     return `
       <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}">
         <div class="card-grupo-imagem">
-          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">LinkHub</div>'}
+          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
           <span class="tag tag-card">${categoria}</span>
           ${destaque ? '<span class="selo-destaque" title="Grupo impulsionado">★</span>' : ''}
         </div>
@@ -232,7 +263,7 @@
 
         <div class="card-grupo-rodape">
           <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
-            Entrar no Grupo
+            Entrar
           </a>
         </div>
       </article>
@@ -287,7 +318,7 @@
     document.getElementById('campo-busca').value = '';
 
     const nomeCategoria = btn.querySelector('.categoria-nome')?.textContent?.trim();
-    document.getElementById('titulo-secao').textContent = slug ? nomeCategoria : 'Grupos de WhatsApp';
+    document.getElementById('titulo-secao').textContent = slug ? nomeCategoria : 'Todos os grupos';
 
     carregarGrupos();
   }
@@ -307,7 +338,7 @@
     document.querySelectorAll('.categoria-card').forEach(b => b.classList.remove('ativo'));
     document.querySelector('[data-slug=""]').classList.add('ativo');
 
-    document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Grupos de WhatsApp';
+    document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Todos os grupos';
 
     carregarGrupos();
   }
@@ -419,13 +450,19 @@
     if (sessao?.logado) {
       bannerContainer.innerHTML = `
         <div class="banner-enviar">
-          <p><strong>Tem um grupo para divulgar?</strong> Envie agora e alcance mais pessoas gratuitamente.</p>
+          <div>
+            <strong>Tem um grupo para divulgar?</strong>
+            <p>Envie sua comunidade e alcance mais pessoas gratuitamente.</p>
+          </div>
           <a href="/pages/enviar-grupo.html" class="btn btn-primario">Enviar meu grupo</a>
         </div>`;
     } else {
       bannerContainer.innerHTML = `
         <div class="banner-enviar">
-          <p><strong>Divulgue seu grupo gratuitamente!</strong> Cadastre-se e envie seu grupo para aprovação.</p>
+          <div>
+            <strong>Divulgue seu grupo gratuitamente!</strong>
+            <p>Cadastre-se e envie sua comunidade para aprovação.</p>
+          </div>
           <a href="/pages/cadastro.html" class="btn btn-primario">Criar conta grátis</a>
         </div>`;
     }
