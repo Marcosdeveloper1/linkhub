@@ -3,45 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enviar grupo — LinkHub</title>
+  <title>Enviar grupo — WhatsApp Grupos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .pagina-envio {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .cabecalho-pagina { margin-bottom: 28px; }
-    .cabecalho-pagina h1 { font-size: 1.6rem; }
-    .cabecalho-pagina p { color: var(--cinza-texto); margin-top: 6px; font-size: 0.95rem; }
-    .formulario-grupo { display: flex; flex-direction: column; gap: 20px; }
-    .diretrizes {
-      background: var(--verde-pale);
-      border: 1px solid #b7e4c7;
-      border-radius: var(--radius);
-      padding: 16px 20px;
-    }
-    .diretrizes h3 { color: var(--verde-escuro); font-size: 0.95rem; margin-bottom: 10px; }
-    .diretrizes ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .diretrizes li { font-size: 0.875rem; color: var(--verde-escuro); }
-    .diretrizes li::before { content: '✓ '; font-weight: 600; }
-    .contador-desc {
-      font-size: 0.8rem;
-      color: var(--cinza-texto);
-      text-align: right;
-      margin-top: 4px;
-    }
-    .sucesso-container {
-      text-align: center;
-      padding: 60px 20px;
-      display: none;
-    }
-    .sucesso-icone { font-size: 4rem; margin-bottom: 16px; }
-    .sucesso-container h2 { margin-bottom: 10px; color: var(--verde-escuro); }
-    .sucesso-container p { color: var(--cinza-texto); margin-bottom: 24px; }
-  </style>
 </head>
 <body>
 
@@ -50,76 +15,131 @@
 <main class="pagina-envio">
 
   <div id="formulario-area">
-    <div class="cabecalho-pagina">
-      <h1>Enviar grupo</h1>
-      <p>Preencha os dados abaixo para submeter seu grupo. Nossa equipe irá analisar e responder por email.</p>
-    </div>
+    <div class="envio-layout">
 
-    <div class="diretrizes">
-      <h3>Diretrizes para aprovação</h3>
-      <ul>
-        <li>O grupo deve ter link público (chat.whatsapp.com/...)</li>
-        <li>Conteúdo relevante e de acordo com o tema cadastrado</li>
-        <li>Sem spam, conteúdo ofensivo ou ilegal</li>
-        <li>Descrição clara e honesta sobre o grupo</li>
-      </ul>
-    </div>
+      <aside class="envio-preview-col" aria-label="Prévia do card do grupo">
+        <span class="envio-preview-label">Prévia em tempo real</span>
 
-    <div id="aviso-envio" class="aviso"></div>
+        <div class="envio-preview-box">
+          <article class="card-grupo card-grupo-preview" id="preview-card">
+            <div class="card-grupo-imagem">
+              <img class="card-grupo-foto" id="preview-foto" src="" alt="" style="display:none;">
+              <div class="preview-foto-placeholder" id="preview-placeholder">
+                A foto do grupo será buscada automaticamente pelo link do WhatsApp.
+              </div>
+              <span class="tag tag-card" id="preview-categoria">Categoria</span>
+            </div>
 
-    <form class="formulario-grupo" id="form-grupo">
+            <div class="card-grupo-corpo">
+              <h3 class="card-grupo-nome" id="preview-nome">Nome do seu grupo</h3>
+              <p class="card-grupo-desc" id="preview-descricao">A descrição do seu grupo aparecerá aqui conforme você digitar.</p>
+            </div>
 
-      <div class="form-grupo">
-        <label class="form-label" for="nome-grupo">Nome do grupo <span style="color:var(--vermelho)">*</span></label>
-        <input class="form-input" type="text" id="nome-grupo" placeholder="Ex: Investimentos para iniciantes" required minlength="3" maxlength="100">
-      </div>
+            <div class="card-grupo-rodape">
+              <a href="#" class="card-grupo-entrada" id="preview-botao" aria-label="Prévia do botão Entrar">
+                Entrar
+              </a>
+            </div>
+          </article>
 
-      <div class="form-grupo">
-        <label class="form-label" for="link-whatsapp">Link do grupo WhatsApp <span style="color:var(--vermelho)">*</span></label>
-        <input class="form-input" type="url" id="link-whatsapp" placeholder="https://chat.whatsapp.com/CODIGO" required>
-        <p class="form-dica">Vá nas configurações do grupo → Link de convite → Copiar link</p>
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label" for="categoria">Categoria <span style="color:var(--vermelho)">*</span></label>
-        <select class="form-select" id="categoria" required>
-          <option value="">Selecione uma categoria...</option>
-        </select>
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label" for="descricao">Descrição do grupo <span style="color:var(--vermelho)">*</span></label>
-        <textarea class="form-textarea" id="descricao" placeholder="Descreva o que é o grupo, quem pode participar e que tipo de conteúdo é compartilhado..." required minlength="20" maxlength="500"></textarea>
-        <div class="contador-desc" id="contador-desc">0 / 500 caracteres</div>
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label" for="regras">Regras do grupo (opcional)</label>
-        <textarea class="form-textarea" id="regras" placeholder="Uma regra por linha. Ex:&#10;Respeitar os participantes&#10;Sem spam de links&#10;Focar no tema do grupo" maxlength="2000"></textarea>
-        <p class="form-dica">Insira uma regra por linha. Deixe em branco se o grupo não tiver regras específicas.</p>
-      </div>
-
-      <div style="border-top: 1px solid var(--cinza-borda); padding-top: 20px;">
-        <p style="font-size: 0.875rem; color: var(--cinza-texto); margin-bottom: 16px;">
-          Dados de contato (para enviarmos a resposta sobre seu grupo)
-        </p>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div class="form-grupo">
-            <label class="form-label" for="nome-contato">Seu nome <span style="color:var(--vermelho)">*</span></label>
-            <input class="form-input" type="text" id="nome-contato" placeholder="Nome para contato" required minlength="2" maxlength="100">
-          </div>
-          <div class="form-grupo">
-            <label class="form-label" for="email-contato">Email de contato <span style="color:var(--vermelho)">*</span></label>
-            <input class="form-input" type="email" id="email-contato" placeholder="seu@email.com" required>
+          <div class="preview-status" id="preview-status">
+            <strong>Como vai aparecer na home</strong>
+            Preencha o formulário para visualizar o card antes de enviar.
           </div>
         </div>
-      </div>
+      </aside>
 
-      <button type="submit" class="btn btn-primario btn-lg" id="btn-enviar">
-        Enviar para aprovação
-      </button>
+      <section class="envio-form-col">
+        <div class="envio-form-card">
+          <div class="cabecalho-pagina">
+            <h1>Enviar grupo</h1>
+            <p>Preencha os dados abaixo para submeter seu grupo. Nossa equipe irá analisar e responder por email.</p>
+          </div>
 
-    </form>
+          <div class="diretrizes">
+            <h3>Diretrizes para aprovação</h3>
+            <ul>
+              <li>O grupo deve ter link público (chat.whatsapp.com/...)</li>
+              <li>Conteúdo relevante e de acordo com o tema cadastrado</li>
+              <li>Sem spam, conteúdo ofensivo ou ilegal</li>
+              <li>Descrição clara e honesta sobre o grupo</li>
+            </ul>
+          </div>
+
+          <div id="aviso-envio" class="aviso"></div>
+
+          <form class="formulario-grupo" id="form-grupo">
+
+            <div class="form-grupo">
+              <label class="form-label" for="nome-grupo">Nome do grupo <span style="color:var(--vermelho)">*</span></label>
+              <input class="form-input" type="text" id="nome-grupo" placeholder="Ex: Investimentos para iniciantes" required minlength="3" maxlength="100">
+            </div>
+
+            <div class="form-grupo">
+              <label class="form-label" for="link-whatsapp">Link do grupo WhatsApp <span style="color:var(--vermelho)">*</span></label>
+              <input class="form-input" type="url" id="link-whatsapp" placeholder="https://chat.whatsapp.com/CODIGO" required>
+              <p class="form-dica">Vá nas configurações do grupo → Link de convite → Copiar link</p>
+            </div>
+
+            <div class="form-grupo">
+              <label class="form-label" for="categoria">Categoria <span style="color:var(--vermelho)">*</span></label>
+              <select class="form-select" id="categoria" required>
+                <option value="">Selecione uma categoria...</option>
+              </select>
+            </div>
+
+            <div class="form-grupo">
+              <label class="form-label" for="descricao">Descrição do grupo <span style="color:var(--vermelho)">*</span></label>
+              <textarea class="form-textarea" id="descricao" placeholder="Descreva o que é o grupo, quem pode participar e que tipo de conteúdo é compartilhado..." required minlength="20" maxlength="500"></textarea>
+              <div class="contador-desc" id="contador-desc">0 / 500 caracteres</div>
+            </div>
+
+            <div class="form-grupo">
+              <label class="form-label">Regras padrão do grupo (opcional)</label>
+              <p class="form-dica">Marque as regras que fazem sentido para sua comunidade.</p>
+
+              <div class="regras-padrao-grid" id="regras-padrao-grid">
+                <label class="regra-check"><input type="checkbox" value="Proibido conteúdo adulto"> Proibido conteúdo adulto</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido conteúdo agressivo"> Proibido conteúdo agressivo</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido uso de palavrões"> Proibido uso de palavrões</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido trava zap"> Proibido trava zap</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido spam"> Proibido spam</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido enviar links"> Proibido enviar links</label>
+                <label class="regra-check"><input type="checkbox" value="Proibido menor de idade"> Proibido menor de idade</label>
+                <label class="regra-check"><input type="checkbox" value="Respeitar todos os membros"> Respeitar todos os membros</label>
+              </div>
+            </div>
+
+            <div class="form-grupo">
+              <label class="form-label" for="regras-extras">Regras extras (opcional)</label>
+              <textarea class="form-textarea" id="regras-extras" placeholder="Uma regra por linha. Ex:&#10;Focar no tema do grupo&#10;Não divulgar correntes&#10;Evitar mensagens repetidas" maxlength="2000"></textarea>
+              <p class="form-dica">As regras marcadas acima serão juntadas com as regras extras automaticamente.</p>
+              <textarea id="regras" hidden></textarea>
+            </div>
+
+            <div class="bloco-contato-envio">
+              <p>Dados de contato (para enviarmos a resposta sobre seu grupo)</p>
+              <div class="bloco-contato-campos">
+                <div class="form-grupo">
+                  <label class="form-label" for="nome-contato">Seu nome <span style="color:var(--vermelho)">*</span></label>
+                  <input class="form-input" type="text" id="nome-contato" placeholder="Nome para contato" required minlength="2" maxlength="100">
+                </div>
+
+                <div class="form-grupo">
+                  <label class="form-label" for="email-contato">Email de contato <span style="color:var(--vermelho)">*</span></label>
+                  <input class="form-input" type="email" id="email-contato" placeholder="seu@email.com" required>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primario btn-lg" id="btn-enviar">
+              Enviar para aprovação
+            </button>
+
+          </form>
+        </div>
+      </section>
+    </div>
   </div>
 
   <div class="sucesso-container" id="sucesso-container">
@@ -135,30 +155,65 @@
 </main>
 
 <footer class="footer">
-  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp</p>
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
 
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ requerLogin: true });
 
+  const padraoLink = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{20,}$/;
+  let timerPreviewLink = null;
+  let previewFotoUrl = '';
+  let previewNomeLink = '';
+
+  const camposPreview = [
+    'nome-grupo',
+    'link-whatsapp',
+    'categoria',
+    'descricao',
+    'regras-extras'
+  ];
+
+  camposPreview.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', atualizarPreviewCard);
+    el.addEventListener('change', atualizarPreviewCard);
+  });
+
   document.getElementById('descricao').addEventListener('input', function () {
     contarCaracteres(this);
   });
 
+  document.getElementById('link-whatsapp').addEventListener('input', agendarPreviewDoLink);
+  document.getElementById('regras-padrao-grid').addEventListener('change', atualizarRegrasOcultas);
+  document.getElementById('regras-extras').addEventListener('input', atualizarRegrasOcultas);
   document.getElementById('form-grupo').addEventListener('submit', enviarGrupo);
   document.getElementById('btn-enviar-outro').addEventListener('click', enviarOutro);
+
+  document.getElementById('preview-botao').addEventListener('click', (e) => {
+    const link = document.getElementById('link-whatsapp').value.trim();
+    if (!padraoLink.test(link)) {
+      e.preventDefault();
+    }
+  });
 
   async function carregarCategorias() {
     try {
       const cats = await apiFetch('/grupos/categorias');
       const sel = document.getElementById('categoria');
+
       cats.forEach(cat => {
         const opt = document.createElement('option');
         opt.value = cat.id;
         opt.textContent = cat.nome;
+        opt.dataset.nome = cat.nome;
+        opt.dataset.slug = cat.slug || '';
         sel.appendChild(opt);
       });
+
+      atualizarPreviewCard();
     } catch {}
   }
 
@@ -166,12 +221,122 @@
     document.getElementById('contador-desc').textContent = `${el.value.length} / 500 caracteres`;
   }
 
+  function montarRegrasFinal() {
+    const regrasPadrao = Array.from(document.querySelectorAll('#regras-padrao-grid input:checked'))
+      .map(input => input.value.trim())
+      .filter(Boolean);
+
+    const regrasExtras = document.getElementById('regras-extras').value
+      .split('\n')
+      .map(regra => regra.trim())
+      .filter(Boolean);
+
+    return [...regrasPadrao, ...regrasExtras].join('\n');
+  }
+
+  function atualizarRegrasOcultas() {
+    document.getElementById('regras').value = montarRegrasFinal();
+  }
+
+  function atualizarPreviewCard() {
+    const nomeDigitado = document.getElementById('nome-grupo').value.trim();
+    const descricaoDigitada = document.getElementById('descricao').value.trim();
+    const link = document.getElementById('link-whatsapp').value.trim();
+    const selectCategoria = document.getElementById('categoria');
+    const categoriaNome = selectCategoria.options[selectCategoria.selectedIndex]?.dataset?.nome || 'Categoria';
+
+    const nomePreview = nomeDigitado || previewNomeLink || 'Nome do seu grupo';
+    const descricaoPreview = descricaoDigitada || 'A descrição do seu grupo aparecerá aqui conforme você digitar.';
+
+    document.getElementById('preview-nome').textContent = nomePreview;
+    document.getElementById('preview-descricao').textContent = descricaoPreview;
+    document.getElementById('preview-categoria').textContent = categoriaNome;
+
+    const previewBotao = document.getElementById('preview-botao');
+    if (padraoLink.test(link)) {
+      previewBotao.href = link;
+      previewBotao.target = '_blank';
+      previewBotao.rel = 'noopener noreferrer';
+    } else {
+      previewBotao.href = '#';
+      previewBotao.removeAttribute('target');
+      previewBotao.removeAttribute('rel');
+    }
+
+    atualizarPreviewImagem();
+    atualizarRegrasOcultas();
+  }
+
+  function atualizarPreviewImagem() {
+    const foto = document.getElementById('preview-foto');
+    const placeholder = document.getElementById('preview-placeholder');
+
+    if (previewFotoUrl) {
+      foto.src = previewFotoUrl;
+      foto.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      foto.removeAttribute('src');
+      foto.style.display = 'none';
+      placeholder.style.display = 'flex';
+    }
+  }
+
+  function setPreviewStatus(titulo, texto) {
+    document.getElementById('preview-status').innerHTML = `<strong>${titulo}</strong>${texto}`;
+  }
+
+  function agendarPreviewDoLink() {
+    clearTimeout(timerPreviewLink);
+
+    const link = document.getElementById('link-whatsapp').value.trim();
+    previewFotoUrl = '';
+    previewNomeLink = '';
+    atualizarPreviewCard();
+
+    if (!link) {
+      setPreviewStatus('Como vai aparecer na home', 'Preencha o formulário para visualizar o card antes de enviar.');
+      return;
+    }
+
+    if (!padraoLink.test(link)) {
+      setPreviewStatus('Link ainda incompleto', 'Cole o link completo do convite para tentarmos buscar a foto do grupo.');
+      return;
+    }
+
+    setPreviewStatus('Buscando prévia...', 'Tentando carregar a foto pública do grupo pelo link do WhatsApp.');
+
+    timerPreviewLink = setTimeout(async () => {
+      try {
+        const resp = await apiFetch('/grupos/preview', {
+          method: 'POST',
+          body: JSON.stringify({ link_whatsapp: link })
+        });
+
+        previewFotoUrl = resp.foto || '';
+        previewNomeLink = resp.nome || '';
+
+        if (previewFotoUrl) {
+          setPreviewStatus('Foto encontrada', 'Esta imagem será usada como prévia visual do card.');
+        } else {
+          setPreviewStatus('Prévia sem foto', 'Não encontramos imagem pública para este link. A equipe ainda poderá revisar o grupo normalmente.');
+        }
+      } catch (err) {
+        previewFotoUrl = '';
+        previewNomeLink = '';
+        setPreviewStatus('Não foi possível buscar a foto', 'Você ainda pode enviar o grupo normalmente. A foto poderá ser capturada na análise.');
+      } finally {
+        atualizarPreviewCard();
+      }
+    }, 750);
+  }
+
   async function enviarGrupo(e) {
     e.preventDefault();
     limparAviso('aviso-envio');
+    atualizarRegrasOcultas();
 
     const link = document.getElementById('link-whatsapp').value.trim();
-    const padraoLink = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{20,}$/;
     if (!padraoLink.test(link)) {
       return mostrarAviso('aviso-envio', 'Link inválido. Copie o link de convite completo nas configurações do grupo (Link de convite → Copiar link).');
     }
@@ -180,13 +345,13 @@
     btnCarregando(btn, true);
 
     const dados = {
-      nome_grupo: document.getElementById('nome-grupo').value,
+      nome_grupo: document.getElementById('nome-grupo').value.trim(),
       link_whatsapp: link,
       categoria_id: document.getElementById('categoria').value,
-      descricao: document.getElementById('descricao').value,
-      nome_contato: document.getElementById('nome-contato').value,
-      email_contato: document.getElementById('email-contato').value,
-      regras: document.getElementById('regras').value
+      descricao: document.getElementById('descricao').value.trim(),
+      nome_contato: document.getElementById('nome-contato').value.trim(),
+      email_contato: document.getElementById('email-contato').value.trim(),
+      regras: document.getElementById('regras').value.trim()
     };
 
     try {
@@ -205,12 +370,24 @@
   function enviarOutro() {
     document.getElementById('form-grupo').reset();
     document.getElementById('contador-desc').textContent = '0 / 500 caracteres';
+    previewFotoUrl = '';
+    previewNomeLink = '';
+    atualizarPreviewCard();
+    setPreviewStatus('Como vai aparecer na home', 'Preencha o formulário para visualizar o card antes de enviar.');
     document.getElementById('sucesso-container').style.display = 'none';
     document.getElementById('formulario-area').style.display = 'block';
+    btnCarregando(document.getElementById('btn-enviar'), false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  document.getElementById('preview-foto').addEventListener('error', () => {
+    previewFotoUrl = '';
+    atualizarPreviewImagem();
+    setPreviewStatus('Imagem indisponível', 'O WhatsApp não permitiu carregar a foto agora. O grupo ainda pode ser enviado.');
+  });
+
   carregarCategorias();
+  atualizarPreviewCard();
 </script>
 </body>
 </html>

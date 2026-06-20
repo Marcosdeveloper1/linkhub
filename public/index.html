@@ -152,7 +152,6 @@
         <span class="home-secao-label" id="label-secao">Diretório</span>
         <h1 id="titulo-secao">Todos os grupos</h1>
       </div>
-      <span class="contagem-resultados" id="contagem"></span>
     </div>
 
     <div id="lista-grupos" class="grid-3 grupos-grid">
@@ -602,8 +601,6 @@
       const resp = await apiFetch('/grupos?' + params);
       const { grupos, total, totalPaginas } = resp;
 
-      document.getElementById('contagem').textContent = total > 0 ? `${total} grupo${total !== 1 ? 's' : ''}` : '';
-
       if (grupos.length === 0) {
         lista.innerHTML = `
           <div class="estado-vazio" style="grid-column: 1/-1">
@@ -695,19 +692,18 @@
       return;
     }
 
-    let html = '';
-    html += `<button class="paginacao-btn" data-page="${atual - 1}" ${atual === 1 ? 'disabled' : ''}>‹</button>`;
+    const anterior = atual - 1;
+    const proxima = atual + 1;
 
-    for (let i = 1; i <= total; i++) {
-      if (i === 1 || i === total || Math.abs(i - atual) <= 1) {
-        html += `<button class="paginacao-btn ${i === atual ? 'ativo' : ''}" data-page="${i}">${i}</button>`;
-      } else if (Math.abs(i - atual) === 2) {
-        html += `<button class="paginacao-btn" disabled>…</button>`;
-      }
-    }
-
-    html += `<button class="paginacao-btn" data-page="${atual + 1}" ${atual === total ? 'disabled' : ''}>›</button>`;
-    container.innerHTML = html;
+    container.innerHTML = `
+      <button class="paginacao-btn paginacao-btn-nav" data-page="${anterior}" ${atual === 1 ? 'disabled' : ''}>
+        ← Anterior
+      </button>
+      <span class="paginacao-status" aria-live="polite">Página ${atual} de ${total}</span>
+      <button class="paginacao-btn paginacao-btn-nav" data-page="${proxima}" ${atual === total ? 'disabled' : ''}>
+        Próxima →
+      </button>
+    `;
   }
 
   function irPagina(p) {

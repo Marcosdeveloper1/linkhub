@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     const categoria = req.query.categoria ? sanitizeString(req.query.categoria, 50) : null;
     const busca = req.query.busca ? sanitizeString(req.query.busca, 100) : null;
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
-    const porPagina = 12;
+    const porPagina = 8;
     const offset = (pagina - 1) * porPagina;
 
     const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
@@ -119,6 +119,29 @@ router.delete('/meus/:id', requireLogin, (req, res) => {
   } catch (err) {
     console.error('[grupos/meus/remover]', err);
     res.status(500).json({ erro: 'Erro ao remover grupo.' });
+  }
+});
+
+// POST /api/grupos/preview — busca uma prévia pública do link do WhatsApp antes do envio
+router.post('/preview', requireLogin, async (req, res) => {
+  try {
+    const link = sanitizeString(req.body.link_whatsapp, 300);
+
+    if (!isValidWhatsAppLink(link)) {
+      return res.status(400).json({ erro: 'Link do WhatsApp inválido.' });
+    }
+
+    const preview = await buscarPreviewGrupo(link);
+
+    res.json({
+      ok: true,
+      nome: preview?.nome ? sanitizeString(preview.nome, 100) : '',
+      descricao: preview?.descricao ? sanitizeString(preview.descricao, 300) : '',
+      foto: preview?.foto || null
+    });
+  } catch (err) {
+    console.error('[grupos/preview]', err);
+    res.status(500).json({ erro: 'Não foi possível buscar a prévia do grupo.' });
   }
 });
 
