@@ -35,6 +35,7 @@ function montarNavbar(sessao) {
       <a href="/" class="navbar-logo">Link<span>Hub</span></a>
       <nav class="navbar-links">
         <a href="/" class="navbar-link ${linkAtivo('/') || linkAtivo('/index.html')}">Grupos</a>
+        ${logado ? `<a href="/pages/meus-grupos.html" class="navbar-link ${linkAtivo('/pages/meus-grupos.html')}">Meus grupos</a>` : ''}
         ${logado ? `<a href="/pages/enviar-grupo.html" class="navbar-link ${linkAtivo('/pages/enviar-grupo.html')}">Enviar grupo</a>` : ''}
         ${logado && usuario?.role === 'admin' ? `<a href="/pages/admin.html" class="navbar-link ${linkAtivo('/pages/admin.html')}">Painel Admin</a>` : ''}
       </nav>

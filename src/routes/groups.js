@@ -70,6 +70,51 @@ router.get('/categorias', (req, res) => {
   }
 });
 
+// GET /api/grupos/meus — grupos enviados pelo usuário logado
+router.get('/meus', requireLogin, (req, res) => {
+  try {
+    const grupos = db.query(
+      `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url,
+              g.status, g.motivo_rejeicao, g.criado_em, g.aprovado_em,
+              c.nome as categoria_nome
+       FROM groups g
+       JOIN categories c ON g.categoria_id = c.id
+       WHERE g.usuario_id = ?
+       ORDER BY g.criado_em DESC`,
+      [req.session.usuario.id]
+    );
+    res.json(grupos);
+  } catch (err) {
+    console.error('[grupos/meus]', err);
+    res.status(500).json({ erro: 'Erro ao buscar seus grupos.' });
+  }
+});
+
+// DELETE /api/grupos/meus/:id — usuário remove um grupo próprio
+router.delete('/meus/:id', requireLogin, (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const grupo = db.queryOne(
+      'SELECT id, usuario_id FROM groups WHERE id = ?',
+      [id]
+    );
+
+    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado.' });
+
+    if (grupo.usuario_id !== req.session.usuario.id) {
+      return res.status(403).json({ erro: 'Você não tem permissão para remover este grupo.' });
+    }
+
+    db.run('DELETE FROM groups WHERE id = ?', [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[grupos/meus/remover]', err);
+    res.status(500).json({ erro: 'Erro ao remover grupo.' });
+  }
+});
+
 router.post('/enviar', requireLogin, limiterGrupo, async (req, res) => {
   try {
     const nomeGrupo = sanitizeString(req.body.nome_grupo, 100);
@@ -153,9 +198,8 @@ router.get('/:id', (req, res) => {
       return res.status(404).json({ erro: 'Grupo não encontrado.' });
     }
 
-    // Incrementa o contador de acessos a cada visualização da página de detalhes
     db.run('UPDATE groups SET total_acessos = total_acessos + 1 WHERE id = ?', [id]);
-    grupo.total_acessos = (grupo.total_acessos || 0) + 1; // reflete na resposta sem precisar reconsultar
+    grupo.total_acessos = (grupo.total_acessos || 0) + 1;
 
     res.json(grupo);
   } catch (err) {

@@ -31,7 +31,6 @@
     .filtro-btn:hover { border-color: var(--verde-claro); color: var(--verde-medio); }
     .filtro-btn.ativo { background: var(--verde-escuro); color: var(--branco); border-color: var(--verde-escuro); }
 
-    /* wrapper de cada filtro: botão + link "Ver tudo" */
     .filtro-item {
       display: inline-flex;
       align-items: center;
@@ -150,6 +149,7 @@
   let paginaAtual = 1;
   let categoriaAtiva = '';
   let buscaAtiva = '';
+  let tempoBusca = null;
 
   async function carregarCategorias() {
     try {
@@ -157,7 +157,6 @@
       const container = document.getElementById('filtro-categorias');
       cats.forEach(cat => {
         if (cat.total_grupos > 0) {
-          // wrapper que agrupa o botão de filtro + link "Ver tudo"
           const item = document.createElement('span');
           item.className = 'filtro-item';
 
@@ -245,7 +244,12 @@
 
   function buscar(e) {
     e.preventDefault();
+    clearTimeout(tempoBusca);
     const termo = document.getElementById('campo-busca').value.trim();
+    aplicarBusca(termo);
+  }
+
+  function aplicarBusca(termo) {
     buscaAtiva = termo;
     paginaAtual = 1;
     categoriaAtiva = '';
@@ -254,6 +258,23 @@
     document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Grupos em destaque';
     carregarGrupos();
   }
+
+  // busca em tempo real com debounce de 350ms
+  document.getElementById('campo-busca').addEventListener('input', (e) => {
+    clearTimeout(tempoBusca);
+    const termo = e.target.value.trim();
+
+    // campo vazio: volta ao estado normal imediatamente
+    if (!termo) {
+      aplicarBusca('');
+      return;
+    }
+
+    // aguarda o usuário parar de digitar antes de buscar
+    tempoBusca = setTimeout(() => {
+      aplicarBusca(termo);
+    }, 350);
+  });
 
   function montarPaginacao(atual, total) {
     const container = document.getElementById('paginacao');

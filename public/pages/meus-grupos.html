@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus grupos — LinkHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-meus {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    .cabecalho-pagina {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .cabecalho-pagina h1 { font-size: 1.6rem; }
+    .cabecalho-pagina p { color: var(--cinza-texto); font-size: 0.9rem; margin-top: 4px; }
+
+    .lista-meus-grupos {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-meu-grupo {
+      background: var(--branco);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border-color 0.15s;
+    }
+
+    .card-meu-grupo:hover { border-color: var(--verde-claro); }
+
+    .card-meu-grupo-foto {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--cinza-fundo);
+    }
+
+    .card-meu-grupo-foto-placeholder {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius);
+      background: var(--cinza-fundo);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    .card-meu-grupo-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-meu-grupo-topo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .card-meu-grupo-nome {
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meu-grupo-desc {
+      font-size: 0.875rem;
+      color: var(--cinza-texto);
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meu-grupo-rodape {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-meu-grupo-meta {
+      font-size: 0.78rem;
+      color: var(--cinza-texto);
+    }
+
+    .motivo-rejeicao {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #fff5f5;
+      border: 1px solid #f5c6cb;
+      border-radius: var(--radius);
+      font-size: 0.82rem;
+      color: #842029;
+    }
+
+    .motivo-rejeicao strong { display: block; margin-bottom: 2px; }
+
+    /* badge de status */
+    .badge-pendente  { background: #fff3cd; color: #856404; }
+    .badge-aprovado  { background: #d1e7dd; color: #0a3622; }
+    .badge-rejeitado { background: #f8d7da; color: #842029; }
+
+    /* modal de confirmação */
+    .modal-confirmacao .modal-caixa {
+      max-width: 400px;
+    }
+
+    .modal-confirmacao p {
+      color: var(--cinza-texto);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+
+    .modal-acoes {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 540px) {
+      .card-meu-grupo { flex-direction: column; }
+      .card-meu-grupo-foto, .card-meu-grupo-foto-placeholder { width: 100%; height: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<main class="pagina-meus">
+
+  <div class="cabecalho-pagina">
+    <div>
+      <h1>Meus grupos</h1>
+      <p>Acompanhe o status dos grupos que você enviou para aprovação.</p>
+    </div>
+    <a href="/pages/enviar-grupo.html" class="btn btn-primario">+ Enviar novo grupo</a>
+  </div>
+
+  <div id="aviso-meus" class="aviso"></div>
+
+  <div id="lista-meus-grupos" class="lista-meus-grupos">
+    <div class="estado-vazio">
+      <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
+      <p>Carregando...</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- modal de confirmação de remoção -->
+<div class="modal-fundo modal-confirmacao" id="modal-remover">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="btn-fechar-modal">×</button>
+    <h3 class="modal-titulo">Remover grupo</h3>
+    <p>Tem certeza que deseja remover este grupo? Esta ação não pode ser desfeita.</p>
+    <div class="modal-acoes">
+      <button class="btn btn-contorno" id="btn-cancelar-remover">Cancelar</button>
+      <button class="btn btn-perigo" id="btn-confirmar-remover">Remover</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp</p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  let idParaRemover = null;
+
+  function escaparHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  function badgeStatus(status) {
+    const labels = { pendente: 'Pendente', aprovado: 'Aprovado', rejeitado: 'Rejeitado' };
+    return `<span class="tag badge-${status}">${labels[status] || status}</span>`;
+  }
+
+  async function carregarMeusGrupos() {
+    const lista = document.getElementById('lista-meus-grupos');
+    try {
+      const grupos = await apiFetch('/grupos/meus');
+
+      if (grupos.length === 0) {
+        lista.innerHTML = `
+          <div class="estado-vazio">
+            <div class="estado-vazio-icone">📭</div>
+            <h3>Nenhum grupo enviado ainda</h3>
+            <p>Quando você enviar um grupo, ele aparecerá aqui com o status da análise.</p>
+            <a href="/pages/enviar-grupo.html" class="btn btn-primario" style="margin-top:16px">Enviar meu primeiro grupo</a>
+          </div>`;
+        return;
+      }
+
+      lista.innerHTML = grupos.map(g => `
+        <div class="card-meu-grupo" data-id="${g.id}">
+          ${g.foto_url
+            ? `<img class="card-meu-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">`
+            : `<div class="card-meu-grupo-foto-placeholder">💬</div>`
+          }
+          <div class="card-meu-grupo-info">
+            <div class="card-meu-grupo-topo">
+              ${badgeStatus(g.status)}
+              <span class="tag tag-cinza">${escaparHtml(g.categoria_nome)}</span>
+            </div>
+            <h3 class="card-meu-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
+            <p class="card-meu-grupo-desc">${escaparHtml(g.descricao)}</p>
+            ${g.status === 'rejeitado' && g.motivo_rejeicao
+              ? `<div class="motivo-rejeicao"><strong>Motivo da rejeição:</strong>${escaparHtml(g.motivo_rejeicao)}</div>`
+              : ''
+            }
+            <div class="card-meu-grupo-rodape">
+              <span class="card-meu-grupo-meta">
+                Enviado em ${formatarData(g.criado_em)}
+                ${g.status === 'aprovado' && g.aprovado_em ? ` · Aprovado em ${formatarData(g.aprovado_em)}` : ''}
+              </span>
+              <div style="display:flex;gap:8px;align-items:center">
+                ${g.status === 'aprovado'
+                  ? `<a href="/pages/grupo.html?id=${g.id}" class="btn btn-contorno btn-sm">Ver publicado</a>`
+                  : ''
+                }
+                <button class="btn btn-perigo btn-sm btn-remover" data-id="${g.id}">Remover</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      lista.querySelectorAll('.card-meu-grupo-foto').forEach(img => {
+        img.addEventListener('error', () => { img.style.display = 'none'; });
+      });
+
+      lista.querySelectorAll('.btn-remover').forEach(btn => {
+        btn.addEventListener('click', () => abrirModalRemover(parseInt(btn.dataset.id, 10)));
+      });
+
+    } catch (err) {
+      lista.innerHTML = '<div class="estado-vazio"><p>Erro ao carregar seus grupos. Tente novamente.</p></div>';
+    }
+  }
+
+  function abrirModalRemover(id) {
+    idParaRemover = id;
+    document.getElementById('modal-remover').classList.add('aberto');
+  }
+
+  function fecharModal() {
+    idParaRemover = null;
+    document.getElementById('modal-remover').classList.remove('aberto');
+  }
+
+  async function confirmarRemover() {
+    if (!idParaRemover) return;
+
+    const btn = document.getElementById('btn-confirmar-remover');
+    btnCarregando(btn, true);
+
+    try {
+      await apiFetch(`/grupos/meus/${idParaRemover}`, { method: 'DELETE' });
+      fecharModal();
+      mostrarAviso('aviso-meus', 'Grupo removido com sucesso.', 'ok');
+      carregarMeusGrupos();
+    } catch (err) {
+      fecharModal();
+      mostrarAviso('aviso-meus', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
+  document.getElementById('btn-cancelar-remover').addEventListener('click', fecharModal);
+  document.getElementById('btn-confirmar-remover').addEventListener('click', confirmarRemover);
+  document.getElementById('modal-remover').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModal();
+  });
+
+  async function montar() {
+    await iniciarPagina({ requerLogin: true });
+    carregarMeusGrupos();
+  }
+
+  montar();
+</script>
+</body>
+</html>
