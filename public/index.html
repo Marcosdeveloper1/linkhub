@@ -18,7 +18,7 @@
     <div class="home-topo-grid">
       <div class="home-topo-texto">
         <span class="home-label">Diretório brasileiro de comunidades</span>
-        <h1>Encontre grupos de WhatsApp por tema, cidade ou interesse</h1>
+        <h1>Encontre grupos de WhatsApp por categoria, cidade ou interesse</h1>
         <p>Explore comunidades ativas, filtre por categoria e entre nos grupos que fazem sentido para você.</p>
       </div>
 
@@ -51,7 +51,7 @@
 
     <div class="categorias-grid" id="filtro-categorias">
       <button class="categoria-card ativo" type="button" data-slug="">
-        <span class="categoria-icone">☰</span>
+        <span class="categoria-icone categoria-icone-texto">☰</span>
         <span class="categoria-nome">Todos</span>
       </button>
     </div>
@@ -65,8 +65,6 @@
 </section>
 
 <main class="container home-conteudo">
-
-  <div id="banner-enviar-container"></div>
 
   <section class="secao-grupos">
     <div class="secao-titulo">
@@ -101,6 +99,8 @@
 
 </main>
 
+<div id="banner-enviar-container"></div>
+
 <footer class="footer">
   <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
@@ -113,48 +113,64 @@
   let tempoBusca = null;
 
   const iconesCategorias = {
-    amizade: '👥',
-    amor: '❤️',
-    romance: '❤️',
-    'amor-e-romance': '❤️',
-    carros: '🚗',
-    motos: '🏍️',
-    'carros-e-motos': '🚗',
-    cidades: '🏙️',
-    cidade: '🏙️',
-    compra: '💰',
-    venda: '💰',
-    'compra-e-venda': '💰',
-    concursos: '🎯',
-    concurso: '🎯',
-    desenhos: '📺',
-    desenho: '📺',
-    anime: '📺',
-    animes: '📺',
-    divulgacao: '📢',
-    divulgação: '📢',
-    educacao: '🎓',
-    educação: '🎓',
-    emagrecimento: '🏃',
-    fitness: '🏃',
-    esportes: '⚽',
-    esporte: '⚽',
-    futebol: '⚽',
-    tecnologia: '💻',
-    politica: '🏛️',
-    política: '🏛️',
-    estudos: '📚',
-    jogos: '🎮',
-    memes: '😂',
-    videos: '🎬',
-    vídeos: '🎬',
-    musica: '🎧',
-    música: '🎧',
-    emprego: '💼',
-    empregos: '💼',
-    renda: '💸',
-    negocios: '📈',
-    negócios: '📈'
+    amizade: '/img/icones_categorias/amizade.png',
+
+    amor: '/img/icones_categorias/relacionamento.png',
+    romance: '/img/icones_categorias/relacionamento.png',
+    relacionamento: '/img/icones_categorias/relacionamento.png',
+    'amor-e-romance': '/img/icones_categorias/relacionamento.png',
+
+    carros: '/img/icones_categorias/carros.png',
+    motos: '/img/icones_categorias/carros.png',
+    'carros-e-motos': '/img/icones_categorias/carros.png',
+
+    cidades: '/img/icones_categorias/cidade.png',
+    cidade: '/img/icones_categorias/cidade.png',
+
+    compra: '/img/icones_categorias/compras_e_vendas.png',
+    venda: '/img/icones_categorias/compras_e_vendas.png',
+    compras: '/img/icones_categorias/compras_e_vendas.png',
+    vendas: '/img/icones_categorias/compras_e_vendas.png',
+    'compra-e-venda': '/img/icones_categorias/compras_e_vendas.png',
+    'compras-e-vendas': '/img/icones_categorias/compras_e_vendas.png',
+
+    concursos: '/img/icones_categorias/concursos.png',
+    concurso: '/img/icones_categorias/concursos.png',
+
+    desenhos: '/img/icones_categorias/desenhos.png',
+    desenho: '/img/icones_categorias/desenhos.png',
+    anime: '/img/icones_categorias/desenhos.png',
+    animes: '/img/icones_categorias/desenhos.png',
+    'desenhos-e-animes': '/img/icones_categorias/desenhos.png',
+
+    divulgacao: '/img/icones_categorias/divulgacao.png',
+    divulgação: '/img/icones_categorias/divulgacao.png',
+
+    emagrecimento: '/img/icones_categorias/emagrecimento.png',
+    fitness: '/img/icones_categorias/emagrecimento.png',
+
+    dinheiro: '/img/icones_categorias/dinheiro.png',
+    renda: '/img/icones_categorias/dinheiro.png',
+
+    investimentos: '/img/icones_categorias/investimentos.png',
+    investimento: '/img/icones_categorias/investimentos.png',
+    financas: '/img/icones_categorias/investimentos.png',
+    finanças: '/img/icones_categorias/investimentos.png',
+
+    links: '/img/icones_categorias/links.png',
+    link: '/img/icones_categorias/links.png',
+
+    receitas: '/img/icones_categorias/receitas.png',
+    receita: '/img/icones_categorias/receitas.png',
+    culinaria: '/img/icones_categorias/receitas.png',
+    culinária: '/img/icones_categorias/receitas.png',
+
+    religiao: '/img/icones_categorias/religiao.png',
+    religião: '/img/icones_categorias/religiao.png',
+
+    turismo: '/img/icones_categorias/turismo.png',
+    viagem: '/img/icones_categorias/turismo.png',
+    viagens: '/img/icones_categorias/turismo.png'
   };
 
   function normalizarSlug(texto) {
@@ -171,10 +187,15 @@
     const slugNormalizado = normalizarSlug(cat?.slug || cat?.nome || '');
     const nomeNormalizado = normalizarSlug(cat?.nome || '');
 
-    return iconesCategorias[slugOriginal]
+    const caminho = iconesCategorias[slugOriginal]
       || iconesCategorias[slugNormalizado]
-      || iconesCategorias[nomeNormalizado]
-      || '•••';
+      || iconesCategorias[nomeNormalizado];
+
+    if (caminho) {
+      return `<img src="${caminho}" alt="" loading="lazy" onerror="this.parentElement.classList.add('categoria-icone-sem-img'); this.remove();">`;
+    }
+
+    return `<span class="categoria-icone-fallback">•••</span>`;
   }
 
   function atualizarBotaoMaisCategorias() {
@@ -195,6 +216,7 @@
     const aberto = grid.classList.toggle('categorias-abertas');
 
     btn.textContent = aberto ? '− Ver menos categorias' : '+ Ver mais categorias';
+    btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
   }
 
   async function carregarCategorias() {
@@ -445,26 +467,26 @@
   async function montar() {
     const sessao = await iniciarPagina();
 
-    const bannerContainer = document.getElementById('banner-enviar-container');
+    const ctaContainer = document.getElementById('banner-enviar-container');
 
     if (sessao?.logado) {
-      bannerContainer.innerHTML = `
-        <div class="banner-enviar">
-          <div>
-            <strong>Tem um grupo para divulgar?</strong>
-            <p>Envie sua comunidade e alcance mais pessoas gratuitamente.</p>
+      ctaContainer.innerHTML = `
+        <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
+          <div class="cta-flutuante-texto">
+            <strong>Divulgue seu grupo</strong>
+            <p>Envie sua comunidade gratuitamente.</p>
           </div>
-          <a href="/pages/enviar-grupo.html" class="btn btn-primario">Enviar meu grupo</a>
-        </div>`;
+          <a href="/pages/enviar-grupo.html" class="btn btn-primario">Enviar grupo</a>
+        </aside>`;
     } else {
-      bannerContainer.innerHTML = `
-        <div class="banner-enviar">
-          <div>
-            <strong>Divulgue seu grupo gratuitamente!</strong>
-            <p>Cadastre-se e envie sua comunidade para aprovação.</p>
+      ctaContainer.innerHTML = `
+        <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
+          <div class="cta-flutuante-texto">
+            <strong>Divulgue seu grupo</strong>
+            <p>Cadastre-se para enviar sua comunidade.</p>
           </div>
-          <a href="/pages/cadastro.html" class="btn btn-primario">Criar conta grátis</a>
-        </div>`;
+          <a href="/pages/cadastro.html" class="btn btn-primario">Criar conta</a>
+        </aside>`;
     }
 
     await carregarCategorias();
