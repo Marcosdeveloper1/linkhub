@@ -3,228 +3,305 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detalhes do Grupo — LinkHub</title>
+  <title>Detalhes do Grupo — WhatsApp Grupos</title>
+  <meta name="description" content="Veja detalhes, regras e informações de um grupo de WhatsApp no WhatsApp Grupos.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .pagina-detalhes {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
-    }
-    
-    .btn-voltar {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.9rem;
-      color: var(--cinza-texto);
-      margin-bottom: 20px;
-      font-weight: 500;
-      transition: color var(--transicao);
-    }
-    
-    .btn-voltar:hover {
-      color: var(--verde-medio);
-    }
-    
-    .detalhe-card {
-      background: var(--branco);
-      border: 1px solid var(--cinza-borda);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      box-shadow: var(--sombra-leve);
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .detalhe-foto {
-      width: 100%;
-      max-height: 320px;
-      object-fit: cover;
-      border-radius: var(--radius-lg);
-      background: var(--cinza-fundo);
-    }
-    
-    .detalhe-cabecalho {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      border-bottom: 1px solid var(--cinza-borda);
-      padding-bottom: 20px;
-    }
-    
-    .detalhe-meta {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 0.85rem;
-      color: var(--cinza-texto);
-    }
-    
-    .detalhe-titulo {
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1.25;
-      color: var(--preto);
-    }
-    
-    .detalhe-desc {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: var(--preto);
-      white-space: pre-line;
-    }
-    
-    .regras-caixa {
-      background: var(--cinza-fundo);
-      border-left: 4px solid var(--verde-claro);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin: 10px 0;
-    }
-    
-    .regras-caixa h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--verde-escuro);
-      margin-bottom: 12px;
-    }
-    
-    .regras-lista {
-      padding-left: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .regras-lista li {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: var(--preto);
-    }
-    
-    .area-cta {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: flex-start;
-      margin-top: 10px;
-    }
-    
-    .btn-entrar {
-      background: #25d366; /* WhatsApp Green */
-      color: var(--branco);
-      border-color: #25d366;
-      font-weight: 700;
-      font-size: 1.1rem;
-      padding: 14px 32px;
-      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
-    }
-    
-    .btn-entrar:hover {
-      background: #20ba5a;
-      border-color: #20ba5a;
-      color: var(--branco);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
-    }
-    
-    .secao-relacionados {
-      margin-top: 48px;
-    }
-    
-    .secao-relacionados h2 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--preto);
-    }
-    
-    /* Layout responsivo */
-    @media (max-width: 600px) {
-      .detalhe-card {
-        padding: 20px;
-      }
-      .detalhe-titulo {
-        font-size: 1.5rem;
-      }
-      .btn-entrar {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-  </style>
 </head>
 <body>
 
 <header class="navbar" id="navbar"></header>
 
-<main class="pagina-detalhes">
-  
-  <a href="/" class="btn-voltar">← Voltar para a home</a>
-  
+<section class="home-categorias pagina-grupo-categorias">
+  <div class="container">
+    <div class="categorias-grid" id="filtro-categorias"></div>
+
+    <div class="categorias-acoes">
+      <button class="btn-ver-mais-categorias" type="button" id="btn-ver-mais-categorias" aria-expanded="false">
+        + Ver mais categorias
+      </button>
+    </div>
+  </div>
+</section>
+
+<main class="pagina-detalhes pagina-grupo-detalhes">
+  <div class="pagina-grupo-topbar">
+    <a href="/" class="btn-voltar btn-voltar-premium">
+      <span aria-hidden="true">←</span>
+      <span>Voltar para a home</span>
+    </a>
+  </div>
+
   <div id="aviso-erro" class="aviso"></div>
-  
-  <div id="conteudo-grupo" style="display: none;">
-    <article class="detalhe-card">
-      <img id="grupo-foto" class="detalhe-foto" alt="" style="display: none;">
-      
-      <div class="detalhe-cabecalho">
-        <div>
-          <span class="tag tag-verde" id="grupo-categoria"></span>
+
+  <div id="conteudo-grupo" class="conteudo-grupo-detalhe" style="display: none;">
+    <section class="detalhe-layout-grupo">
+
+      <aside class="detalhe-card-coluna">
+        <article class="card-grupo card-grupo-detalhe-preview" id="card-preview-grupo">
+          <div class="card-grupo-imagem">
+            <img id="grupo-card-foto" class="card-grupo-foto" alt="" loading="lazy" style="display: none;">
+            <div id="grupo-card-placeholder" class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>
+            <span class="tag tag-card" id="grupo-card-categoria"></span>
+            <span class="selo-destaque" id="grupo-card-destaque" title="Grupo em destaque" style="display:none;">★</span>
+          </div>
+
+          <div class="card-grupo-corpo">
+            <h3 class="card-grupo-nome" id="grupo-card-nome"></h3>
+            <p class="card-grupo-desc" id="grupo-card-desc"></p>
+          </div>
+
+          <div class="card-grupo-rodape">
+            <a href="#" target="_blank" rel="noopener noreferrer" class="card-grupo-entrada" id="btn-entrar-whatsapp-card">
+              Entrar no Grupo
+            </a>
+          </div>
+        </article>
+      </aside>
+
+      <article class="detalhe-info-painel">
+        <div class="detalhe-cabecalho">
+          <div class="detalhe-tags-linha">
+            <span class="tag tag-verde" id="grupo-categoria"></span>
+          </div>
+
+          <h1 class="detalhe-titulo" id="grupo-nome"></h1>
+
+          <div class="detalhe-meta">
+            <span id="grupo-data"></span>
+            <span class="detalhe-meta-divisor">·</span>
+            <span id="grupo-acessos"></span>
+          </div>
         </div>
-        <h1 class="detalhe-titulo" id="grupo-nome"></h1>
-        <div class="detalhe-meta">
-          <span id="grupo-data"></span>
-          <span>·</span>
-          <span id="grupo-acessos" style="font-weight: 500; color: var(--verde-medio)"></span>
+
+        <div class="detalhe-bloco">
+          <span class="detalhe-bloco-label">Descrição</span>
+          <div class="detalhe-desc" id="grupo-desc"></div>
         </div>
-      </div>
-      
-      <div class="detalhe-desc" id="grupo-desc"></div>
-      
-      <div class="regras-caixa" id="grupo-regras-container" style="display: none;">
-        <h3>Regras do grupo</h3>
-        <ol class="regras-lista" id="grupo-regras-lista"></ol>
-      </div>
-      
-      <div class="area-cta">
-        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-entrar btn-lg" id="btn-entrar-whatsapp">
-          Entrar no Grupo
-        </a>
-        <p style="font-size: 0.8rem; color: var(--cinza-texto);">
-          Ao clicar, você será redirecionado para o convite do WhatsApp.
-        </p>
-      </div>
-    </article>
-    
+
+        <div class="regras-caixa" id="grupo-regras-container" style="display: none;">
+          <h3>Regras do grupo</h3>
+          <ol class="regras-lista" id="grupo-regras-lista"></ol>
+        </div>
+
+        <div class="detalhe-aviso-responsabilidade">
+          Antes de acessar, leia as regras e lembre-se: o grupo é administrado por terceiros. O WhatsApp Grupos apenas organiza e divulga comunidades públicas.
+        </div>
+
+        <div class="area-cta detalhe-area-cta">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-entrar btn-lg" id="btn-entrar-whatsapp">
+            Entrar no Grupo
+          </a>
+
+          <button type="button" class="btn btn-comunicar-erro" id="btn-comunicar-erro">
+            Comunicar erro
+          </button>
+
+          <p class="detalhe-cta-ajuda">
+            Ao clicar em entrar, você será redirecionado para o convite do WhatsApp.
+          </p>
+        </div>
+      </article>
+    </section>
+
     <section class="secao-relacionados" id="secao-relacionados" style="display: none;">
-      <h2>Mais grupos da categoria</h2>
-      <div id="lista-relacionados" class="grid-3"></div>
+      <div class="secao-titulo secao-titulo-secundaria">
+        <div>
+          <span class="home-secao-label">Mais opções</span>
+          <h2>Mais grupos da categoria</h2>
+        </div>
+      </div>
+
+      <div id="lista-relacionados" class="grid-3 grupos-grid"></div>
     </section>
   </div>
-  
+
   <div id="estado-carregando" class="estado-vazio">
     <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
     <p>Carregando detalhes do grupo...</p>
   </div>
-
 </main>
 
 <footer class="footer">
-  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp</p>
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
 
 <script src="/js/utils.js"></script>
 <script>
-  // Inicialização da página pública
+  const CATEGORIAS_MENU = [
+    {
+      nome: 'Amizade',
+      slug: 'amizade',
+      apiSlug: 'amizade',
+      icone: '/img/icones_categorias/amizade.png',
+      descricao: 'Encontre grupos de WhatsApp de amizade, conversas e novas conexões.'
+    },
+    {
+      nome: 'Relacionamento',
+      slug: 'relacionamento',
+      apiSlug: 'relacionamento',
+      icone: '/img/icones_categorias/relacionamento.png',
+      descricao: 'Encontre grupos de WhatsApp sobre relacionamento, amor e romance.'
+    },
+    {
+      nome: 'Carros e Motos',
+      slug: 'carros',
+      apiSlug: 'carros',
+      icone: '/img/icones_categorias/carros.png',
+      descricao: 'Encontre grupos de WhatsApp sobre carros, motos, mecânica e veículos.'
+    },
+    {
+      nome: 'Cidades',
+      slug: 'cidade',
+      apiSlug: 'cidade',
+      icone: '/img/icones_categorias/cidade.png',
+      descricao: 'Encontre grupos de WhatsApp por cidade, região e comunidade local.'
+    },
+    {
+      nome: 'Compra e Venda',
+      slug: 'compras-e-vendas',
+      apiSlug: 'compras-e-vendas',
+      icone: '/img/icones_categorias/compras_e_vendas.png',
+      descricao: 'Encontre grupos de WhatsApp para compra, venda, ofertas e negócios locais.'
+    },
+    {
+      nome: 'Concursos',
+      slug: 'concursos',
+      apiSlug: 'concursos',
+      icone: '/img/icones_categorias/concursos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre concursos, estudos e preparação.'
+    },
+    {
+      nome: 'Desenhos e Animes',
+      slug: 'desenhos',
+      apiSlug: 'desenhos',
+      icone: '/img/icones_categorias/desenhos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre desenhos, animes e cultura geek.'
+    },
+    {
+      nome: 'Divulgação',
+      slug: 'divulgacao',
+      apiSlug: 'divulgacao',
+      icone: '/img/icones_categorias/divulgacao.png',
+      descricao: 'Encontre grupos de WhatsApp para divulgação, links e comunidades.'
+    },
+    {
+      nome: 'Educação',
+      slug: 'educacao',
+      apiSlug: 'educacao',
+      icone: '/img/icones_categorias/educacao.png',
+      descricao: 'Encontre grupos de WhatsApp de educação, cursos, estudos e conhecimento.'
+    },
+    {
+      nome: 'Emagrecimento',
+      slug: 'emagrecimento',
+      apiSlug: 'emagrecimento',
+      icone: '/img/icones_categorias/emagrecimento.png',
+      descricao: 'Encontre grupos de WhatsApp sobre emagrecimento, saúde e rotina fitness.'
+    },
+    {
+      nome: 'Dinheiro',
+      slug: 'dinheiro',
+      apiSlug: 'financas',
+      icone: '/img/icones_categorias/dinheiro.png',
+      descricao: 'Encontre grupos de WhatsApp sobre dinheiro, finanças, renda e oportunidades.'
+    },
+    {
+      nome: 'Investimentos',
+      slug: 'investimentos',
+      apiSlug: 'investimentos',
+      icone: '/img/icones_categorias/investimentos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre investimentos, mercado e finanças.'
+    },
+    {
+      nome: 'Links',
+      slug: 'links',
+      apiSlug: 'links',
+      icone: '/img/icones_categorias/links.png',
+      descricao: 'Encontre grupos de WhatsApp para links úteis, comunidades e indicações.'
+    },
+    {
+      nome: 'Receitas',
+      slug: 'receitas',
+      apiSlug: 'receitas',
+      icone: '/img/icones_categorias/receitas.png',
+      descricao: 'Encontre grupos de WhatsApp sobre receitas, culinária e comida.'
+    },
+    {
+      nome: 'Religião',
+      slug: 'religiao',
+      apiSlug: 'religiao',
+      icone: '/img/icones_categorias/religiao.png',
+      descricao: 'Encontre grupos de WhatsApp sobre religião, fé e comunidades religiosas.'
+    },
+    {
+      nome: 'Turismo',
+      slug: 'turismo',
+      apiSlug: 'turismo',
+      icone: '/img/icones_categorias/turismo.png',
+      descricao: 'Encontre grupos de WhatsApp sobre turismo, viagens e passeios.'
+    },
+    {
+      nome: 'Política',
+      slug: 'politica',
+      apiSlug: 'politica',
+      icone: '/img/icones_categorias/politica.png',
+      descricao: 'Encontre grupos de WhatsApp sobre política, debates e notícias.'
+    },
+    {
+      nome: 'Tecnologia',
+      slug: 'tecnologia',
+      apiSlug: 'tecnologia',
+      icone: '/img/icones_categorias/tecnologia.png',
+      descricao: 'Encontre grupos de WhatsApp sobre tecnologia, programação e inovação.'
+    },
+    {
+      nome: 'Saúde',
+      slug: 'saude',
+      apiSlug: 'saude',
+      icone: '/img/icones_categorias/saude.png',
+      descricao: 'Encontre grupos de WhatsApp sobre saúde, bem-estar e qualidade de vida.'
+    },
+    {
+      nome: 'Entretenimento',
+      slug: 'entretenimento',
+      apiSlug: 'entretenimento',
+      icone: '/img/icones_categorias/entretenimento.png',
+      descricao: 'Encontre grupos de WhatsApp sobre entretenimento, vídeos e diversão.'
+    },
+    {
+      nome: 'Empregos',
+      slug: 'empregos',
+      apiSlug: 'empregos',
+      icone: '/img/icones_categorias/empregos.png',
+      descricao: 'Encontre grupos de WhatsApp sobre empregos, vagas e oportunidades.'
+    },
+    {
+      nome: 'Negócios',
+      slug: 'negocios',
+      apiSlug: 'negocios',
+      icone: '/img/icones_categorias/negocios.png',
+      descricao: 'Encontre grupos de WhatsApp sobre negócios, empreendedorismo e vendas.'
+    },
+    {
+      nome: 'Esportes',
+      slug: 'esportes',
+      apiSlug: 'esportes',
+      icone: '/img/icones_categorias/esportes.png',
+      descricao: 'Encontre grupos de WhatsApp de esportes, futebol e torcida.'
+    },
+    {
+      nome: 'Outros',
+      slug: 'outros',
+      apiSlug: 'outros',
+      icone: '/img/icones_categorias/outros.png',
+      descricao: 'Encontre outros grupos de WhatsApp de vários temas.'
+    }
+  ];
+
   iniciarPagina();
 
-  // Obter o ID do grupo na URL
   const queryParams = new URLSearchParams(window.location.search);
   const grupoId = parseInt(queryParams.get('id'), 10);
 
@@ -234,10 +311,141 @@
     return d.innerHTML;
   }
 
+  function normalizarSlug(texto) {
+    return String(texto || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  function obterIconeCategoria(cat) {
+    if (cat.icone) {
+      return `<img src="${cat.icone}" alt="" loading="lazy" onerror="this.parentElement.classList.add('categoria-icone-sem-img'); this.remove();">`;
+    }
+
+    return `<span class="categoria-icone-texto">${escaparHtml(cat.emoji || '•••')}</span>`;
+  }
+
+  function montarCategorias(categoriaNome = '') {
+    const container = document.getElementById('filtro-categorias');
+    if (!container) return;
+
+    const slugAtivo = normalizarSlug(categoriaNome);
+
+    let html = `
+      <a class="categoria-card ${!slugAtivo ? 'ativo' : ''}" href="/" data-slug="">
+        <span class="categoria-icone categoria-icone-texto">☰</span>
+        <span class="categoria-nome">Todos</span>
+      </a>
+    `;
+
+    html += CATEGORIAS_MENU.map((cat, index) => {
+      const ativo = slugAtivo && (slugAtivo === cat.slug || slugAtivo === normalizarSlug(cat.nome) || slugAtivo === normalizarSlug(cat.apiSlug));
+      const extra = index >= 9 ? 'categoria-extra' : '';
+
+      return `
+        <a class="categoria-card ${ativo ? 'ativo' : ''} ${extra}" href="/${cat.slug}" data-slug="${cat.slug}">
+          <span class="categoria-icone">${obterIconeCategoria(cat)}</span>
+          <span class="categoria-nome">${escaparHtml(cat.nome)}</span>
+        </a>
+      `;
+    }).join('');
+
+    container.innerHTML = html;
+    atualizarBotaoMaisCategorias();
+  }
+
+  function atualizarBotaoMaisCategorias() {
+    const btn = document.getElementById('btn-ver-mais-categorias');
+    const extras = document.querySelectorAll('.categoria-extra');
+
+    if (!btn) return;
+
+    if (!extras.length) {
+      btn.style.display = 'none';
+      return;
+    }
+
+    btn.style.display = 'inline-flex';
+  }
+
+  function alternarCategorias() {
+    const grid = document.getElementById('filtro-categorias');
+    const btn = document.getElementById('btn-ver-mais-categorias');
+    if (!grid || !btn) return;
+
+    const aberto = grid.classList.toggle('categorias-abertas');
+
+    btn.textContent = aberto ? '− Ver menos categorias' : '+ Ver mais categorias';
+    btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+  }
+
+  function grupoTemDestaque(g) {
+    return Boolean(
+      g.destaque ||
+      g.impulsionado ||
+      g.pago ||
+      g.premium ||
+      g.patrocinado ||
+      g.is_destaque ||
+      g.is_impulsionado
+    );
+  }
+
+  function montarCardRelacionado(g) {
+    const destaque = grupoTemDestaque(g);
+    const categoria = escaparHtml(g.categoria_nome || 'Grupo');
+    const nome = escaparHtml(g.nome_grupo || 'Grupo sem nome');
+    const descricao = escaparHtml(g.descricao || '');
+    const foto = g.foto_url ? escaparHtml(g.foto_url) : '';
+
+    return `
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}" data-href="/pages/grupo.html?id=${g.id}" role="link" tabindex="0" aria-label="Abrir detalhes do grupo">
+        <div class="card-grupo-imagem">
+          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
+          <span class="tag tag-card">${categoria}</span>
+          ${destaque ? '<span class="selo-destaque" title="Grupo em destaque">★</span>' : ''}
+        </div>
+
+        <div class="card-grupo-corpo">
+          <h3 class="card-grupo-nome">${nome}</h3>
+          <p class="card-grupo-desc">${descricao}</p>
+        </div>
+
+        <div class="card-grupo-rodape">
+          <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+            Ver grupo →
+          </a>
+        </div>
+      </article>
+    `;
+  }
+
+  function cliqueCardRelacionado(e) {
+    const acaoInterna = e.target.closest('a, button, input, label, select, textarea');
+    if (acaoInterna) return;
+
+    const card = e.target.closest('.card-grupo[data-href]');
+    if (!card) return;
+
+    window.location.href = card.dataset.href;
+  }
+
+  function tecladoCardRelacionado(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+
+    const card = e.target.closest('.card-grupo[data-href]');
+    if (!card) return;
+
+    e.preventDefault();
+    window.location.href = card.dataset.href;
+  }
+
   async function carregarDetalhes() {
     const loadingEl = document.getElementById('estado-carregando');
     const contentEl = document.getElementById('conteudo-grupo');
-    const errorEl = document.getElementById('aviso-erro');
 
     if (!grupoId || isNaN(grupoId)) {
       loadingEl.style.display = 'none';
@@ -246,36 +454,56 @@
     }
 
     try {
-      // 1. Carrega os dados do grupo principal
       const grupo = await apiFetch(`/grupos/${grupoId}`);
-      
-      // Atualizar o título do navegador
-      document.title = `${grupo.nome_grupo} — LinkHub`;
 
-      // Renderizar imagem com fallback de erro
-      const fotoImg = document.getElementById('grupo-foto');
-      if (grupo.foto_url) {
-        fotoImg.src = grupo.foto_url;
-        fotoImg.style.display = 'block';
-        fotoImg.addEventListener('error', () => {
-          fotoImg.style.display = 'none';
-        });
-      } else {
-        fotoImg.style.display = 'none';
+      document.title = `${grupo.nome_grupo} — WhatsApp Grupos`;
+
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', grupo.descricao || 'Veja detalhes, regras e informações de um grupo de WhatsApp no WhatsApp Grupos.');
       }
 
-      // Preencher campos de texto
-      document.getElementById('grupo-categoria').textContent = grupo.categoria_nome;
-      document.getElementById('grupo-nome').textContent = grupo.nome_grupo;
-      document.getElementById('grupo-data').textContent = `Publicado em ${formatarData(grupo.aprovado_em)}`;
-      document.getElementById('grupo-acessos').textContent = `🔥 ${grupo.total_acessos} acesso${grupo.total_acessos !== 1 ? 's' : ''}`;
-      document.getElementById('grupo-desc').textContent = grupo.descricao;
+      montarCategorias(grupo.categoria_nome || '');
 
-      // Renderizar regras, se houver
+      const cardFoto = document.getElementById('grupo-card-foto');
+      const cardPlaceholder = document.getElementById('grupo-card-placeholder');
+
+      if (grupo.foto_url) {
+        cardFoto.src = grupo.foto_url;
+        cardFoto.style.display = 'block';
+        cardPlaceholder.style.display = 'none';
+        cardFoto.addEventListener('error', () => {
+          cardFoto.style.display = 'none';
+          cardPlaceholder.style.display = 'flex';
+        });
+      } else {
+        cardFoto.style.display = 'none';
+        cardPlaceholder.style.display = 'flex';
+      }
+
+      const destaqueEl = document.getElementById('grupo-card-destaque');
+      if (grupoTemDestaque(grupo)) {
+        destaqueEl.style.display = 'inline-flex';
+        document.getElementById('card-preview-grupo').classList.add('card-grupo-destaque');
+      } else {
+        destaqueEl.style.display = 'none';
+        document.getElementById('card-preview-grupo').classList.remove('card-grupo-destaque');
+      }
+
+      document.getElementById('grupo-card-categoria').textContent = grupo.categoria_nome || 'Grupo';
+      document.getElementById('grupo-card-nome').textContent = grupo.nome_grupo || 'Grupo sem nome';
+      document.getElementById('grupo-card-desc').textContent = grupo.descricao || '';
+
+      document.getElementById('grupo-categoria').textContent = grupo.categoria_nome || 'Grupo';
+      document.getElementById('grupo-nome').textContent = grupo.nome_grupo || 'Grupo sem nome';
+      document.getElementById('grupo-data').textContent = `Publicado em ${formatarData(grupo.aprovado_em)}`;
+      document.getElementById('grupo-acessos').textContent = `🔥 ${grupo.total_acessos || 0} acesso${grupo.total_acessos !== 1 ? 's' : ''}`;
+      document.getElementById('grupo-desc').textContent = grupo.descricao || '';
+
       const regrasContainer = document.getElementById('grupo-regras-container');
       const regrasLista = document.getElementById('grupo-regras-lista');
       regrasLista.innerHTML = '';
-      
+
       if (grupo.regras && grupo.regras.trim()) {
         const regrasItens = grupo.regras.split('\n').map(r => r.trim()).filter(Boolean);
         if (regrasItens.length > 0) {
@@ -292,19 +520,18 @@
         regrasContainer.style.display = 'none';
       }
 
-      // Configurar link do botão do WhatsApp
       const ctaBtn = document.getElementById('btn-entrar-whatsapp');
-      ctaBtn.href = grupo.link_whatsapp;
+      const ctaCardBtn = document.getElementById('btn-entrar-whatsapp-card');
+      ctaBtn.href = grupo.link_whatsapp || '#';
+      ctaCardBtn.href = grupo.link_whatsapp || '#';
 
-      // Exibir os dados e ocultar o loading
       loadingEl.style.display = 'none';
       contentEl.style.display = 'block';
 
-      // 2. Carrega os grupos relacionados
       carregarRelacionados(grupo.id);
-
     } catch (err) {
       loadingEl.style.display = 'none';
+      montarCategorias('');
       mostrarAviso('aviso-erro', err.message || 'Erro ao carregar detalhes do grupo.');
     }
   }
@@ -312,35 +539,21 @@
   async function carregarRelacionados(id) {
     const sectionRel = document.getElementById('secao-relacionados');
     const container = document.getElementById('lista-relacionados');
-    
+
     try {
       const relacionados = await apiFetch(`/grupos/${id}/relacionados`);
-      
-      if (relacionados.length === 0) {
+
+      if (!relacionados || relacionados.length === 0) {
         sectionRel.style.display = 'none';
         return;
       }
-      
-      container.innerHTML = relacionados.map(g => `
-        <article class="card-grupo">
-          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
-          <div class="card-grupo-cabecalho">
-            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
-          </div>
-          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
-          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
-          <div class="card-grupo-rodape">
-            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
-              Ver grupo →
-            </a>
-          </div>
-        </article>
-      `).join('');
-      
+
+      container.innerHTML = relacionados.slice(0, 6).map(g => montarCardRelacionado(g)).join('');
+
       container.querySelectorAll('.card-grupo-foto').forEach(img => {
         img.addEventListener('error', () => { img.style.display = 'none'; });
       });
-      
+
       sectionRel.style.display = 'block';
     } catch (err) {
       console.error('Falha ao carregar relacionados:', err);
@@ -348,6 +561,24 @@
     }
   }
 
+  document.getElementById('btn-ver-mais-categorias').addEventListener('click', alternarCategorias);
+  document.getElementById('lista-relacionados').addEventListener('click', cliqueCardRelacionado);
+  document.getElementById('lista-relacionados').addEventListener('keydown', tecladoCardRelacionado);
+
+  const btnComunicarErro = document.getElementById('btn-comunicar-erro');
+  if (btnComunicarErro) {
+    btnComunicarErro.addEventListener('click', () => {
+      btnComunicarErro.textContent = 'Função em breve';
+      btnComunicarErro.disabled = true;
+
+      setTimeout(() => {
+        btnComunicarErro.textContent = 'Comunicar erro';
+        btnComunicarErro.disabled = false;
+      }, 1800);
+    });
+  }
+
+  montarCategorias('');
   carregarDetalhes();
 </script>
 </body>

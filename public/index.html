@@ -64,6 +64,17 @@
       display: flex;
       gap: 10px;
     }
+
+    .card-grupo[data-href] {
+      cursor: pointer;
+    }
+
+    .card-grupo[data-href] a,
+    .card-grupo[data-href] button,
+    .card-grupo[data-href] input,
+    .card-grupo[data-href] label {
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -541,7 +552,7 @@
     const estaChecado = selecionadosLote.has(g.id) ? 'checked' : '';
 
     return `
-      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}" data-id="${g.id}">
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}" data-id="${g.id}" data-href="/pages/grupo.html?id=${g.id}" role="link" tabindex="0" aria-label="Abrir detalhes do grupo">
         <div class="card-grupo-imagem" style="position: relative;">
           ${ehAdmin ? `
             <div class="admin-card-selecao-container">
@@ -890,27 +901,72 @@
     }
   }
 
-  // Delegar eventos de seleção e botões no grid de grupos
-  document.getElementById('lista-grupos').addEventListener('change', (e) => {
-    const cb = e.target.closest('.admin-checkbox-selecao');
-    if (cb) {
-      const id = parseInt(cb.dataset.id, 10);
-      toggleSelecionarGrupo(id, cb.checked);
-    }
-  });
+  function alvoInterativoDoCard(alvo) {
+    return Boolean(
+      alvo.closest('a, button, input, label, select, textarea, .admin-card-selecao-container, .admin-card-acoes')
+    );
+  }
 
-  document.getElementById('lista-grupos').addEventListener('click', (e) => {
-    const btnEditar = e.target.closest('.btn-editar-grupo');
-    const btnDeletar = e.target.closest('.btn-deletar-grupo');
-
-    if (btnEditar) {
-      const id = parseInt(btnEditar.dataset.id, 10);
-      abrirModalEditar(id);
-    } else if (btnDeletar) {
-      const id = parseInt(btnDeletar.dataset.id, 10);
-      removerGrupoHome(id);
+  function abrirDestinoDoCard(card) {
+    const destino = card?.dataset?.href;
+    if (destino) {
+      window.location.href = destino;
     }
-  });
+  }
+
+  function configurarEventosGridGrupos(containerId) {
+    const grid = document.getElementById(containerId);
+    if (!grid) return;
+
+    grid.addEventListener('change', (e) => {
+      const cb = e.target.closest('.admin-checkbox-selecao');
+      if (cb) {
+        const id = parseInt(cb.dataset.id, 10);
+        toggleSelecionarGrupo(id, cb.checked);
+      }
+    });
+
+    grid.addEventListener('click', (e) => {
+      const btnEditar = e.target.closest('.btn-editar-grupo');
+      const btnDeletar = e.target.closest('.btn-deletar-grupo');
+
+      if (btnEditar) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = parseInt(btnEditar.dataset.id, 10);
+        abrirModalEditar(id);
+        return;
+      }
+
+      if (btnDeletar) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = parseInt(btnDeletar.dataset.id, 10);
+        removerGrupoHome(id);
+        return;
+      }
+
+      if (alvoInterativoDoCard(e.target)) return;
+
+      const card = e.target.closest('.card-grupo[data-href]');
+      if (card) abrirDestinoDoCard(card);
+    });
+
+    grid.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (alvoInterativoDoCard(e.target)) return;
+
+      const card = e.target.closest('.card-grupo[data-href]');
+      if (!card) return;
+
+      e.preventDefault();
+      abrirDestinoDoCard(card);
+    });
+  }
+
+  // Delegar eventos de seleção, botões admin e clique no card inteiro
+  configurarEventosGridGrupos('lista-grupos');
+  configurarEventosGridGrupos('lista-destaque-categoria');
 
   // Modal fechar / cancelar
   document.getElementById('fechar-modal-editar').addEventListener('click', fecharModalEditar);
