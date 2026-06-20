@@ -204,7 +204,9 @@ function btnCarregando(btn, sim = true, textoOriginal = '') {
 function formatarData(str) {
   if (!str) return '';
   const d = new Date(str.endsWith('Z') ? str : str + 'Z');
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const data = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return `${data} às ${hora}`;
 }
 
 function iconeCategoria(icone) {
