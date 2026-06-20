@@ -10,7 +10,7 @@
   <style>
     .pagina-admin { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
     .admin-cabecalho { margin-bottom: 24px; }
-    .admin-abas { display: flex; gap: 4px; border-bottom: 1px solid var(--cinza-borda); margin-bottom: 24px; }
+    .admin-abas { display: flex; gap: 4px; border-bottom: 1px solid var(--cinza-borda); margin-bottom: 24px; flex-wrap: wrap; }
     .admin-aba {
       padding: 10px 18px;
       font-size: 0.9rem;
@@ -30,7 +30,7 @@
     .solicitacao-meta { font-size: 0.8rem; color: var(--cinza-texto); margin-top: 2px; }
     .solicitacao-desc { font-size: 0.9rem; color: var(--preto); line-height: 1.5; }
     .solicitacao-contato { font-size: 0.825rem; color: var(--cinza-texto); }
-    .solicitacao-acoes { display: flex; gap: 8px; margin-top: 4px; }
+    .solicitacao-acoes { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
     .motivo-rejeicao-exibido {
       background: #fff5f5;
       border-left: 3px solid var(--vermelho);
@@ -38,6 +38,104 @@
       font-size: 0.825rem;
       color: #842029;
       border-radius: 4px;
+    }
+
+    /* checkboxes de regras (importação em lote) */
+    .regras-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--cinza-fundo);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius);
+    }
+
+    .regra-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .regra-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--verde-escuro);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .descricao-preview {
+      font-size: 0.78rem;
+      color: var(--cinza-texto);
+      margin-top: 4px;
+    }
+
+    .modal-lote { max-width: 640px; }
+    .modal-lote .form-grupo { margin-bottom: 16px; }
+    .modal-lote .form-label { margin-bottom: 6px; display: block; }
+
+    /* barra de ferramentas da aba Aprovados: filtro, busca, ações em lote */
+    .barra-ferramentas {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--cinza-fundo);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius);
+    }
+    .barra-ferramentas .form-select,
+    .barra-ferramentas .form-input {
+      max-width: 220px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+    }
+    .barra-ferramentas-acoes {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* checkbox de seleção no card (aba Aprovados) */
+    .solicitacao-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--verde-escuro);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .card-selecionado {
+      border-color: var(--verde-claro);
+      background: var(--verde-pale);
+    }
+
+    .barra-selecao {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--verde-pale);
+      border: 1px solid var(--verde-claro);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      font-size: 0.875rem;
+      color: var(--verde-escuro);
+    }
+    .barra-selecao.visivel { display: flex; }
+
+    .tag-status-indisponivel {
+      background: #fff3cd;
+      color: #856404;
     }
   </style>
 </head>
@@ -56,6 +154,31 @@
     <button class="admin-aba" data-status="aprovado">Aprovados</button>
     <button class="admin-aba" data-status="rejeitado">Rejeitados</button>
     <button class="btn btn-contorno btn-sm" id="btn-importar-lote" style="margin-left:auto;">Importar em lote</button>
+  </div>
+
+  <!-- Barra de ferramentas: só aparece na aba Aprovados -->
+  <div class="barra-ferramentas" id="barra-ferramentas-aprovados" style="display:none;">
+    <select class="form-select" id="filtro-categoria-aprovados">
+      <option value="">Todas as categorias</option>
+    </select>
+    <input type="search" class="form-input" id="busca-nome-aprovados" placeholder="Buscar por nome...">
+    <div class="barra-ferramentas-acoes">
+      <button class="btn btn-contorno btn-sm" id="btn-verificar-links">Verificar links</button>
+    </div>
+  </div>
+
+  <!-- Botão "Limpar rejeitados": só aparece na aba Rejeitados -->
+  <div id="barra-rejeitados" style="display:none; margin-bottom:16px;">
+    <button class="btn btn-perigo btn-sm" id="btn-limpar-rejeitados">Limpar todos os rejeitados</button>
+  </div>
+
+  <!-- Barra de seleção múltipla: só aparece quando há cards marcados na aba Aprovados -->
+  <div class="barra-selecao" id="barra-selecao">
+    <span id="texto-selecao">0 selecionados</span>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-contorno btn-sm" id="btn-limpar-selecao">Limpar seleção</button>
+      <button class="btn btn-perigo btn-sm" id="btn-remover-selecionados">Remover selecionados</button>
+    </div>
   </div>
 
   <div id="lista-area" class="lista-solicitacoes">
@@ -82,17 +205,53 @@
 
 <!-- Modal de importação em lote -->
 <div class="modal-fundo" id="modal-importar">
-  <div class="modal-caixa" style="max-width:600px;">
+  <div class="modal-caixa modal-lote">
     <button class="modal-fechar" id="fechar-modal-importar">&times;</button>
     <h3 class="modal-titulo">Importar grupos em lote</h3>
-    <p style="font-size:0.875rem; color:var(--cinza-texto); margin-bottom:12px;">
-      Um grupo por linha, no formato <code>link,categoria</code>. A foto e o nome são capturados automaticamente do link.
-      Categorias disponíveis: <span id="lista-slugs-categorias">carregando...</span>
-    </p>
+
     <div id="aviso-importar" class="aviso"></div>
-    <textarea class="form-textarea" id="campo-importar-lote" rows="8" placeholder="https://chat.whatsapp.com/ABC123...,esportes
-https://chat.whatsapp.com/XYZ789...,financas"></textarea>
-    <div id="resultado-importacao" style="margin-top:12px; font-size:0.85rem;"></div>
+
+    <!-- Categoria -->
+    <div class="form-grupo">
+      <label class="form-label" for="lote-categoria">Categoria <span style="color:var(--vermelho)">*</span></label>
+      <select class="form-select" id="lote-categoria">
+        <option value="">Selecione a categoria do lote...</option>
+      </select>
+    </div>
+
+    <!-- Descrição genérica -->
+    <div class="form-grupo">
+      <label class="form-label" for="lote-descricao">Descrição genérica <span style="color:var(--vermelho)">*</span></label>
+      <textarea class="form-textarea" id="lote-descricao" rows="3" maxlength="500" placeholder="Será aplicada a todos os grupos deste lote. Edite conforme necessário."></textarea>
+      <p class="descricao-preview">Preenchida automaticamente ao escolher a categoria. Você pode editar.</p>
+    </div>
+
+    <!-- Regras -->
+    <div class="form-grupo">
+      <label class="form-label">Regras do grupo (marque as que se aplicam)</label>
+      <div class="regras-lista" id="regras-lista">
+        <label class="regra-item"><input type="checkbox" value="Proibido conteúdo adulto"> Proibido conteúdo adulto</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido conteúdo agressivo"> Proibido conteúdo agressivo</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido uso de palavrões"> Proibido uso de palavrões</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido trava zap"> Proibido trava zap</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido menor de idade"> Proibido menor de idade</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido enviar links"> Proibido enviar links</label>
+        <label class="regra-item"><input type="checkbox" value="Proibido spam"> Proibido spam</label>
+        <label class="regra-item"><input type="checkbox" value="Respeitar todos os membros"> Respeitar todos os membros</label>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="form-grupo">
+      <label class="form-label" for="campo-importar-lote">Links dos grupos <span style="color:var(--vermelho)">*</span></label>
+      <textarea class="form-textarea" id="campo-importar-lote" rows="7" placeholder="Um link por linha:
+https://chat.whatsapp.com/ABC123...
+https://chat.whatsapp.com/XYZ789..."></textarea>
+      <p class="descricao-preview">Máximo de 50 links por importação.</p>
+    </div>
+
+    <div id="resultado-importacao" style="margin-top:4px; font-size:0.85rem;"></div>
+
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
       <button class="btn btn-contorno" id="cancelar-importar">Fechar</button>
       <button class="btn btn-primario" id="confirmar-importar">Importar</button>
@@ -106,14 +265,53 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
 
   let abaAtual = 'pendente';
   let idEmRejeicao = null;
+  let categoriaFiltro = '';
+  let buscaNome = '';
+  let idsSelecionados = new Set();
+  let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
+
+  // descrições genéricas por categoria
+  const descricoesPorCategoria = {
+    esportes: 'Grupo de discussão sobre esportes e futebol. Compartilhe resultados, notícias e opiniões.',
+    politica: 'Grupo de debate político. Discuta notícias, eleições e temas de interesse público.',
+    financas: 'Grupo sobre finanças, investimentos e educação financeira. Troque dicas e experiências.',
+    tecnologia: 'Grupo de tecnologia, programação e inovação. Compartilhe novidades e tire dúvidas.',
+    saude: 'Grupo sobre saúde, bem-estar e qualidade de vida. Dicas e informações sobre o tema.',
+    entretenimento: 'Grupo de entretenimento, séries, filmes e cultura pop. Venha se divertir!',
+    empregos: 'Grupo de vagas de emprego e oportunidades de trabalho. Compartilhe e encontre oportunidades.',
+    educacao: 'Grupo educativo para troca de conhecimento, dicas de estudo e materiais de apoio.',
+    negocios: 'Grupo de negócios e empreendedorismo. Conecte-se com outros empreendedores.',
+    outros: 'Grupo de discussão geral. Participe e interaja com a comunidade.'
+  };
 
   async function carregarLista() {
     const area = document.getElementById('lista-area');
     area.innerHTML = '<p style="color:var(--cinza-texto);">Carregando...</p>';
 
+    // mostra/esconde a barra de ferramentas certa pra cada aba
+    document.getElementById('barra-ferramentas-aprovados').style.display = abaAtual === 'aprovado' ? 'flex' : 'none';
+    document.getElementById('barra-rejeitados').style.display = abaAtual === 'rejeitado' ? 'block' : 'none';
+
+    if (abaAtual !== 'aprovado') {
+      idsSelecionados.clear();
+      atualizarBarraSelecao();
+    }
+
     try {
-      const endpoint = abaAtual === 'pendente' ? '/admin/pendentes' : `/admin/grupos?status=${abaAtual}`;
+      let endpoint;
+      if (abaAtual === 'pendente') {
+        endpoint = '/admin/pendentes';
+      } else {
+        const params = new URLSearchParams({ status: abaAtual });
+        if (abaAtual === 'aprovado') {
+          if (categoriaFiltro) params.set('categoria', categoriaFiltro);
+          if (buscaNome) params.set('busca', buscaNome);
+        }
+        endpoint = `/admin/grupos?${params}`;
+      }
+
       const grupos = await apiFetch(endpoint);
+      gruposCarregados = grupos;
       renderizarLista(grupos);
     } catch (err) {
       area.innerHTML = `<p style="color:var(--vermelho);">${err.message}</p>`;
@@ -133,14 +331,18 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
       return;
     }
 
+    const mostrarCheckbox = abaAtual === 'aprovado';
+
     area.innerHTML = grupos.map(g => `
-      <div class="card solicitacao-card" data-id="${g.id}">
+      <div class="card solicitacao-card ${idsSelecionados.has(g.id) ? 'card-selecionado' : ''}" data-id="${g.id}">
         <div class="solicitacao-topo">
+          ${mostrarCheckbox ? `<input type="checkbox" class="solicitacao-checkbox" data-id="${g.id}" ${idsSelecionados.has(g.id) ? 'checked' : ''}>` : ''}
           ${g.foto_url ? `<img src="${escaparHtml(g.foto_url)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : ''}
-          <div>
+          <div style="flex:1;">
             <div class="solicitacao-nome">${escaparHtml(g.nome_grupo)}</div>
             <div class="solicitacao-meta">
               <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
+              ${g.status === 'indisponivel' ? `<span class="tag tag-status-indisponivel">Link indisponível</span>` : ''}
               · Enviado em ${formatarData(g.criado_em)}
             </div>
           </div>
@@ -171,7 +373,7 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
             <button class="btn btn-primario btn-sm" data-acao="aprovar" data-id="${g.id}">Aprovar</button>
             <button class="btn btn-perigo btn-sm" data-acao="rejeitar" data-id="${g.id}">Rejeitar</button>
           ` : ''}
-          ${g.status === 'aprovado' ? `
+          ${g.status === 'aprovado' || g.status === 'indisponivel' ? `
             <button class="btn btn-perigo btn-sm" data-acao="remover" data-id="${g.id}">Remover do site</button>
           ` : ''}
         </div>
@@ -189,7 +391,17 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
     return div.innerHTML;
   }
 
-  // Delegação de eventos — funciona mesmo com a lista sendo recriada a cada carregamento
+  function atualizarBarraSelecao() {
+    const barra = document.getElementById('barra-selecao');
+    const texto = document.getElementById('texto-selecao');
+    if (idsSelecionados.size > 0) {
+      barra.classList.add('visivel');
+      texto.textContent = `${idsSelecionados.size} selecionado${idsSelecionados.size !== 1 ? 's' : ''}`;
+    } else {
+      barra.classList.remove('visivel');
+    }
+  }
+
   document.getElementById('lista-area').addEventListener('click', (e) => {
     const btnDetalhe = e.target.closest('.btn-ver-detalhes');
     if (btnDetalhe) {
@@ -210,6 +422,97 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
     if (acao === 'aprovar') return aprovar(id);
     if (acao === 'rejeitar') return abrirModalRejeitar(id);
     if (acao === 'remover') return remover(id);
+  });
+
+  // checkbox de seleção (delegação separada, porque é um <input>, não <button>)
+  document.getElementById('lista-area').addEventListener('change', (e) => {
+    const checkbox = e.target.closest('.solicitacao-checkbox');
+    if (!checkbox) return;
+
+    const id = parseInt(checkbox.dataset.id, 10);
+    if (checkbox.checked) {
+      idsSelecionados.add(id);
+    } else {
+      idsSelecionados.delete(id);
+    }
+
+    checkbox.closest('.solicitacao-card').classList.toggle('card-selecionado', checkbox.checked);
+    atualizarBarraSelecao();
+  });
+
+  document.getElementById('btn-limpar-selecao').addEventListener('click', () => {
+    idsSelecionados.clear();
+    document.querySelectorAll('.solicitacao-checkbox').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('.card-selecionado').forEach(c => c.classList.remove('card-selecionado'));
+    atualizarBarraSelecao();
+  });
+
+  document.getElementById('btn-remover-selecionados').addEventListener('click', async () => {
+    if (idsSelecionados.size === 0) return;
+    if (!confirm(`Remover ${idsSelecionados.size} grupo(s) selecionado(s)? Esta ação não pode ser desfeita.`)) return;
+
+    const btn = document.getElementById('btn-remover-selecionados');
+    btnCarregando(btn, true);
+
+    try {
+      await apiFetch('/admin/grupos/remover-em-lote', {
+        method: 'POST',
+        body: JSON.stringify({ ids: Array.from(idsSelecionados) })
+      });
+      idsSelecionados.clear();
+      atualizarBarraSelecao();
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  });
+
+  document.getElementById('btn-verificar-links').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-verificar-links');
+    btnCarregando(btn, true);
+
+    try {
+      const resp = await apiFetch('/admin/grupos/verificar-links', { method: 'POST' });
+      alert(`Verificação concluída: ${resp.verificados} grupo(s) checado(s), ${resp.indisponiveis} marcado(s) como indisponível.`);
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  });
+
+  document.getElementById('btn-limpar-rejeitados').addEventListener('click', async () => {
+    if (!confirm('Remover TODOS os grupos rejeitados permanentemente? Esta ação não pode ser desfeita.')) return;
+
+    const btn = document.getElementById('btn-limpar-rejeitados');
+    btnCarregando(btn, true);
+
+    try {
+      const resp = await apiFetch('/admin/grupos/rejeitados', { method: 'DELETE' });
+      alert(`${resp.removidos} grupo(s) rejeitado(s) removido(s).`);
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  });
+
+  document.getElementById('filtro-categoria-aprovados').addEventListener('change', (e) => {
+    categoriaFiltro = e.target.value;
+    carregarLista();
+  });
+
+  let timeoutBusca = null;
+  document.getElementById('busca-nome-aprovados').addEventListener('input', (e) => {
+    clearTimeout(timeoutBusca);
+    timeoutBusca = setTimeout(() => {
+      buscaNome = e.target.value.trim();
+      carregarLista();
+    }, 400);
   });
 
   async function aprovar(id) {
@@ -269,23 +572,55 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
       document.querySelectorAll('.admin-aba').forEach(a => a.classList.remove('ativa'));
       aba.classList.add('ativa');
       abaAtual = aba.dataset.status;
+      categoriaFiltro = '';
+      buscaNome = '';
+      document.getElementById('filtro-categoria-aprovados').value = '';
+      document.getElementById('busca-nome-aprovados').value = '';
       carregarLista();
     });
   });
 
-  async function abrirModalImportar() {
-    document.getElementById('campo-importar-lote').value = '';
-    document.getElementById('resultado-importacao').innerHTML = '';
-    limparAviso('aviso-importar');
-    document.getElementById('modal-importar').classList.add('aberto');
-
+  async function carregarCategoriasFiltro() {
+    const sel = document.getElementById('filtro-categoria-aprovados');
     try {
       const cats = await apiFetch('/grupos/categorias');
-      document.getElementById('lista-slugs-categorias').textContent = cats.map(c => c.slug).join(', ');
-    } catch {
-      document.getElementById('lista-slugs-categorias').textContent = 'não foi possível carregar';
-    }
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.slug;
+        opt.textContent = cat.nome;
+        sel.appendChild(opt);
+      });
+    } catch {}
   }
+
+  async function abrirModalImportar() {
+    document.getElementById('campo-importar-lote').value = '';
+    document.getElementById('lote-descricao').value = '';
+    document.getElementById('resultado-importacao').innerHTML = '';
+    limparAviso('aviso-importar');
+
+    document.querySelectorAll('#regras-lista input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+
+    const sel = document.getElementById('lote-categoria');
+    sel.innerHTML = '<option value="">Selecione a categoria do lote...</option>';
+    try {
+      const cats = await apiFetch('/grupos/categorias');
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.slug;
+        opt.textContent = cat.nome;
+        sel.appendChild(opt);
+      });
+    } catch {}
+
+    document.getElementById('modal-importar').classList.add('aberto');
+  }
+
+  document.getElementById('lote-categoria').addEventListener('change', (e) => {
+    const slug = e.target.value;
+    const desc = descricoesPorCategoria[slug] || '';
+    document.getElementById('lote-descricao').value = desc;
+  });
 
   function fecharModalImportar() {
     document.getElementById('modal-importar').classList.remove('aberto');
@@ -296,12 +631,20 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
   document.getElementById('cancelar-importar').addEventListener('click', fecharModalImportar);
 
   document.getElementById('confirmar-importar').addEventListener('click', async () => {
-    const linhas = document.getElementById('campo-importar-lote').value.trim();
     limparAviso('aviso-importar');
 
-    if (!linhas) {
-      return mostrarAviso('aviso-importar', 'Cole ao menos uma linha.');
-    }
+    const links = document.getElementById('campo-importar-lote').value.trim();
+    const categoriaSlug = document.getElementById('lote-categoria').value;
+    const descricao = document.getElementById('lote-descricao').value.trim();
+
+    if (!categoriaSlug) return mostrarAviso('aviso-importar', 'Selecione uma categoria.');
+    if (!descricao) return mostrarAviso('aviso-importar', 'Preencha a descrição genérica.');
+    if (!links) return mostrarAviso('aviso-importar', 'Cole ao menos um link.');
+
+    const regras = [];
+    document.querySelectorAll('#regras-lista input[type="checkbox"]:checked').forEach(cb => {
+      regras.push(cb.value);
+    });
 
     const btn = document.getElementById('confirmar-importar');
     btnCarregando(btn, true);
@@ -309,7 +652,7 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
     try {
       const resp = await apiFetch('/admin/grupos/importar-lote', {
         method: 'POST',
-        body: JSON.stringify({ linhas })
+        body: JSON.stringify({ links, categoria_slug: categoriaSlug, descricao, regras })
       });
 
       const resultadoDiv = document.getElementById('resultado-importacao');
@@ -330,6 +673,7 @@ https://chat.whatsapp.com/XYZ789...,financas"></textarea>
     }
   });
 
+  carregarCategoriasFiltro();
   carregarLista();
 </script>
 </body>

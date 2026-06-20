@@ -82,6 +82,52 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
   }
 }
 
+// Verifica se um link de convite de grupo do WhatsApp ainda está ativo.
+// Quando o administrador do grupo revoga o link (gera um novo) ou o grupo
+// atinge o limite de membros, o WhatsApp deixa de servir a página normal
+// de convite (com og:title/og:image do grupo) e passa a mostrar uma página
+// genérica de erro/redirecionamento. Usamos isso como sinal de link inválido,
+// já que não existe endpoint oficial para checar "este grupo ainda existe?".
+async function linkAindaValido(link) {
+  try {
+    const resp = await fetch(link, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)' },
+      redirect: 'follow'
+    });
+
+    if (!resp.ok) {
+      console.warn(`[whatsappPreview] verificação: ${link} retornou ${resp.status}`);
+      return false;
+    }
+
+    const html = await resp.text();
+
+    // Link revogado/expirado geralmente não tem mais a tag og:title
+    // específica do grupo (ou a página vem vazia/genérica).
+    const nome = extrairMetaTag(html, 'og:title');
+
+    if (!nome) {
+      console.warn(`[whatsappPreview] verificação: ${link} sem og:title — provável link morto`);
+      return false;
+    }
+
+    // Heurística adicional: o WhatsApp mostra textos assim quando o convite
+    // não é mais válido, mesmo retornando 200 OK.
+    const indicaInvalido = /convite inv[aá]lido|link expirou|n[aã]o est[aá] mais dispon[ií]vel/i.test(html);
+    if (indicaInvalido) {
+      console.warn(`[whatsappPreview] verificação: ${link} contém texto de convite inválido`);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn(`[whatsappPreview] falha ao verificar link ${link}:`, err.message);
+    // Erro de rede/timeout não é prova de que o link morreu — evita marcar
+    // como indisponível por instabilidade temporária. Mantém como estava.
+    return true;
+  }
+}
+
 function extrairMetaTag(html, propriedade) {
   const padroes = [
     new RegExp(`<meta[^>]+property=["']${propriedade}["'][^>]+content=["']([^"']+)["']`, 'i'),
@@ -106,4 +152,4 @@ function decodificarEntidadesHtml(texto) {
     .replace(/&gt;/g, '>');
 }
 
-module.exports = { buscarPreviewGrupo, baixarFotoGrupo };
+module.exports = { buscarPreviewGrupo, baixarFotoGrupo, linkAindaValido };
