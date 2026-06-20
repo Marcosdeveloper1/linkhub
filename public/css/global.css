@@ -1485,3 +1485,313 @@ p {
     font-size: 0.98rem;
   }
 }
+/* ---- Menu lateral / páginas institucionais ---- */
+.navbar-menu-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.08);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background var(--transicao), border-color var(--transicao), transform var(--transicao);
+}
+
+.navbar-menu-btn span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--branco);
+  display: block;
+}
+
+.navbar-menu-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.45);
+  transform: translateY(-1px);
+}
+
+.menu-lateral-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  z-index: 240;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.menu-lateral {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(360px, calc(100vw - 34px));
+  height: 100vh;
+  background: var(--branco);
+  z-index: 250;
+  transform: translateX(105%);
+  transition: transform 0.24s ease;
+  box-shadow: -24px 0 60px rgba(15, 23, 42, 0.24);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+body.menu-lateral-aberto {
+  overflow: hidden;
+}
+
+body.menu-lateral-aberto .menu-lateral-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.menu-lateral-aberto .menu-lateral {
+  transform: translateX(0);
+}
+
+.menu-lateral-topo {
+  min-height: 86px;
+  padding: 22px 22px 18px;
+  background:
+    linear-gradient(135deg, rgba(37, 44, 55, 0.98), rgba(31, 38, 49, 0.98)),
+    radial-gradient(circle at top right, rgba(53, 190, 114, 0.22), transparent 18rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.menu-lateral-topo strong {
+  display: block;
+  color: var(--branco);
+  font-size: 1.18rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.menu-lateral-topo span {
+  display: block;
+  color: rgba(255,255,255,0.68);
+  font-size: 0.84rem;
+  margin-top: 3px;
+}
+
+.menu-lateral-fechar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.08);
+  color: var(--branco);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transicao), transform var(--transicao);
+}
+
+.menu-lateral-fechar:hover {
+  background: rgba(255,255,255,0.14);
+  transform: translateY(-1px);
+}
+
+.menu-lateral-links {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 4px;
+}
+
+.menu-lateral-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1f2937;
+  padding: 12px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.94rem;
+  transition: background var(--transicao), color var(--transicao), transform var(--transicao);
+}
+
+.menu-lateral-link:hover {
+  background: #f3f8f5;
+  color: var(--verde-escuro);
+  transform: translateX(2px);
+}
+
+.menu-lateral-link.ativo {
+  background: #eefbf4;
+  color: var(--verde-escuro);
+}
+
+.menu-lateral-icone {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #eef3f0;
+  color: var(--verde-escuro);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  flex: 0 0 auto;
+}
+
+.menu-lateral-link.ativo .menu-lateral-icone,
+.menu-lateral-link:hover .menu-lateral-icone {
+  background: var(--verde-pale);
+}
+
+.menu-lateral-divisor {
+  height: 1px;
+  background: var(--cinza-borda);
+  margin: 10px 4px;
+}
+
+.pagina-institucional {
+  padding: 42px 0 64px;
+}
+
+.institucional-card {
+  max-width: 920px;
+  margin: 0 auto;
+  background: var(--branco);
+  border: 1px solid var(--cinza-borda);
+  border-radius: 22px;
+  box-shadow: var(--sombra-leve);
+  overflow: hidden;
+}
+
+.institucional-hero {
+  background:
+    linear-gradient(135deg, rgba(37, 44, 55, 0.98), rgba(31, 38, 49, 0.98)),
+    radial-gradient(circle at top right, rgba(53, 190, 114, 0.24), transparent 22rem);
+  padding: 34px 34px 30px;
+}
+
+.institucional-label {
+  display: inline-flex;
+  color: var(--verde-claro);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.institucional-hero h1 {
+  color: var(--branco);
+  font-size: 2rem;
+  letter-spacing: -0.7px;
+  margin-bottom: 8px;
+}
+
+.institucional-hero p {
+  color: rgba(255,255,255,0.74);
+  max-width: 650px;
+  font-size: 0.98rem;
+}
+
+.institucional-conteudo {
+  padding: 32px 34px 36px;
+}
+
+.institucional-conteudo h2 {
+  font-size: 1.12rem;
+  margin: 28px 0 8px;
+  letter-spacing: -0.2px;
+}
+
+.institucional-conteudo h2:first-child {
+  margin-top: 0;
+}
+
+.institucional-conteudo p,
+.institucional-conteudo li {
+  color: #3b4656;
+  font-size: 0.96rem;
+  line-height: 1.72;
+}
+
+.institucional-conteudo ul,
+.institucional-conteudo ol {
+  padding-left: 20px;
+  margin: 8px 0 0;
+}
+
+.faq-item {
+  border: 1px solid var(--cinza-borda);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: #fbfcfd;
+}
+
+.faq-item h2 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.institucional-data {
+  display: inline-flex;
+  margin-top: 28px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f6f8fa;
+  color: var(--cinza-texto);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .navbar-menu-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+  }
+
+  .menu-lateral {
+    width: min(340px, calc(100vw - 22px));
+  }
+
+  .pagina-institucional {
+    padding: 28px 0 50px;
+  }
+
+  .institucional-hero {
+    padding: 26px 22px 24px;
+  }
+
+  .institucional-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .institucional-conteudo {
+    padding: 24px 22px 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-actions {
+    gap: 5px;
+  }
+
+  .navbar-actions .btn {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .navbar-menu-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .navbar-menu-btn span {
+    width: 16px;
+  }
+}

@@ -40,7 +40,7 @@ function montarNavbar(sessao) {
         </span>
       </a>
 
-      <nav class="navbar-links">
+      <nav class="navbar-links" aria-label="Menu principal">
         ${logado ? `<a href="/pages/meus-grupos.html" class="navbar-link ${linkAtivo('/pages/meus-grupos.html')}">Meus grupos</a>` : ''}
         ${logado ? `<a href="/pages/enviar-grupo.html" class="navbar-link ${linkAtivo('/pages/enviar-grupo.html')}">Enviar grupo</a>` : ''}
         ${logado && usuario?.role === 'admin' ? `<a href="/pages/admin.html" class="navbar-link ${linkAtivo('/pages/admin.html')}">Painel Admin</a>` : ''}
@@ -53,12 +53,119 @@ function montarNavbar(sessao) {
           : `<a href="/pages/login.html" class="btn btn-contorno-branco btn-sm">Entrar</a>
              <a href="/pages/cadastro.html" class="btn btn-primario btn-sm">Cadastrar</a>`
         }
+
+        <button class="navbar-menu-btn" type="button" id="btn-menu-lateral" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-lateral">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </div>
+
+    <div class="menu-lateral-overlay" id="menu-lateral-overlay" aria-hidden="true"></div>
+
+    <aside class="menu-lateral" id="menu-lateral" aria-hidden="true">
+      <div class="menu-lateral-topo">
+        <div>
+          <strong>Menu</strong>
+          <span>WhatsApp Grupos</span>
+        </div>
+        <button class="menu-lateral-fechar" type="button" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
+      </div>
+
+      <nav class="menu-lateral-links" aria-label="Links do site">
+        <a href="/" class="menu-lateral-link ${linkAtivo('/')}">
+          <span class="menu-lateral-icone">⌂</span>
+          <span>Início</span>
+        </a>
+
+        ${logado
+          ? `<a href="/pages/enviar-grupo.html" class="menu-lateral-link ${linkAtivo('/pages/enviar-grupo.html')}">
+              <span class="menu-lateral-icone">＋</span>
+              <span>Enviar grupo</span>
+            </a>
+            <a href="/pages/meus-grupos.html" class="menu-lateral-link ${linkAtivo('/pages/meus-grupos.html')}">
+              <span class="menu-lateral-icone">▣</span>
+              <span>Meus grupos</span>
+            </a>`
+          : `<a href="/pages/cadastro.html" class="menu-lateral-link ${linkAtivo('/pages/cadastro.html')}">
+              <span class="menu-lateral-icone">＋</span>
+              <span>Divulgar grupo</span>
+            </a>`
+        }
+
+        ${logado && usuario?.role === 'admin'
+          ? `<a href="/pages/admin.html" class="menu-lateral-link ${linkAtivo('/pages/admin.html')}">
+              <span class="menu-lateral-icone">⚙</span>
+              <span>Painel Admin</span>
+            </a>`
+          : ''
+        }
+
+        <div class="menu-lateral-divisor"></div>
+
+        <a href="/pages/faq.html" class="menu-lateral-link ${linkAtivo('/pages/faq.html')}">
+          <span class="menu-lateral-icone">?</span>
+          <span>FAQ</span>
+        </a>
+        <a href="/pages/termos.html" class="menu-lateral-link ${linkAtivo('/pages/termos.html')}">
+          <span class="menu-lateral-icone">§</span>
+          <span>Termos de uso</span>
+        </a>
+        <a href="/pages/privacidade.html" class="menu-lateral-link ${linkAtivo('/pages/privacidade.html')}">
+          <span class="menu-lateral-icone">◌</span>
+          <span>Política de privacidade</span>
+        </a>
+
+        ${!logado
+          ? `<div class="menu-lateral-divisor"></div>
+            <a href="/pages/login.html" class="menu-lateral-link ${linkAtivo('/pages/login.html')}">
+              <span class="menu-lateral-icone">→</span>
+              <span>Entrar</span>
+            </a>`
+          : ''
+        }
+      </nav>
+    </aside>
   `;
 
   const btnLogout = document.getElementById('btn-logout-navbar');
   if (btnLogout) btnLogout.addEventListener('click', fazerLogout);
+
+  configurarMenuLateral();
+}
+
+function configurarMenuLateral() {
+  const btnAbrir = document.getElementById('btn-menu-lateral');
+  const btnFechar = document.getElementById('btn-fechar-menu');
+  const overlay = document.getElementById('menu-lateral-overlay');
+  const menu = document.getElementById('menu-lateral');
+
+  if (!btnAbrir || !btnFechar || !overlay || !menu) return;
+
+  const abrirMenu = () => {
+    document.body.classList.add('menu-lateral-aberto');
+    btnAbrir.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+  };
+
+  const fecharMenu = () => {
+    document.body.classList.remove('menu-lateral-aberto');
+    btnAbrir.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+  };
+
+  btnAbrir.addEventListener('click', abrirMenu);
+  btnFechar.addEventListener('click', fecharMenu);
+  overlay.addEventListener('click', fecharMenu);
+
+  menu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', fecharMenu);
+  });
+
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') fecharMenu();
+  });
 }
 
 async function fazerLogout() {
