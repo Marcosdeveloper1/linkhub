@@ -113,6 +113,72 @@
 
 <div id="banner-enviar-container"></div>
 
+<!-- Modal de Edição (apenas Admin) -->
+<div class="modal-fundo" id="modal-editar-grupo">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="fechar-modal-editar">&times;</button>
+    <h3 class="modal-titulo">Editar grupo</h3>
+    
+    <form id="form-editar-grupo">
+      <input type="hidden" id="editar-grupo-id">
+      
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-nome">Nome do grupo</label>
+        <input class="form-input" type="text" id="editar-nome" required minlength="3" maxlength="100">
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-link">Link do WhatsApp</label>
+        <input class="form-input" type="url" id="editar-link" required>
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-desc">Descrição</label>
+        <textarea class="form-textarea" id="editar-desc" required minlength="20" maxlength="500" style="height:100px; resize:vertical;"></textarea>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-categoria">Categoria</label>
+        <select class="form-select" id="editar-categoria" required>
+          <!-- Será preenchido dinamicamente via JS -->
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-regras">Regras do grupo (opcional)</label>
+        <textarea class="form-textarea" id="editar-regras" placeholder="Uma regra por linha" maxlength="2000" style="height:80px; resize:vertical;"></textarea>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label" style="margin-bottom:6px; display:block;" for="editar-status">Status</label>
+        <select class="form-select" id="editar-status" required>
+          <option value="aprovado">Aprovado</option>
+          <option value="indisponivel">Indisponível</option>
+          <option value="pendente">Pendente</option>
+          <option value="rejeitado">Rejeitado</option>
+        </select>
+      </div>
+      
+      <div class="aviso" id="aviso-editar" style="margin-bottom:16px;"></div>
+      
+      <div class="modal-acoes" style="display:flex; justify-content:flex-end; gap:12px;">
+        <button class="btn btn-contorno" type="button" id="cancelar-editar">Cancelar</button>
+        <button class="btn btn-primario" type="submit" id="confirmar-editar">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Barra de ações em lote para admin (oculta por padrão) -->
+<div class="admin-barra-acoes" id="admin-barra-acoes" style="display:none;">
+  <span class="admin-barra-acoes-texto" id="admin-selecao-texto">0 selecionados</span>
+  <div class="admin-barra-acoes-botoes">
+    <button class="btn btn-sm btn-contorno-branco" type="button" id="btn-admin-lote-indisponivel">Indisponível</button>
+    <button class="btn btn-sm btn-contorno-branco" type="button" id="btn-admin-lote-aprovado">Aprovado</button>
+    <button class="btn btn-sm btn-perigo" type="button" id="btn-admin-lote-deletar">Apagar</button>
+  </div>
+</div>
+
 <footer class="footer">
   <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
@@ -294,6 +360,8 @@
   let categoriaAtiva = '';
   let buscaAtiva = '';
   let tempoBusca = null;
+  let usuarioSessao = null;
+  const selecionadosLote = new Set();
 
   function normalizarSlug(texto) {
     return String(texto || '')
@@ -412,11 +480,20 @@
     const descricao = escaparHtml(g.descricao || '');
     const foto = g.foto_url ? escaparHtml(g.foto_url) : '';
 
+    const ehAdmin = usuarioSessao?.usuario?.role === 'admin';
+    const estaChecado = selecionadosLote.has(g.id) ? 'checked' : '';
+
     return `
-      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}">
-        <div class="card-grupo-imagem">
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}" data-id="${g.id}">
+        <div class="card-grupo-imagem" style="position: relative;">
+          ${ehAdmin ? `
+            <div class="admin-card-selecao-container">
+              <input type="checkbox" class="admin-checkbox-selecao" data-id="${g.id}" ${estaChecado}>
+            </div>
+          ` : ''}
           ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
           <span class="tag tag-card">${categoria}</span>
+          ${g.status === 'indisponivel' ? '<span class="tag tag-indisponivel" style="position: absolute; right: 8px; top: 8px; z-index: 10;">Indisponível</span>' : ''}
           ${destaque ? '<span class="selo-destaque" title="Grupo impulsionado">★</span>' : ''}
         </div>
 
@@ -425,10 +502,16 @@
           <p class="card-grupo-desc">${descricao}</p>
         </div>
 
-        <div class="card-grupo-rodape">
-          <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+        <div class="card-grupo-rodape" style="display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
+          <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada" style="text-align: center;">
             Entrar
           </a>
+          ${ehAdmin ? `
+            <div class="admin-card-acoes" style="display: flex; gap: 8px; width: 100%;">
+              <button class="btn btn-sm btn-contorno btn-editar-grupo" data-id="${g.id}" type="button" style="flex: 1; padding: 6px 12px; font-size: 0.8rem;">Editar</button>
+              <button class="btn btn-sm btn-perigo btn-deletar-grupo" data-id="${g.id}" type="button" style="flex: 1; padding: 6px 12px; font-size: 0.8rem;">Apagar</button>
+            </div>
+          ` : ''}
         </div>
       </article>
     `;
@@ -443,6 +526,9 @@
 
     if (categoria) params.set('categoria', categoria.apiSlug || categoria.slug);
     if (buscaAtiva) params.set('busca', buscaAtiva);
+    if (usuarioSessao?.usuario?.role === 'admin') {
+      params.set('incluirIndisponiveis', 'true');
+    }
 
     try {
       const resp = await apiFetch('/grupos?' + params);
@@ -588,7 +674,11 @@
         return;
       }
 
-      const resp = await apiFetch(`/grupos?categoria=${catDestaque.apiSlug || catDestaque.slug}`);
+      const params = new URLSearchParams({ categoria: catDestaque.apiSlug || catDestaque.slug });
+      if (usuarioSessao?.usuario?.role === 'admin') {
+        params.set('incluirIndisponiveis', 'true');
+      }
+      const resp = await apiFetch('/grupos?' + params);
       const grupos = resp.grupos || [];
 
       if (grupos.length === 0) {
@@ -668,6 +758,193 @@
     }
   }
 
+  async function popularCategoriasSelect() {
+    try {
+      const cats = await apiFetch('/grupos/categorias');
+      const select = document.getElementById('editar-categoria');
+      if (select) {
+        select.innerHTML = cats.map(c => `<option value="${c.id}">${escaparHtml(c.nome)}</option>`).join('');
+      }
+    } catch (err) {
+      console.error('Erro ao popular categorias select:', err);
+    }
+  }
+
+  function atualizarBarraLote() {
+    const barra = document.getElementById('admin-barra-acoes');
+    const texto = document.getElementById('admin-selecao-texto');
+    if (!barra || !texto) return;
+
+    const totalSelecionados = selecionadosLote.size;
+    if (totalSelecionados > 0) {
+      texto.textContent = `${totalSelecionados} selecionado${totalSelecionados !== 1 ? 's' : ''}`;
+      barra.style.display = 'flex';
+    } else {
+      barra.style.display = 'none';
+    }
+  }
+
+  function toggleSelecionarGrupo(id, selecionado) {
+    if (selecionado) {
+      selecionadosLote.add(id);
+    } else {
+      selecionadosLote.delete(id);
+    }
+    atualizarBarraLote();
+  }
+
+  async function abrirModalEditar(id) {
+    limparAviso('aviso-editar');
+    try {
+      const grupo = await apiFetch(`/grupos/${id}`);
+      
+      document.getElementById('editar-grupo-id').value = grupo.id;
+      document.getElementById('editar-nome').value = grupo.nome_grupo;
+      document.getElementById('editar-link').value = grupo.link_whatsapp;
+      document.getElementById('editar-desc').value = grupo.descricao;
+      document.getElementById('editar-regras').value = grupo.regras || '';
+      document.getElementById('editar-status').value = grupo.status;
+
+      const selectCat = document.getElementById('editar-categoria');
+      if (selectCat) {
+        selectCat.value = grupo.categoria_id;
+      }
+
+      document.getElementById('modal-editar-grupo').classList.add('aberto');
+    } catch (err) {
+      alert('Erro ao carregar dados do grupo: ' + err.message);
+    }
+  }
+
+  function fecharModalEditar() {
+    document.getElementById('modal-editar-grupo').classList.remove('aberto');
+  }
+
+  async function removerGrupoHome(id) {
+    if (!confirm('Deseja realmente apagar este grupo definitivamente do site?')) return;
+    try {
+      await apiFetch(`/admin/grupos/${id}`, { method: 'DELETE' });
+      selecionadosLote.delete(id);
+      atualizarBarraLote();
+      carregarGrupos();
+      montarCategorias();
+    } catch (err) {
+      alert('Erro ao apagar grupo: ' + err.message);
+    }
+  }
+
+  // Delegar eventos de seleção e botões no grid de grupos
+  document.getElementById('lista-grupos').addEventListener('change', (e) => {
+    const cb = e.target.closest('.admin-checkbox-selecao');
+    if (cb) {
+      const id = parseInt(cb.dataset.id, 10);
+      toggleSelecionarGrupo(id, cb.checked);
+    }
+  });
+
+  document.getElementById('lista-grupos').addEventListener('click', (e) => {
+    const btnEditar = e.target.closest('.btn-editar-grupo');
+    const btnDeletar = e.target.closest('.btn-deletar-grupo');
+
+    if (btnEditar) {
+      const id = parseInt(btnEditar.dataset.id, 10);
+      abrirModalEditar(id);
+    } else if (btnDeletar) {
+      const id = parseInt(btnDeletar.dataset.id, 10);
+      removerGrupoHome(id);
+    }
+  });
+
+  // Modal fechar / cancelar
+  document.getElementById('fechar-modal-editar').addEventListener('click', fecharModalEditar);
+  document.getElementById('cancelar-editar').addEventListener('click', fecharModalEditar);
+
+  // Form submit de edição
+  document.getElementById('form-editar-grupo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editar-grupo-id').value;
+    const btnSalvar = document.getElementById('confirmar-editar');
+    
+    btnCarregando(btnSalvar, true);
+    limparAviso('aviso-editar');
+
+    const payload = {
+      nome_grupo: document.getElementById('editar-nome').value.trim(),
+      link_whatsapp: document.getElementById('editar-link').value.trim(),
+      descricao: document.getElementById('editar-desc').value.trim(),
+      categoria_id: parseInt(document.getElementById('editar-categoria').value, 10),
+      regras: document.getElementById('editar-regras').value.trim(),
+      status: document.getElementById('editar-status').value
+    };
+
+    try {
+      await apiFetch(`/admin/grupos/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      fecharModalEditar();
+      carregarGrupos();
+      montarCategorias();
+    } catch (err) {
+      mostrarAviso('aviso-editar', err.message);
+    } finally {
+      btnCarregando(btnSalvar, false);
+    }
+  });
+
+  // Ações em lote
+  document.getElementById('btn-admin-lote-indisponivel').addEventListener('click', async () => {
+    if (selecionadosLote.size === 0) return;
+    const ids = Array.from(selecionadosLote);
+    try {
+      await apiFetch('/admin/grupos/status-lote', {
+        method: 'POST',
+        body: JSON.stringify({ ids, status: 'indisponivel' })
+      });
+      selecionadosLote.clear();
+      atualizarBarraLote();
+      carregarGrupos();
+      montarCategorias();
+    } catch (err) {
+      alert('Erro ao atualizar status dos grupos: ' + err.message);
+    }
+  });
+
+  document.getElementById('btn-admin-lote-aprovado').addEventListener('click', async () => {
+    if (selecionadosLote.size === 0) return;
+    const ids = Array.from(selecionadosLote);
+    try {
+      await apiFetch('/admin/grupos/status-lote', {
+        method: 'POST',
+        body: JSON.stringify({ ids, status: 'aprovado' })
+      });
+      selecionadosLote.clear();
+      atualizarBarraLote();
+      carregarGrupos();
+      montarCategorias();
+    } catch (err) {
+      alert('Erro ao atualizar status dos grupos: ' + err.message);
+    }
+  });
+
+  document.getElementById('btn-admin-lote-deletar').addEventListener('click', async () => {
+    if (selecionadosLote.size === 0) return;
+    if (!confirm(`Deseja apagar os ${selecionadosLote.size} grupos selecionados de forma definitiva?`)) return;
+    const ids = Array.from(selecionadosLote);
+    try {
+      await apiFetch('/admin/grupos/deletar-lote', {
+        method: 'POST',
+        body: JSON.stringify({ ids })
+      });
+      selecionadosLote.clear();
+      atualizarBarraLote();
+      carregarGrupos();
+      montarCategorias();
+    } catch (err) {
+      alert('Erro ao apagar grupos: ' + err.message);
+    }
+  });
+
   async function montar() {
     configurarBannerHome();
 
@@ -676,10 +953,10 @@
     atualizarTituloSecao();
     montarCategorias();
 
-    const sessao = await iniciarPagina();
+    usuarioSessao = await iniciarPagina();
     const ctaContainer = document.getElementById('banner-enviar-container');
 
-    if (sessao?.logado) {
+    if (usuarioSessao?.logado) {
       ctaContainer.innerHTML = `
         <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
           <div class="cta-flutuante-texto">
@@ -688,6 +965,10 @@
           </div>
           <a href="/pages/enviar-grupo.html" class="btn btn-primario">Enviar grupo</a>
         </aside>`;
+      
+      if (usuarioSessao?.usuario?.role === 'admin') {
+        await popularCategoriasSelect();
+      }
     } else {
       ctaContainer.innerHTML = `
         <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
