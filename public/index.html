@@ -3,139 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkHub1 — Grupos de WhatsApp</title>
-  <meta name="description" content="Encontre grupos de WhatsApp sobre qualquer assunto. Política, finanças, esportes, tecnologia e muito mais.">
+  <title>LinkHub — Grupos de WhatsApp</title>
+  <meta name="description" content="Encontre grupos de WhatsApp por tema. Diretório de grupos com categorias, busca, destaques e divulgação gratuita.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .filtro-categorias {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 20px 0;
-    }
-
-    .filtro-btn {
-      padding: 7px 16px;
-      border-radius: 20px;
-      border: 1.5px solid var(--cinza-borda);
-      background: var(--branco);
-      font-size: 0.85rem;
-      font-family: var(--font);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      color: var(--preto);
-      font-weight: 500;
-    }
-    .filtro-btn:hover { border-color: var(--verde-claro); color: var(--verde-medio); }
-    .filtro-btn.ativo { background: var(--verde-escuro); color: var(--branco); border-color: var(--verde-escuro); }
-
-    .filtro-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .filtro-ver-tudo {
-      font-size: 0.75rem;
-      color: var(--cinza-texto);
-      text-decoration: none;
-      padding: 2px 4px;
-      border-radius: 4px;
-      transition: color 0.15s;
-      white-space: nowrap;
-    }
-    .filtro-ver-tudo:hover { color: var(--verde-medio); }
-
-    .secao-grupos { padding: 8px 0 40px; }
-    .secao-titulo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      gap: 12px;
-    }
-    .secao-titulo h2 { font-size: 1.15rem; font-weight: 600; }
-    .contagem-resultados { font-size: 0.875rem; color: var(--cinza-texto); }
-
-    .card-grupo-entrada {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: var(--verde-escuro);
-      color: var(--branco);
-      padding: 7px 14px;
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: background 0.15s;
-    }
-    .card-grupo-entrada:hover { background: var(--verde-medio); color: var(--branco); }
-
-    .banner-enviar {
-      background: var(--verde-pale);
-      border: 1px solid #b7e4c7;
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin: 20px 0;
-    }
-    .banner-enviar p { color: var(--verde-escuro); font-size: 0.95rem; }
-    .banner-enviar strong { font-weight: 600; }
-
-    @media (max-width: 600px) {
-      .banner-enviar { flex-direction: column; align-items: flex-start; }
-      .secao-titulo { flex-direction: column; align-items: flex-start; }
-    }
-  </style>
 </head>
 <body>
 
 <header class="navbar" id="navbar"></header>
 
-<section class="secao-hero">
+<section class="home-busca">
   <div class="container">
-    <h1>Encontre seu grupo</h1>
-    <p>O maior diretório de grupos de WhatsApp do Brasil. Busque por tema e entre agora.</p>
-    <form class="busca-hero" id="form-busca">
-      <input type="search" id="campo-busca" placeholder="Buscar grupos por nome ou assunto..." autocomplete="off" maxlength="100">
+    <form class="busca-diretorio" id="form-busca">
+      <input type="search" id="campo-busca" placeholder="Buscar um grupo..." autocomplete="off" maxlength="100">
       <button type="submit">Buscar</button>
     </form>
   </div>
 </section>
 
-<main class="container">
+<section class="home-categorias">
+  <div class="container">
+    <div class="categorias-grid" id="filtro-categorias">
+      <button class="categoria-card ativo" type="button" data-slug="">
+        <span class="categoria-icone">☰</span>
+        <span class="categoria-nome">Todos</span>
+      </button>
+    </div>
 
-  <div class="filtro-categorias" id="filtro-categorias">
-    <button class="filtro-btn ativo" data-slug="">Todos</button>
+    <div class="categorias-acoes">
+      <button class="btn-ver-mais-categorias" type="button" id="btn-ver-mais-categorias">
+        + Ver mais categorias
+      </button>
+    </div>
   </div>
+</section>
+
+<main class="container home-conteudo">
 
   <div id="banner-enviar-container"></div>
 
   <section class="secao-grupos">
     <div class="secao-titulo">
-      <h2 id="titulo-secao">Grupos em destaque</h2>
+      <h1 id="titulo-secao">Grupos de WhatsApp</h1>
       <span class="contagem-resultados" id="contagem"></span>
     </div>
-    <div id="lista-grupos" class="grid-3">
+
+    <div id="lista-grupos" class="grid-3 grupos-grid">
       <div class="estado-vazio">
         <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
         <p>Carregando grupos...</p>
       </div>
     </div>
+
     <div class="paginacao" id="paginacao"></div>
   </section>
 
-  <section class="secao-destaque-categoria" id="secao-destaque-categoria" style="display: none; margin-top: 40px; border-top: 1px solid var(--cinza-borda); padding-top: 30px; margin-bottom: 20px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px;">
-      <h2 style="font-size: 1.25rem; font-weight: 600;" id="titulo-destaque-categoria"></h2>
-      <a id="link-destaque-categoria" href="#" style="font-size:0.85rem; color:var(--verde-medio); white-space:nowrap;">Ver todos →</a>
+  <section class="secao-destaque-categoria" id="secao-destaque-categoria">
+    <div class="secao-titulo secao-titulo-secundaria">
+      <h2 id="titulo-destaque-categoria"></h2>
+      <a id="link-destaque-categoria" href="#">Ver todos →</a>
     </div>
-    <div id="lista-destaque-categoria" class="grid-3"></div>
+
+    <div id="lista-destaque-categoria" class="grid-3 grupos-grid"></div>
   </section>
 
 </main>
@@ -151,37 +81,167 @@
   let buscaAtiva = '';
   let tempoBusca = null;
 
+  const iconesCategorias = {
+    amizade: '👥',
+    amor: '❤️',
+    romance: '❤️',
+    'amor-e-romance': '❤️',
+    carros: '🚗',
+    motos: '🏍️',
+    'carros-e-motos': '🚗',
+    cidades: '🏙️',
+    cidade: '🏙️',
+    compra: '💰',
+    venda: '💰',
+    'compra-e-venda': '💰',
+    concursos: '🎯',
+    concurso: '🎯',
+    desenhos: '📺',
+    desenho: '📺',
+    anime: '📺',
+    animes: '📺',
+    divulgacao: '📢',
+    divulgação: '📢',
+    educacao: '🎓',
+    educação: '🎓',
+    emagrecimento: '🏃',
+    fitness: '🏃',
+    esportes: '⚽',
+    esporte: '⚽',
+    futebol: '⚽',
+    tecnologia: '💻',
+    politica: '🏛️',
+    política: '🏛️',
+    estudos: '📚',
+    jogos: '🎮',
+    memes: '😂',
+    videos: '🎬',
+    vídeos: '🎬',
+    musica: '🎧',
+    música: '🎧',
+    emprego: '💼',
+    empregos: '💼',
+    renda: '💸',
+    negocios: '📈',
+    negócios: '📈'
+  };
+
+  function normalizarSlug(texto) {
+    return String(texto || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  function obterIconeCategoria(cat) {
+    const slugOriginal = String(cat?.slug || '').toLowerCase();
+    const slugNormalizado = normalizarSlug(cat?.slug || cat?.nome || '');
+    const nomeNormalizado = normalizarSlug(cat?.nome || '');
+
+    return iconesCategorias[slugOriginal]
+      || iconesCategorias[slugNormalizado]
+      || iconesCategorias[nomeNormalizado]
+      || '•••';
+  }
+
+  function atualizarBotaoMaisCategorias() {
+    const btn = document.getElementById('btn-ver-mais-categorias');
+    const extras = document.querySelectorAll('.categoria-extra');
+
+    if (!extras.length) {
+      btn.style.display = 'none';
+      return;
+    }
+
+    btn.style.display = 'inline-flex';
+  }
+
+  function alternarCategorias() {
+    const grid = document.getElementById('filtro-categorias');
+    const btn = document.getElementById('btn-ver-mais-categorias');
+    const aberto = grid.classList.toggle('categorias-abertas');
+
+    btn.textContent = aberto ? '− Ver menos categorias' : '+ Ver mais categorias';
+  }
+
   async function carregarCategorias() {
     try {
       const cats = await apiFetch('/grupos/categorias');
       const container = document.getElementById('filtro-categorias');
-      cats.forEach(cat => {
+
+      cats.forEach((cat, index) => {
         if (cat.total_grupos > 0) {
-          const item = document.createElement('span');
-          item.className = 'filtro-item';
-
           const btn = document.createElement('button');
-          btn.className = 'filtro-btn';
+          btn.type = 'button';
+          btn.className = 'categoria-card';
           btn.dataset.slug = cat.slug;
-          btn.textContent = `${cat.nome} (${cat.total_grupos})`;
 
-          const link = document.createElement('a');
-          link.className = 'filtro-ver-tudo';
-          link.href = `/pages/categoria.html?slug=${cat.slug}`;
-          link.title = `Ver página de ${cat.nome}`;
-          link.textContent = '↗';
+          if (index >= 9) {
+            btn.classList.add('categoria-extra');
+          }
 
-          item.appendChild(btn);
-          item.appendChild(link);
-          container.appendChild(item);
+          btn.innerHTML = `
+            <span class="categoria-icone">${obterIconeCategoria(cat)}</span>
+            <span class="categoria-nome">${escaparHtml(cat.nome)}</span>
+          `;
+
+          container.appendChild(btn);
         }
       });
-    } catch {}
+
+      atualizarBotaoMaisCategorias();
+    } catch (err) {
+      console.error('Erro ao carregar categorias:', err);
+      atualizarBotaoMaisCategorias();
+    }
+  }
+
+  function grupoTemDestaque(g) {
+    return Boolean(
+      g.destaque ||
+      g.impulsionado ||
+      g.pago ||
+      g.premium ||
+      g.patrocinado ||
+      g.is_destaque ||
+      g.is_impulsionado
+    );
+  }
+
+  function montarCardGrupo(g) {
+    const destaque = grupoTemDestaque(g);
+    const categoria = escaparHtml(g.categoria_nome || 'Grupo');
+    const nome = escaparHtml(g.nome_grupo || 'Grupo sem nome');
+    const descricao = escaparHtml(g.descricao || '');
+    const foto = g.foto_url ? escaparHtml(g.foto_url) : '';
+
+    return `
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}">
+        <div class="card-grupo-imagem">
+          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">LinkHub</div>'}
+          <span class="tag tag-card">${categoria}</span>
+          ${destaque ? '<span class="selo-destaque" title="Grupo impulsionado">★</span>' : ''}
+        </div>
+
+        <div class="card-grupo-corpo">
+          <h3 class="card-grupo-nome">${nome}</h3>
+          <p class="card-grupo-desc">${descricao}</p>
+        </div>
+
+        <div class="card-grupo-rodape">
+          <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
+            Entrar no Grupo
+          </a>
+        </div>
+      </article>
+    `;
   }
 
   async function carregarGrupos() {
     const lista = document.getElementById('lista-grupos');
-    lista.innerHTML = '<div style="text-align:center;padding:40px"><span class="spinner spinner-verde" style="display:inline-block"></span></div>';
+    lista.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px"><span class="spinner spinner-verde" style="display:inline-block"></span></div>';
 
     const params = new URLSearchParams({ pagina: paginaAtual });
     if (categoriaAtiva) params.set('categoria', categoriaAtiva);
@@ -204,22 +264,7 @@
         return;
       }
 
-      lista.innerHTML = grupos.map(g => `
-        <article class="card-grupo">
-          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
-          <div class="card-grupo-cabecalho">
-            <span class="tag tag-verde">${g.categoria_nome}</span>
-          </div>
-          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
-          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
-          <div class="card-grupo-rodape">
-            <span style="font-size:0.78rem;color:var(--cinza-texto)">${g.aprovado_em ? formatarData(g.aprovado_em) : ''}</span>
-            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
-              Ver grupo →
-            </a>
-          </div>
-        </article>
-      `).join('');
+      lista.innerHTML = grupos.map(g => montarCardGrupo(g)).join('');
 
       lista.querySelectorAll('.card-grupo-foto').forEach(img => {
         img.addEventListener('error', () => { img.style.display = 'none'; });
@@ -232,13 +277,18 @@
   }
 
   function filtrarCategoria(btn, slug) {
-    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+    document.querySelectorAll('.categoria-card').forEach(b => b.classList.remove('ativo'));
     btn.classList.add('ativo');
+
     categoriaAtiva = slug;
     paginaAtual = 1;
     buscaAtiva = '';
+
     document.getElementById('campo-busca').value = '';
-    document.getElementById('titulo-secao').textContent = slug ? btn.textContent.split('(')[0].trim() : 'Grupos em destaque';
+
+    const nomeCategoria = btn.querySelector('.categoria-nome')?.textContent?.trim();
+    document.getElementById('titulo-secao').textContent = slug ? nomeCategoria : 'Grupos de WhatsApp';
+
     carregarGrupos();
   }
 
@@ -253,24 +303,24 @@
     buscaAtiva = termo;
     paginaAtual = 1;
     categoriaAtiva = '';
-    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+
+    document.querySelectorAll('.categoria-card').forEach(b => b.classList.remove('ativo'));
     document.querySelector('[data-slug=""]').classList.add('ativo');
-    document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Grupos em destaque';
+
+    document.getElementById('titulo-secao').textContent = termo ? `Resultados para "${termo}"` : 'Grupos de WhatsApp';
+
     carregarGrupos();
   }
 
-  // busca em tempo real com debounce de 350ms
   document.getElementById('campo-busca').addEventListener('input', (e) => {
     clearTimeout(tempoBusca);
     const termo = e.target.value.trim();
 
-    // campo vazio: volta ao estado normal imediatamente
     if (!termo) {
       aplicarBusca('');
       return;
     }
 
-    // aguarda o usuário parar de digitar antes de buscar
     tempoBusca = setTimeout(() => {
       aplicarBusca(termo);
     }, 350);
@@ -278,10 +328,14 @@
 
   function montarPaginacao(atual, total) {
     const container = document.getElementById('paginacao');
-    if (total <= 1) { container.innerHTML = ''; return; }
+    if (total <= 1) {
+      container.innerHTML = '';
+      return;
+    }
 
     let html = '';
     html += `<button class="paginacao-btn" data-page="${atual - 1}" ${atual === 1 ? 'disabled' : ''}>‹</button>`;
+
     for (let i = 1; i <= total; i++) {
       if (i === 1 || i === total || Math.abs(i - atual) <= 1) {
         html += `<button class="paginacao-btn ${i === atual ? 'ativo' : ''}" data-page="${i}">${i}</button>`;
@@ -289,6 +343,7 @@
         html += `<button class="paginacao-btn" disabled>…</button>`;
       }
     }
+
     html += `<button class="paginacao-btn" data-page="${atual + 1}" ${atual === total ? 'disabled' : ''}>›</button>`;
     container.innerHTML = html;
   }
@@ -308,10 +363,12 @@
   document.getElementById('form-busca').addEventListener('submit', buscar);
 
   document.getElementById('filtro-categorias').addEventListener('click', (e) => {
-    const btn = e.target.closest('.filtro-btn');
+    const btn = e.target.closest('.categoria-card');
     if (!btn) return;
     filtrarCategoria(btn, btn.dataset.slug);
   });
+
+  document.getElementById('btn-ver-mais-categorias').addEventListener('click', alternarCategorias);
 
   function escaparHtml(str) {
     const d = document.createElement('div');
@@ -323,6 +380,7 @@
     try {
       const cats = await apiFetch('/grupos/categorias');
       const catDestaque = cats.find(c => c.total_grupos > 0 && c.slug !== categoriaAtiva);
+
       if (!catDestaque) {
         document.getElementById('secao-destaque-categoria').style.display = 'none';
         return;
@@ -330,6 +388,7 @@
 
       const resp = await apiFetch(`/grupos?categoria=${catDestaque.slug}`);
       const grupos = resp.grupos || [];
+
       if (grupos.length === 0) {
         document.getElementById('secao-destaque-categoria').style.display = 'none';
         return;
@@ -339,21 +398,7 @@
       document.getElementById('link-destaque-categoria').href = `/pages/categoria.html?slug=${catDestaque.slug}`;
 
       const container = document.getElementById('lista-destaque-categoria');
-      container.innerHTML = grupos.slice(0, 3).map(g => `
-        <article class="card-grupo">
-          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">` : ''}
-          <div class="card-grupo-cabecalho">
-            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
-          </div>
-          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
-          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
-          <div class="card-grupo-rodape">
-            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
-              Ver grupo →
-            </a>
-          </div>
-        </article>
-      `).join('');
+      container.innerHTML = grupos.slice(0, 3).map(g => montarCardGrupo(g)).join('');
 
       container.querySelectorAll('.card-grupo-foto').forEach(img => {
         img.addEventListener('error', () => { img.style.display = 'none'; });
@@ -370,6 +415,7 @@
     const sessao = await iniciarPagina();
 
     const bannerContainer = document.getElementById('banner-enviar-container');
+
     if (sessao?.logado) {
       bannerContainer.innerHTML = `
         <div class="banner-enviar">
