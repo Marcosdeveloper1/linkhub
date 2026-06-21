@@ -930,6 +930,59 @@ p {
   z-index: 1;
 }
 
+
+.cta-flutuante-impulso {
+  background:
+    radial-gradient(circle at top right, rgba(255, 224, 102, 0.22), transparent 10rem),
+    rgba(255, 255, 255, 0.97);
+  border-color: rgba(214, 158, 46, 0.42);
+  box-shadow: 0 18px 40px rgba(120, 83, 17, 0.18);
+}
+
+.cta-flutuante-impulso::before {
+  background: linear-gradient(135deg, rgba(255, 204, 20, 0.16), transparent 46%);
+}
+
+.cta-flutuante-impulso strong {
+  color: #3f2c07;
+}
+
+.cta-flutuante-impulso p {
+  color: #6f5a1e;
+}
+
+.cta-flutuante-selo {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff4c2;
+  color: #6d4b00;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.btn-dourado {
+  background: linear-gradient(135deg, #ffd34d 0%, #d99a00 100%);
+  border-color: #d99a00;
+  color: #2f2100;
+  font-weight: 950;
+}
+
+.btn-dourado:hover {
+  background: linear-gradient(135deg, #ffe17a 0%, #c98f00 100%);
+  border-color: #c98f00;
+  color: #2f2100;
+  transform: translateY(-1px);
+}
+
 /* ---- Formulários ---- */
 .form-grupo {
   display: flex;
@@ -4298,3 +4351,5 @@ a
     font-size: 1rem;
   }
 }
+
+

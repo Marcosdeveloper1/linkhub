@@ -1443,11 +1443,23 @@
     criarPedidoZapCoin(quantidade, btn);
   });
 
+  function rolarParaZapCoinsSeNecessario() {
+    if (window.location.hash !== '#zapcoin-area') return;
+
+    const alvo = document.getElementById('zapcoin-area');
+    if (!alvo) return;
+
+    setTimeout(() => {
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+  }
+
   async function montar() {
     await iniciarPagina({ requerLogin: true });
     await carregarZapCoins();
     await carregarMeusGrupos();
     calcularCompraPersonalizada();
+    rolarParaZapCoinsSeNecessario();
   }
 
   montar();

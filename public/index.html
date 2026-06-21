@@ -1076,12 +1076,13 @@
 
     if (usuarioSessao?.logado) {
       ctaContainer.innerHTML = `
-        <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
+        <aside class="banner-enviar cta-flutuante cta-flutuante-impulso" aria-label="Impulsionar grupo">
           <div class="cta-flutuante-texto">
-            <strong>Divulgue seu grupo</strong>
-            <p>Envie sua comunidade gratuitamente.</p>
+            <span class="cta-flutuante-selo">⚡ ZapCoin</span>
+            <strong>Impulsione seu grupo</strong>
+            <p>Use ZapCoins para destacar seus grupos aprovados.</p>
           </div>
-          <a href="/pages/enviar-grupo.html" class="btn btn-primario">Enviar grupo</a>
+          <a href="/pages/meus-grupos.html#zapcoin-area" class="btn btn-dourado">Impulsionar agora</a>
         </aside>`;
       
       if (usuarioSessao?.usuario?.role === 'admin') {
@@ -1092,9 +1093,9 @@
         <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
           <div class="cta-flutuante-texto">
             <strong>Divulgue seu grupo</strong>
-            <p>Cadastre-se para enviar sua comunidade.</p>
+            <p>Entre com sua conta para enviar sua comunidade.</p>
           </div>
-          <a href="/pages/cadastro.html" class="btn btn-primario">Criar conta</a>
+          <a href="/pages/login.html?redirect=/pages/enviar-grupo.html" class="btn btn-primario">Entrar para divulgar</a>
         </aside>`;
     }
 
@@ -1106,3 +1107,4 @@
 </script>
 </body>
 </html>
+
