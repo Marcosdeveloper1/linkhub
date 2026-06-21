@@ -180,7 +180,6 @@
 
 </main>
 
-<div id="banner-enviar-container"></div>
 
 <!-- Modal de Edição (apenas Admin) -->
 <div class="modal-fundo" id="modal-editar-grupo">
@@ -1072,31 +1071,9 @@
     montarCategorias();
 
     usuarioSessao = await iniciarPagina();
-    const ctaContainer = document.getElementById('banner-enviar-container');
 
-    if (usuarioSessao?.logado) {
-      ctaContainer.innerHTML = `
-        <aside class="banner-enviar cta-flutuante cta-flutuante-impulso" aria-label="Impulsionar grupo">
-          <div class="cta-flutuante-texto">
-            <span class="cta-flutuante-selo">⚡ ZapCoin</span>
-            <strong>Impulsione seu grupo</strong>
-            <p>Use ZapCoins para destacar seus grupos aprovados.</p>
-          </div>
-          <a href="/pages/meus-grupos.html#zapcoin-area" class="btn btn-dourado">Impulsionar agora</a>
-        </aside>`;
-      
-      if (usuarioSessao?.usuario?.role === 'admin') {
-        await popularCategoriasSelect();
-      }
-    } else {
-      ctaContainer.innerHTML = `
-        <aside class="banner-enviar cta-flutuante" aria-label="Divulgar grupo">
-          <div class="cta-flutuante-texto">
-            <strong>Divulgue seu grupo</strong>
-            <p>Entre com sua conta para enviar sua comunidade.</p>
-          </div>
-          <a href="/pages/login.html?redirect=/pages/enviar-grupo.html" class="btn btn-primario">Entrar para divulgar</a>
-        </aside>`;
+    if (usuarioSessao?.usuario?.role === 'admin') {
+      await popularCategoriasSelect();
     }
 
     carregarGrupos();
@@ -1107,3 +1084,4 @@
 </script>
 </body>
 </html>
+
