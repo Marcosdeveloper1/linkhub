@@ -5,6 +5,191 @@ const db = require('../db');
 const { buscarPreviewGrupo, baixarFotoGrupo } = require('../utils/whatsappPreview');
 const { limiterGrupo, requireLogin, sanitizeString, isValidWhatsAppLink } = require('../middleware/security');
 
+const CATEGORIAS_PADRAO = [
+  {
+    "nome": "Amizade",
+    "slug": "amizade",
+    "icone": "users"
+  },
+  {
+    "nome": "Relacionamento",
+    "slug": "relacionamento",
+    "icone": "heart"
+  },
+  {
+    "nome": "Carros e Motos",
+    "slug": "carros",
+    "icone": "car"
+  },
+  {
+    "nome": "Cidades",
+    "slug": "cidade",
+    "icone": "building"
+  },
+  {
+    "nome": "Compra e Venda",
+    "slug": "compras-e-vendas",
+    "icone": "shopping-cart"
+  },
+  {
+    "nome": "Concursos",
+    "slug": "concursos",
+    "icone": "books"
+  },
+  {
+    "nome": "Desenhos e Animes",
+    "slug": "desenhos",
+    "icone": "video"
+  },
+  {
+    "nome": "Divulgação",
+    "slug": "divulgacao",
+    "icone": "megaphone"
+  },
+  {
+    "nome": "Educação",
+    "slug": "educacao",
+    "icone": "school"
+  },
+  {
+    "nome": "Emagrecimento",
+    "slug": "emagrecimento",
+    "icone": "activity"
+  },
+  {
+    "nome": "Dinheiro",
+    "slug": "financas",
+    "icone": "currency-dollar"
+  },
+  {
+    "nome": "Investimentos",
+    "slug": "investimentos",
+    "icone": "chart-line"
+  },
+  {
+    "nome": "Links",
+    "slug": "links",
+    "icone": "link"
+  },
+  {
+    "nome": "Receitas",
+    "slug": "receitas",
+    "icone": "chef-hat"
+  },
+  {
+    "nome": "Religião",
+    "slug": "religiao",
+    "icone": "sparkles"
+  },
+  {
+    "nome": "Turismo",
+    "slug": "turismo",
+    "icone": "map"
+  },
+  {
+    "nome": "Política",
+    "slug": "politica",
+    "icone": "speakerphone"
+  },
+  {
+    "nome": "Tecnologia",
+    "slug": "tecnologia",
+    "icone": "device-laptop"
+  },
+  {
+    "nome": "Saúde",
+    "slug": "saude",
+    "icone": "heart-pulse"
+  },
+  {
+    "nome": "Entretenimento",
+    "slug": "entretenimento",
+    "icone": "movie"
+  },
+  {
+    "nome": "Empregos",
+    "slug": "empregos",
+    "icone": "briefcase"
+  },
+  {
+    "nome": "Negócios",
+    "slug": "negocios",
+    "icone": "trending-up"
+  },
+  {
+    "nome": "Esportes",
+    "slug": "esportes",
+    "icone": "ball-football"
+  },
+  {
+    "nome": "Outros",
+    "slug": "outros",
+    "icone": "dots-circle-horizontal"
+  }
+];
+
+function garantirCategoriasPadrao() {
+  CATEGORIAS_PADRAO.forEach((cat) => {
+    db.run('INSERT OR IGNORE INTO categories (nome, slug, icone) VALUES (?, ?, ?)', [cat.nome, cat.slug, cat.icone]);
+    db.run('UPDATE categories SET nome = ?, icone = ? WHERE slug = ?', [cat.nome, cat.icone, cat.slug]);
+  });
+}
+
+function ordemCategoriasSql() {
+  return `CASE c.slug
+        WHEN 'amizade' THEN 1
+        WHEN 'relacionamento' THEN 2
+        WHEN 'carros' THEN 3
+        WHEN 'cidade' THEN 4
+        WHEN 'compras-e-vendas' THEN 5
+        WHEN 'concursos' THEN 6
+        WHEN 'desenhos' THEN 7
+        WHEN 'divulgacao' THEN 8
+        WHEN 'educacao' THEN 9
+        WHEN 'emagrecimento' THEN 10
+        WHEN 'financas' THEN 11
+        WHEN 'investimentos' THEN 12
+        WHEN 'links' THEN 13
+        WHEN 'receitas' THEN 14
+        WHEN 'religiao' THEN 15
+        WHEN 'turismo' THEN 16
+        WHEN 'politica' THEN 17
+        WHEN 'tecnologia' THEN 18
+        WHEN 'saude' THEN 19
+        WHEN 'entretenimento' THEN 20
+        WHEN 'empregos' THEN 21
+        WHEN 'negocios' THEN 22
+        WHEN 'esportes' THEN 23
+        WHEN 'outros' THEN 24
+        ELSE 999
+      END, c.nome`;
+}
+
+function garantirTabelaRelatosErro() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS error_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grupo_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL,
+      descricao TEXT,
+      status TEXT NOT NULL DEFAULT 'pendente',
+      criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+      resolvido_em TEXT,
+      FOREIGN KEY (grupo_id) REFERENCES groups(id),
+      FOREIGN KEY (usuario_id) REFERENCES users(id)
+    )
+  `);
+}
+
+const TIPOS_RELATO_ERRO = {
+  link_quebrado: 'Link quebrado ou expirado',
+  grupo_cheio: 'Grupo cheio',
+  grupo_errado: 'Grupo diferente do anunciado',
+  conteudo_inadequado: 'Conteúdo inadequado',
+  outro: 'Outro problema'
+};
+
 router.get('/', (req, res) => {
   try {
     const categoria = req.query.categoria ? sanitizeString(req.query.categoria, 50) : null;
@@ -59,6 +244,7 @@ router.get('/', (req, res) => {
 
 router.get('/categorias', (req, res) => {
   try {
+    garantirCategoriasPadrao();
     const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
     const incluirIndisponiveis = isAdmin && req.query.incluirIndisponiveis === 'true';
     const statusSql = incluirIndisponiveis ? "g.status IN ('aprovado', 'indisponivel')" : "g.status = 'aprovado'";
@@ -69,7 +255,7 @@ router.get('/categorias', (req, res) => {
       FROM categories c
       LEFT JOIN groups g ON g.categoria_id = c.id AND ${statusSql}
       GROUP BY c.id
-      ORDER BY c.nome
+      ORDER BY ${ordemCategoriasSql()}
     `);
     res.json(cats);
   } catch (err) {
@@ -170,6 +356,8 @@ router.post('/enviar', requireLogin, limiterGrupo, async (req, res) => {
     if (!categoriaId || isNaN(categoriaId)) {
       return res.status(400).json({ erro: 'Selecione uma categoria.' });
     }
+    garantirCategoriasPadrao();
+
 
     const cat = db.queryOne('SELECT id FROM categories WHERE id = ?', [categoriaId]);
     if (!cat) {
@@ -208,6 +396,48 @@ router.post('/enviar', requireLogin, limiterGrupo, async (req, res) => {
   } catch (err) {
     console.error('[grupos/enviar]', err);
     res.status(500).json({ erro: 'Erro ao enviar grupo. Tente novamente.' });
+  }
+});
+
+
+// POST /api/grupos/:id/comunicar-erro — usuário logado relata problema em um grupo
+router.post('/:id/comunicar-erro', requireLogin, (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const tipo = sanitizeString(req.body.tipo, 50);
+    const descricao = req.body.descricao ? sanitizeString(req.body.descricao, 1000) : '';
+
+    if (!TIPOS_RELATO_ERRO[tipo]) {
+      return res.status(400).json({ erro: 'Selecione um tipo de erro válido.' });
+    }
+
+    if (tipo === 'outro' && descricao.length < 10) {
+      return res.status(400).json({ erro: 'Descreva o problema com pelo menos 10 caracteres.' });
+    }
+
+    const grupo = db.queryOne(
+      "SELECT id, status FROM groups WHERE id = ? AND status IN ('aprovado', 'indisponivel')",
+      [id]
+    );
+
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado ou não disponível para relato.' });
+    }
+
+    db.run(
+      `INSERT INTO error_reports (grupo_id, usuario_id, tipo, descricao, status)
+       VALUES (?, ?, ?, ?, 'pendente')`,
+      [id, req.session.usuario.id, tipo, descricao || null]
+    );
+
+    res.json({ ok: true, mensagem: 'Erro comunicado com sucesso. Nossa equipe irá analisar.' });
+  } catch (err) {
+    console.error('[grupos/comunicar-erro]', err);
+    res.status(500).json({ erro: 'Erro ao comunicar problema. Tente novamente.' });
   }
 });
 

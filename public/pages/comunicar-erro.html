@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunicar erro — WhatsApp Grupos</title>
+  <meta name="description" content="Comunique um problema em um grupo listado no WhatsApp Grupos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .pagina-comunicar-erro {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 36px 20px 70px;
+    }
+
+    .erro-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 22px;
+      align-items: start;
+      margin-top: 22px;
+    }
+
+    .erro-resumo-grupo,
+    .erro-form-card {
+      background: #fff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius-lg, 18px);
+      box-shadow: var(--sombra-card, 0 14px 35px rgba(15, 23, 42, 0.08));
+      padding: 22px;
+    }
+
+    .erro-resumo-img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      background: var(--verde-pale);
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--verde-escuro);
+      font-weight: 900;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .erro-resumo-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .erro-resumo-grupo h2 {
+      margin: 0 0 10px;
+      color: var(--preto);
+      font-size: 1.25rem;
+    }
+
+    .erro-resumo-grupo p {
+      margin: 0;
+      color: var(--cinza-texto);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .erro-info-box {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 12px;
+      color: var(--cinza-texto);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .erro-form-card h1 {
+      margin: 0 0 8px;
+      color: var(--preto);
+      font-size: 1.6rem;
+    }
+
+    .erro-form-card > p {
+      margin: 0 0 18px;
+      color: var(--cinza-texto);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 780px) {
+      .erro-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="navbar"></header>
+
+<main class="pagina-comunicar-erro">
+  <a href="javascript:history.back()" class="btn-voltar btn-voltar-premium">
+    <span aria-hidden="true">←</span>
+    <span>Voltar</span>
+  </a>
+
+  <div id="aviso-erro" class="aviso"></div>
+
+  <div class="erro-layout" id="conteudo" style="display:none;">
+    <aside class="erro-resumo-grupo">
+      <div class="erro-resumo-img" id="grupo-imagem">WhatsApp Grupos</div>
+      <span class="tag tag-verde" id="grupo-categoria">Grupo</span>
+      <h2 id="grupo-nome" style="margin-top:12px;">Grupo</h2>
+      <p id="grupo-desc"></p>
+      <div class="erro-info-box">
+        Este relato será enviado para a equipe do WhatsApp Grupos. Não enviaremos e-mail automático para economizar limite de envio.
+      </div>
+    </aside>
+
+    <section class="erro-form-card">
+      <h1>Comunicar erro</h1>
+      <p>Informe qual problema você encontrou neste grupo. Apenas usuários cadastrados podem enviar relatos.</p>
+
+      <form id="form-comunicar-erro">
+        <div class="form-grupo">
+          <label class="form-label" for="tipo-erro">Tipo de erro <span style="color:var(--vermelho)">*</span></label>
+          <select class="form-select" id="tipo-erro" required>
+            <option value="">Selecione uma opção...</option>
+            <option value="link_quebrado">Link quebrado ou expirado</option>
+            <option value="grupo_cheio">Grupo cheio</option>
+            <option value="grupo_errado">Grupo diferente do anunciado</option>
+            <option value="conteudo_inadequado">Conteúdo inadequado</option>
+            <option value="outro">Outro problema</option>
+          </select>
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="descricao-erro">Detalhes do problema</label>
+          <textarea class="form-textarea" id="descricao-erro" rows="5" maxlength="1000" placeholder="Explique rapidamente o que aconteceu. Ex: o link abre uma página inválida, o grupo está cheio, o grupo não tem relação com a descrição..."></textarea>
+          <p class="form-dica">Se escolher “Outro problema”, escreva pelo menos 10 caracteres.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primario btn-lg" id="btn-enviar-relato">Enviar relato</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="estado-carregando" class="estado-vazio">
+    <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
+    <p>Carregando grupo...</p>
+  </div>
+</main>
+
+<footer class="footer">
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  let grupoId = null;
+  let sessaoAtual = null;
+
+  function escaparHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  async function carregarGrupo() {
+    const params = new URLSearchParams(window.location.search);
+    grupoId = parseInt(params.get('id'), 10);
+
+    if (!grupoId || isNaN(grupoId)) {
+      document.getElementById('estado-carregando').style.display = 'none';
+      mostrarAviso('aviso-erro', 'ID do grupo inválido. Volte para a página do grupo e tente novamente.');
+      return;
+    }
+
+    try {
+      const grupo = await apiFetch(`/grupos/${grupoId}`);
+      document.title = `Comunicar erro — ${grupo.nome_grupo || 'Grupo'} — WhatsApp Grupos`;
+
+      document.getElementById('grupo-nome').textContent = grupo.nome_grupo || 'Grupo sem nome';
+      document.getElementById('grupo-categoria').textContent = grupo.categoria_nome || 'Grupo';
+      document.getElementById('grupo-desc').textContent = grupo.descricao || '';
+
+      const imagem = document.getElementById('grupo-imagem');
+      if (grupo.foto_url) {
+        imagem.innerHTML = `<img src="${escaparHtml(grupo.foto_url)}" alt="">`;
+        imagem.querySelector('img').addEventListener('error', () => {
+          imagem.textContent = 'WhatsApp Grupos';
+        });
+      }
+
+      document.getElementById('estado-carregando').style.display = 'none';
+      document.getElementById('conteudo').style.display = 'grid';
+    } catch (err) {
+      document.getElementById('estado-carregando').style.display = 'none';
+      mostrarAviso('aviso-erro', err.message || 'Erro ao carregar grupo.');
+    }
+  }
+
+  async function enviarRelato(e) {
+    e.preventDefault();
+    limparAviso('aviso-erro');
+
+    const tipo = document.getElementById('tipo-erro').value;
+    const descricao = document.getElementById('descricao-erro').value.trim();
+
+    if (!tipo) return mostrarAviso('aviso-erro', 'Selecione o tipo de erro.');
+    if (tipo === 'outro' && descricao.length < 10) {
+      return mostrarAviso('aviso-erro', 'Para “Outro problema”, descreva o erro com pelo menos 10 caracteres.');
+    }
+
+    const btn = document.getElementById('btn-enviar-relato');
+    btnCarregando(btn, true);
+
+    try {
+      await apiFetch(`/grupos/${grupoId}/comunicar-erro`, {
+        method: 'POST',
+        body: JSON.stringify({ tipo, descricao })
+      });
+
+      mostrarAviso('aviso-erro', 'Relato enviado com sucesso. Nossa equipe irá analisar.', 'ok');
+      document.getElementById('form-comunicar-erro').reset();
+    } catch (err) {
+      mostrarAviso('aviso-erro', err.message || 'Erro ao enviar relato.');
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  async function iniciar() {
+    sessaoAtual = await iniciarPagina({ requerLogin: true });
+    if (!sessaoAtual) return;
+    await carregarGrupo();
+  }
+
+  document.getElementById('form-comunicar-erro').addEventListener('submit', enviarRelato);
+  iniciar();
+</script>
+</body>
+</html>

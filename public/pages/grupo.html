@@ -568,13 +568,8 @@
   const btnComunicarErro = document.getElementById('btn-comunicar-erro');
   if (btnComunicarErro) {
     btnComunicarErro.addEventListener('click', () => {
-      btnComunicarErro.textContent = 'Função em breve';
-      btnComunicarErro.disabled = true;
-
-      setTimeout(() => {
-        btnComunicarErro.textContent = 'Comunicar erro';
-        btnComunicarErro.disabled = false;
-      }, 1800);
+      if (!grupoId || isNaN(grupoId)) return;
+      window.location.href = `/pages/comunicar-erro.html?id=${grupoId}`;
     });
   }
 

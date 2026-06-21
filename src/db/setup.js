@@ -53,6 +53,21 @@ async function createDatabase() {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS error_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grupo_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL,
+      descricao TEXT,
+      status TEXT NOT NULL DEFAULT 'pendente',
+      criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+      resolvido_em TEXT,
+      FOREIGN KEY (grupo_id) REFERENCES groups(id),
+      FOREIGN KEY (usuario_id) REFERENCES users(id)
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS sessions (
       sid TEXT PRIMARY KEY,
       sess TEXT NOT NULL,
@@ -63,24 +78,39 @@ async function createDatabase() {
   const adminSenha = bcrypt.hashSync(process.env.ADMIN_SENHA || 'admin123', 12);
   db.run(`
     INSERT OR IGNORE INTO users (nome, email, senha, role)
-    VALUES ('Administrador', 'admin@linkhub.com.br', '${adminSenha}', 'admin')
+    VALUES ('Administrador', 'admin@whatsappgrupos.site', '${adminSenha}', 'admin')
   `);
 
   const categorias = [
-    ['Política', 'politica', 'speakerphone'],
-    ['Finanças & Dinheiro', 'financas', 'currency-dollar'],
-    ['Esportes & Futebol', 'esportes', 'ball-football'],
-    ['Tecnologia', 'tecnologia', 'device-laptop'],
-    ['Saúde & Bem-estar', 'saude', 'heart'],
-    ['Entretenimento', 'entretenimento', 'movie'],
-    ['Empregos & Vagas', 'empregos', 'briefcase'],
+    ['Amizade', 'amizade', 'users'],
+    ['Relacionamento', 'relacionamento', 'heart'],
+    ['Carros e Motos', 'carros', 'car'],
+    ['Cidades', 'cidade', 'building'],
+    ['Compra e Venda', 'compras-e-vendas', 'shopping-cart'],
+    ['Concursos', 'concursos', 'books'],
+    ['Desenhos e Animes', 'desenhos', 'video'],
+    ['Divulgação', 'divulgacao', 'megaphone'],
     ['Educação', 'educacao', 'school'],
-    ['Negócios & Empreendedorismo', 'negocios', 'trending-up'],
+    ['Emagrecimento', 'emagrecimento', 'activity'],
+    ['Dinheiro', 'financas', 'currency-dollar'],
+    ['Investimentos', 'investimentos', 'chart-line'],
+    ['Links', 'links', 'link'],
+    ['Receitas', 'receitas', 'chef-hat'],
+    ['Religião', 'religiao', 'sparkles'],
+    ['Turismo', 'turismo', 'map'],
+    ['Política', 'politica', 'speakerphone'],
+    ['Tecnologia', 'tecnologia', 'device-laptop'],
+    ['Saúde', 'saude', 'heart-pulse'],
+    ['Entretenimento', 'entretenimento', 'movie'],
+    ['Empregos', 'empregos', 'briefcase'],
+    ['Negócios', 'negocios', 'trending-up'],
+    ['Esportes', 'esportes', 'ball-football'],
     ['Outros', 'outros', 'dots-circle-horizontal']
   ];
 
   for (const [nome, slug, icone] of categorias) {
     db.run(`INSERT OR IGNORE INTO categories (nome, slug, icone) VALUES (?, ?, ?)`, [nome, slug, icone]);
+    db.run(`UPDATE categories SET nome = ?, icone = ? WHERE slug = ?`, [nome, icone, slug]);
   }
 
   const dir = path.dirname(DB_PATH);
@@ -91,7 +121,7 @@ async function createDatabase() {
   db.close();
 
   console.log('Banco de dados criado com sucesso em', DB_PATH);
-  console.log('Admin padrão: admin@linkhub.com.br / admin123 (MUDE EM PRODUÇÃO!)');
+  console.log('Admin padrão: admin@whatsappgrupos.site / admin123 (MUDE EM PRODUÇÃO!)');
 }
 
 createDatabase().catch(console.error);

@@ -5,6 +5,35 @@ const { requireAdmin, sanitizeString, isValidWhatsAppLink } = require('../middle
 const { emailGrupoAprovado, emailGrupoRejeitado } = require('../email');
 const { buscarPreviewGrupo, baixarFotoGrupo } = require('../utils/whatsappPreview');
 
+function garantirTabelaRelatosErro() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS error_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grupo_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL,
+      descricao TEXT,
+      status TEXT NOT NULL DEFAULT 'pendente',
+      criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+      resolvido_em TEXT,
+      FOREIGN KEY (grupo_id) REFERENCES groups(id),
+      FOREIGN KEY (usuario_id) REFERENCES users(id)
+    )
+  `);
+}
+
+const TIPOS_RELATO_ERRO = {
+  link_quebrado: 'Link quebrado ou expirado',
+  grupo_cheio: 'Grupo cheio',
+  grupo_errado: 'Grupo diferente do anunciado',
+  conteudo_inadequado: 'Conteúdo inadequado',
+  outro: 'Outro problema'
+};
+
+function traduzirTipoRelato(tipo) {
+  return TIPOS_RELATO_ERRO[tipo] || tipo || 'Erro informado';
+}
+
 router.use(requireAdmin);
 
 router.get('/pendentes', (req, res) => {
@@ -114,6 +143,72 @@ router.post('/grupos/:id/rejeitar', (req, res) => {
   } catch (err) {
     console.error('[admin/rejeitar]', err);
     res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
+  }
+});
+
+
+// Lista relatos de erro enviados por usuários cadastrados
+router.get('/erros', (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const relatos = db.query(`
+      SELECT r.id, r.grupo_id, r.usuario_id, r.tipo, r.descricao, r.status, r.criado_em, r.resolvido_em,
+             g.nome_grupo, g.link_whatsapp, g.status as grupo_status,
+             c.nome as categoria_nome,
+             u.nome as usuario_nome, u.email as usuario_email
+      FROM error_reports r
+      JOIN groups g ON g.id = r.grupo_id
+      LEFT JOIN categories c ON c.id = g.categoria_id
+      LEFT JOIN users u ON u.id = r.usuario_id
+      ORDER BY CASE WHEN r.status = 'pendente' THEN 0 ELSE 1 END, r.criado_em DESC
+    `);
+
+    res.json(relatos.map((relato) => ({
+      ...relato,
+      tipo_label: traduzirTipoRelato(relato.tipo)
+    })));
+  } catch (err) {
+    console.error('[admin/erros]', err);
+    res.status(500).json({ erro: 'Erro ao carregar relatos de erro.' });
+  }
+});
+
+// Marca um relato de erro como resolvido
+router.post('/erros/:id/resolver', (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const relato = db.queryOne('SELECT id FROM error_reports WHERE id = ?', [id]);
+    if (!relato) return res.status(404).json({ erro: 'Relato não encontrado.' });
+
+    db.run("UPDATE error_reports SET status = 'resolvido', resolvido_em = datetime('now') WHERE id = ?", [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/erros/resolver]', err);
+    res.status(500).json({ erro: 'Erro ao marcar relato como resolvido.' });
+  }
+});
+
+// Remove um relato de erro do painel
+router.delete('/erros/:id', (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const relato = db.queryOne('SELECT id FROM error_reports WHERE id = ?', [id]);
+    if (!relato) return res.status(404).json({ erro: 'Relato não encontrado.' });
+
+    db.run('DELETE FROM error_reports WHERE id = ?', [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/erros/remover]', err);
+    res.status(500).json({ erro: 'Erro ao remover relato.' });
   }
 });
 
@@ -257,7 +352,7 @@ router.post('/grupos/importar-lote', async (req, res) => {
       const id = db.run(
         `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, regras, status, aprovado_em)
          VALUES (?, ?, ?, ?, NULL, ?, ?, ?, 'aprovado', datetime('now'))`,
-        [nomeGrupo, link, descricao, categoria.id, 'Importação LinkHub', 'admin@linkhub.com.br', regrasTexto]
+        [nomeGrupo, link, descricao, categoria.id, 'Importação WhatsApp Grupos', 'admin@whatsappgrupos.site', regrasTexto]
       );
 
       let fotoLocal = null;

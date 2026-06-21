@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Admin — LinkHub</title>
+  <title>Painel Admin — WhatsApp Grupos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
@@ -137,6 +137,40 @@
       background: #fff3cd;
       color: #856404;
     }
+
+    .erro-relato-card {
+      border-left: 4px solid var(--verde-claro);
+    }
+    .erro-relato-card.resolvido {
+      border-left-color: var(--cinza-borda);
+      opacity: 0.78;
+    }
+    .erro-relato-topo {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .erro-relato-tipo {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--preto);
+    }
+    .erro-relato-texto {
+      background: #f8fafc;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--cinza-texto);
+      line-height: 1.5;
+      font-size: 0.875rem;
+      margin-top: 10px;
+    }
+    .tag-status-resolvido {
+      background: #eef2f7;
+      color: #475569;
+    }
   </style>
 </head>
 <body>
@@ -153,6 +187,7 @@
     <button class="admin-aba ativa" data-status="pendente">Pendentes</button>
     <button class="admin-aba" data-status="aprovado">Aprovados</button>
     <button class="admin-aba" data-status="rejeitado">Rejeitados</button>
+    <button class="admin-aba" data-status="erros">Erros relatados</button>
     <button class="btn btn-contorno btn-sm" id="btn-importar-lote" style="margin-left:auto;">Importar em lote</button>
   </div>
 
@@ -272,15 +307,29 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   // descrições genéricas por categoria
   const descricoesPorCategoria = {
-    esportes: 'Grupo de discussão sobre esportes e futebol. Compartilhe resultados, notícias e opiniões.',
-    politica: 'Grupo de debate político. Discuta notícias, eleições e temas de interesse público.',
-    financas: 'Grupo sobre finanças, investimentos e educação financeira. Troque dicas e experiências.',
+    amizade: 'Grupo de amizade, conversas e novas conexões. Participe com respeito e interaja com a comunidade.',
+    relacionamento: 'Grupo sobre relacionamento, amor e novas conexões. Converse com respeito e clareza.',
+    carros: 'Grupo sobre carros, motos, mecânica e veículos. Compartilhe dicas, dúvidas e novidades.',
+    cidade: 'Grupo local para moradores, eventos, informações e oportunidades da cidade ou região.',
+    'compras-e-vendas': 'Grupo para compra, venda, ofertas e negociações. Combine tudo com segurança e responsabilidade.',
+    concursos: 'Grupo sobre concursos, estudos e preparação. Compartilhe materiais, editais e dicas.',
+    desenhos: 'Grupo sobre desenhos, animes e cultura geek. Participe e compartilhe conteúdos do tema.',
+    divulgacao: 'Grupo para divulgação, links e comunidades. Divulgue com moderação e respeite as regras.',
+    educacao: 'Grupo educativo para troca de conhecimento, cursos, dicas de estudo e materiais de apoio.',
+    emagrecimento: 'Grupo sobre emagrecimento, rotina fitness e hábitos saudáveis. Troque experiências com respeito.',
+    financas: 'Grupo sobre dinheiro, finanças, renda e educação financeira. Troque dicas e experiências.',
+    investimentos: 'Grupo sobre investimentos, mercado e finanças. Compartilhe informações e aprenda com a comunidade.',
+    links: 'Grupo para compartilhar links úteis, comunidades e indicações relacionadas ao tema.',
+    receitas: 'Grupo sobre receitas, culinária e comida. Compartilhe pratos, dicas e experiências.',
+    religiao: 'Grupo sobre religião, fé e comunidades religiosas. Participe com respeito.',
+    turismo: 'Grupo sobre turismo, viagens, passeios e dicas de lugares.',
+    politica: 'Grupo de debate político. Discuta notícias, eleições e temas de interesse público com respeito.',
     tecnologia: 'Grupo de tecnologia, programação e inovação. Compartilhe novidades e tire dúvidas.',
-    saude: 'Grupo sobre saúde, bem-estar e qualidade de vida. Dicas e informações sobre o tema.',
-    entretenimento: 'Grupo de entretenimento, séries, filmes e cultura pop. Venha se divertir!',
+    saude: 'Grupo sobre saúde, bem-estar e qualidade de vida. Compartilhe informações com responsabilidade.',
+    entretenimento: 'Grupo de entretenimento, séries, filmes, vídeos e diversão.',
     empregos: 'Grupo de vagas de emprego e oportunidades de trabalho. Compartilhe e encontre oportunidades.',
-    educacao: 'Grupo educativo para troca de conhecimento, dicas de estudo e materiais de apoio.',
-    negocios: 'Grupo de negócios e empreendedorismo. Conecte-se com outros empreendedores.',
+    negocios: 'Grupo de negócios, vendas e empreendedorismo. Conecte-se com outros empreendedores.',
+    esportes: 'Grupo de discussão sobre esportes e futebol. Compartilhe resultados, notícias e opiniões.',
     outros: 'Grupo de discussão geral. Participe e interaja com a comunidade.'
   };
 
@@ -298,6 +347,12 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     }
 
     try {
+      if (abaAtual === 'erros') {
+        const relatos = await apiFetch('/admin/erros');
+        renderizarErros(relatos);
+        return;
+      }
+
       let endpoint;
       if (abaAtual === 'pendente') {
         endpoint = '/admin/pendentes';
@@ -316,6 +371,51 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     } catch (err) {
       area.innerHTML = `<p style="color:var(--vermelho);">${err.message}</p>`;
     }
+  }
+
+
+  function renderizarErros(relatos) {
+    const area = document.getElementById('lista-area');
+
+    if (!relatos || relatos.length === 0) {
+      area.innerHTML = `
+        <div class="estado-vazio">
+          <h3>Nenhum erro relatado</h3>
+          <p>Quando usuários cadastrados comunicarem problemas em grupos, eles aparecerão aqui.</p>
+        </div>
+      `;
+      return;
+    }
+
+    area.innerHTML = relatos.map((r) => `
+      <div class="card solicitacao-card erro-relato-card ${r.status === 'resolvido' ? 'resolvido' : ''}" data-id="${r.id}">
+        <div class="erro-relato-topo">
+          <div style="flex:1;">
+            <div class="erro-relato-tipo">${escaparHtml(r.tipo_label || r.tipo || 'Erro relatado')}</div>
+            <div class="solicitacao-meta">
+              <span class="tag ${r.status === 'resolvido' ? 'tag-status-resolvido' : 'tag-verde'}">${r.status === 'resolvido' ? 'Resolvido' : 'Pendente'}</span>
+              · Relatado em ${formatarData(r.criado_em)}
+              ${r.resolvido_em ? `· Resolvido em ${formatarData(r.resolvido_em)}` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="solicitacao-contato">
+          <strong>Grupo:</strong> ${escaparHtml(r.nome_grupo || 'Grupo removido')}<br>
+          <strong>Categoria:</strong> ${escaparHtml(r.categoria_nome || 'Sem categoria')}<br>
+          <strong>Usuário:</strong> ${escaparHtml(r.usuario_nome || 'Usuário')} — ${escaparHtml(r.usuario_email || '')}<br>
+          <strong>Link:</strong> ${r.link_whatsapp ? `<a href="${escaparHtml(r.link_whatsapp)}" target="_blank" rel="noopener">${escaparHtml(r.link_whatsapp)}</a>` : 'Sem link'}
+        </div>
+
+        ${r.descricao ? `<div class="erro-relato-texto">${escaparHtml(r.descricao).replace(/\n/g, '<br>')}</div>` : ''}
+
+        <div class="solicitacao-acoes">
+          <a class="btn btn-contorno btn-sm" href="/pages/grupo.html?id=${r.grupo_id}" target="_blank" rel="noopener">Abrir grupo</a>
+          ${r.status !== 'resolvido' ? `<button class="btn btn-primario btn-sm" data-acao="erro-resolver" data-id="${r.id}">Marcar como resolvido</button>` : ''}
+          <button class="btn btn-perigo btn-sm" data-acao="erro-remover" data-id="${r.id}">Remover relato</button>
+        </div>
+      </div>
+    `).join('');
   }
 
   function renderizarLista(grupos) {
@@ -422,6 +522,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (acao === 'aprovar') return aprovar(id);
     if (acao === 'rejeitar') return abrirModalRejeitar(id);
     if (acao === 'remover') return remover(id);
+    if (acao === 'erro-resolver') return resolverErro(id);
+    if (acao === 'erro-remover') return removerErro(id);
   });
 
   // checkbox de seleção (delegação separada, porque é um <input>, não <button>)
@@ -561,6 +663,26 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (!confirm('Remover este grupo do site? Esta ação não pode ser desfeita.')) return;
     try {
       await apiFetch(`/admin/grupos/${id}`, { method: 'DELETE' });
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+
+  async function resolverErro(id) {
+    try {
+      await apiFetch(`/admin/erros/${id}/resolver`, { method: 'POST' });
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function removerErro(id) {
+    if (!confirm('Remover este relato de erro do painel?')) return;
+    try {
+      await apiFetch(`/admin/erros/${id}`, { method: 'DELETE' });
       carregarLista();
     } catch (err) {
       alert(err.message);
