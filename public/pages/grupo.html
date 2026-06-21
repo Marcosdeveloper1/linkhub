@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta name="google-adsense-account" content="ca-pub-9703946371500715">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalhes do Grupo — ZapGrupos</title>
   <meta name="description" content="Veja detalhes, regras e informações de uma comunidade no ZapGrupos.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" id="meta-canonical" href="https://zapgrupos.site/pages/grupo.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" id="og-titulo" content="Detalhes do Grupo — ZapGrupos">
+  <meta property="og:description" id="og-descricao" content="Veja detalhes, regras e informações de uma comunidade no ZapGrupos.">
+  <meta property="og:url" id="og-url" content="https://zapgrupos.site/pages/grupo.html">
+  <meta property="og:image" id="og-imagem" content="https://zapgrupos.site/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
@@ -459,9 +467,21 @@
       document.title = `${grupo.nome_grupo} — ZapGrupos`;
 
       const metaDescription = document.querySelector('meta[name="description"]');
+      const descricaoSeo = grupo.descricao || 'Veja detalhes, regras e informações de uma comunidade no ZapGrupos.';
+      const urlSeo = `https://zapgrupos.site/pages/grupo.html?id=${grupo.id}`;
       if (metaDescription) {
-        metaDescription.setAttribute('content', grupo.descricao || 'Veja detalhes, regras e informações de uma comunidade no ZapGrupos.');
+        metaDescription.setAttribute('content', descricaoSeo);
       }
+      const canonical = document.getElementById('meta-canonical');
+      const ogTitulo = document.getElementById('og-titulo');
+      const ogDescricao = document.getElementById('og-descricao');
+      const ogUrl = document.getElementById('og-url');
+      const ogImagem = document.getElementById('og-imagem');
+      if (canonical) canonical.setAttribute('href', urlSeo);
+      if (ogTitulo) ogTitulo.setAttribute('content', `${grupo.nome_grupo} — ZapGrupos`);
+      if (ogDescricao) ogDescricao.setAttribute('content', descricaoSeo);
+      if (ogUrl) ogUrl.setAttribute('content', urlSeo);
+      if (ogImagem && grupo.foto_url) ogImagem.setAttribute('content', `https://zapgrupos.site${grupo.foto_url}`);
 
       montarCategorias(grupo.categoria_nome || '');
 

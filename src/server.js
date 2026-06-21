@@ -3,7 +3,8 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
-const { getDb } = require('./db');
+const db = require('./db');
+const { getDb } = db;
 const { limiterGeral, sessionConfig } = require('./middleware/security');
 
 const app = express();
@@ -40,6 +41,31 @@ function enviarHome(req, res) {
 }
 
 
+function siteBaseUrl() {
+  return (process.env.SITE_URL || 'https://zapgrupos.site').replace(/\/+$/, '');
+}
+
+function escapeXml(valor) {
+  return String(valor || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function formatarDataSitemap(valor) {
+  if (!valor) return new Date().toISOString();
+  const data = new Date(String(valor).replace(' ', 'T') + 'Z');
+  if (Number.isNaN(data.getTime())) return new Date().toISOString();
+  return data.toISOString();
+}
+
+function linhaSitemap(loc, lastmod, changefreq = 'weekly', priority = '0.7') {
+  return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+}
+
+
 app.set('trust proxy', 1);
 
 app.use(helmet({
@@ -66,6 +92,53 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(sessionConfig);
+
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const baseUrl = siteBaseUrl();
+    const agora = new Date().toISOString();
+
+    const urls = [];
+    urls.push(linhaSitemap(`${baseUrl}/`, agora, 'daily', '1.0'));
+
+    Array.from(CATEGORIAS_PUBLICAS).forEach((slug) => {
+      urls.push(linhaSitemap(`${baseUrl}/${slug}`, agora, 'daily', '0.9'));
+    });
+
+    [
+      '/pages/faq.html',
+      '/pages/termos.html',
+      '/pages/privacidade.html'
+    ].forEach((rota) => {
+      urls.push(linhaSitemap(`${baseUrl}${rota}`, agora, 'monthly', '0.5'));
+    });
+
+    const grupos = db.query(`
+      SELECT id, COALESCE(aprovado_em, criado_em, datetime('now')) as atualizado_em
+      FROM groups
+      WHERE status = 'aprovado'
+      ORDER BY id DESC
+      LIMIT 50000
+    `);
+
+    grupos.forEach((grupo) => {
+      urls.push(linhaSitemap(
+        `${baseUrl}/pages/grupo.html?id=${grupo.id}`,
+        formatarDataSitemap(grupo.atualizado_em),
+        'weekly',
+        '0.8'
+      ));
+    });
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
+
+    res.type('application/xml');
+    res.send(xml);
+  } catch (err) {
+    console.error('[sitemap]', err);
+    res.status(500).type('text/plain').send('Erro ao gerar sitemap.');
+  }
+});
 
 // Arquivos estáticos servidos ANTES do rate limiter e sem passar por ele —
 // HTML, CSS, JS e fontes não devem contar contra o limite de requisições.

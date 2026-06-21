@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Disallow: /pages/admin.html
+Disallow: /pages/meus-grupos.html
+Disallow: /pages/checkout.html
+Disallow: /pages/login.html
+Disallow: /pages/cadastro.html
+Disallow: /api/
+
+Sitemap: https://zapgrupos.site/sitemap.xml

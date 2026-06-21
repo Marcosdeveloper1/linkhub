@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta name="google-adsense-account" content="ca-pub-9703946371500715">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="meta-titulo">Comunidades por categoria — ZapGrupos</title>
-  <meta name="description" id="meta-descricao" content="Encontre comunidades organizadas por categoria no ZapGrupos.">
+  <meta name="description" id="meta-descricao" content="Encontre grupos e comunidades organizadas por categoria no ZapGrupos.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" id="og-titulo" content="Comunidades por categoria — ZapGrupos">
+  <meta property="og:description" id="og-descricao" content="Encontre grupos organizados por categoria no ZapGrupos.">
+  <meta property="og:url" id="og-url" content="https://zapgrupos.site/pages/categoria.html">
   <link rel="canonical" id="meta-canonical" href="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -257,7 +263,10 @@
       document.getElementById('meta-descricao').setAttribute('content',
         `Encontre comunidades de ${cat.nome}. Entre agora e participe pelo ZapGrupos.`
       );
-      document.getElementById('meta-canonical').setAttribute('href', window.location.href);
+      document.getElementById('meta-canonical').setAttribute('href', `https://zapgrupos.site/${cat.slug}`);
+      document.getElementById('og-titulo').setAttribute('content', `${titulo} — ZapGrupos`);
+      document.getElementById('og-descricao').setAttribute('content', `Encontre grupos e comunidades de ${cat.nome} no ZapGrupos.`);
+      document.getElementById('og-url').setAttribute('content', `https://zapgrupos.site/${cat.slug}`);
       document.getElementById('breadcrumb-nome').textContent = cat.nome;
       document.getElementById('titulo-pagina').textContent = titulo;
       document.getElementById('descricao-pagina').textContent =

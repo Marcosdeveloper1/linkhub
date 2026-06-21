@@ -6,8 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/img/icon.png">
   <link rel="apple-touch-icon" href="/img/icon.png">
-  <title>ZapGrupos — Diretório independente de comunidades</title>
-  <meta name="description" content="Encontre comunidades por tema. Diretório de comunidades com categorias, busca, destaques e divulgação gratuita.">
+  <title>ZapGrupos — Grupos e comunidades por tema</title>
+  <meta name="description" content="Encontre grupos e comunidades por tema, cidade ou interesse no ZapGrupos. Explore categorias, veja grupos em destaque e divulgue sua comunidade gratuitamente.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://zapgrupos.site/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ZapGrupos — Grupos e comunidades por tema">
+  <meta property="og:description" content="Diretório independente para encontrar e divulgar grupos e comunidades por categoria.">
+  <meta property="og:url" content="https://zapgrupos.site/">
+  <meta property="og:image" content="https://zapgrupos.site/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
@@ -441,19 +448,35 @@
   function atualizarSeoCategoria() {
     const categoria = obterCategoriaAtual();
     const metaDescription = document.querySelector('meta[name="description"]');
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]');
 
     if (!categoria) {
-      document.title = 'ZapGrupos — Diretório de comunidades';
+      document.title = 'ZapGrupos — Grupos e comunidades por tema';
       if (metaDescription) {
-        metaDescription.setAttribute('content', 'Encontre comunidades por tema. Diretório de comunidades com categorias, busca, destaques e divulgação gratuita.');
+        metaDescription.setAttribute('content', 'Encontre grupos e comunidades por tema, cidade ou interesse no ZapGrupos. Explore categorias, veja grupos em destaque e divulgue sua comunidade gratuitamente.');
       }
+      if (canonical) canonical.setAttribute('href', 'https://zapgrupos.site/');
+      if (ogTitle) ogTitle.setAttribute('content', 'ZapGrupos — Grupos e comunidades por tema');
+      if (ogDescription) ogDescription.setAttribute('content', 'Diretório independente para encontrar e divulgar grupos e comunidades por categoria.');
+      if (ogUrl) ogUrl.setAttribute('content', 'https://zapgrupos.site/');
       return;
     }
 
-    document.title = `Comunidades de ${categoria.nome} — ZapGrupos`;
+    const tituloCategoria = `Grupos de ${categoria.nome} — ZapGrupos`;
+    const descricaoCategoria = `${categoria.descricao} Veja grupos atualizados, entre em comunidades públicas e divulgue seu grupo no ZapGrupos.`;
+    const urlCategoria = `https://zapgrupos.site/${categoria.slug}`;
+
+    document.title = tituloCategoria;
     if (metaDescription) {
-      metaDescription.setAttribute('content', categoria.descricao);
+      metaDescription.setAttribute('content', descricaoCategoria);
     }
+    if (canonical) canonical.setAttribute('href', urlCategoria);
+    if (ogTitle) ogTitle.setAttribute('content', tituloCategoria);
+    if (ogDescription) ogDescription.setAttribute('content', descricaoCategoria);
+    if (ogUrl) ogUrl.setAttribute('content', urlCategoria);
   }
 
   function montarCategorias() {
@@ -1003,4 +1026,3 @@
 </script>
 </body>
 </html>
-
