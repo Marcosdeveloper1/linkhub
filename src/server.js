@@ -46,11 +46,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://sdk.mercadopago.com', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
       fontSrc: ["'self'", 'fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
+      connectSrc: ["'self'", 'https://api.mercadopago.com', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
+      frameSrc: ["'self'", 'https://*.mercadopago.com', 'https://*.mercadopago.com.br'],
       upgradeInsecureRequests: null
     }
   },

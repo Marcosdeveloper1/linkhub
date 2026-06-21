@@ -338,6 +338,68 @@
       display: block;
     }
 
+
+
+    .checkout-mp-box {
+      border: 1px solid #e7edf4;
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 14px;
+      box-shadow: var(--sombra-leve);
+      margin-top: 12px;
+    }
+
+    .checkout-mp-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .checkout-mp-head strong {
+      color: var(--preto);
+      font-size: .96rem;
+      font-weight: 950;
+    }
+
+    .checkout-mp-head span {
+      color: var(--cinza-texto);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+
+    #paymentBrick_container {
+      min-height: 180px;
+    }
+
+    .checkout-qrcode-wrap {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid rgba(53,190,114,.25);
+    }
+
+    .checkout-qrcode-wrap.visivel {
+      display: flex;
+    }
+
+    .checkout-qrcode-wrap img {
+      width: 132px;
+      height: 132px;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 1px solid #e7edf4;
+      background: #fff;
+      padding: 6px;
+    }
+
     @media (max-width: 900px) {
       .checkout-grid {
         grid-template-columns: 1fr;
@@ -400,31 +462,37 @@
       </div>
 
       <h2>Pagamento</h2>
-      <p class="checkout-card-sub">Escolha a forma de pagamento.</p>
+      <p class="checkout-card-sub">Pix e cartão de crédito via Mercado Pago Payment Brick.</p>
 
-      <div class="checkout-tabs" role="tablist" aria-label="Forma de pagamento">
-        <button class="checkout-tab ativo" id="tab-pix" type="button" data-metodo="pix">
-          <strong>Pix</strong>
-          <span>Código copia e cola</span>
-        </button>
-        <button class="checkout-tab" id="tab-cartao" type="button" data-metodo="cartao" disabled title="Aguardando endpoint oficial de cartão da Sync Pay">
-          <strong>Cartão de crédito</strong>
-          <span>Estrutura visual pronta</span>
-        </button>
+      <div class="checkout-card-alerta">
+        <strong>Pagamento protegido pelo Mercado Pago.</strong><br>
+        Os dados de cartão são tratados pelo ambiente seguro do Mercado Pago. Nosso sistema não salva número do cartão, CVV nem validade.
       </div>
 
-      <div class="checkout-card-alerta" id="cartao-alerta" hidden>
-        <strong>Cartão ainda não foi ativado.</strong><br>
-        A documentação enviada mostra Pix Cash-in e webhooks, mas não trouxe endpoint/tokenização oficial para cartão avulso. Para não adivinhar nem salvar dados sensíveis, a aba de cartão ficou bloqueada até termos o endpoint correto.
+      <div class="checkout-mp-box">
+        <div class="checkout-mp-head">
+          <div>
+            <strong>Escolha como pagar</strong><br>
+            <span>Pix ou cartão de crédito no mesmo checkout.</span>
+          </div>
+          <span class="checkout-status" id="mp-status">Aguardando dados</span>
+        </div>
+        <div id="paymentBrick_container"></div>
       </div>
 
-      <button class="btn btn-primario btn-bloco" id="btn-gerar-pagamento" type="button">Gerar Pix</button>
-      <p class="checkout-seguranca">Não salvamos dados de cartão no nosso sistema. O Pix é criado pelo backend e confirmado por webhook/consulta de status.</p>
+      <p class="checkout-seguranca">Nome e email ficam no pedido para identificação, suporte e confirmação da compra. Dados sensíveis de cartão não passam pelo nosso banco.</p>
 
       <div class="checkout-pix-box" id="pix-box">
         <span class="checkout-status" id="pix-status">Aguardando pagamento</span>
         <h3>Pix copia e cola</h3>
-        <p style="color:var(--cinza-texto);font-size:.9rem;">Copie o código abaixo, pague no seu banco e depois clique em verificar.</p>
+        <p style="color:var(--cinza-texto);font-size:.9rem;">Caso o Mercado Pago retorne um código Pix, ele também aparecerá aqui para conferência.</p>
+        <div class="checkout-qrcode-wrap" id="pix-qr-wrap">
+          <img id="pix-qr-img" alt="QR Code Pix" src="">
+          <div>
+            <strong>QR Code Pix</strong><br>
+            <span style="color:var(--cinza-texto);font-size:.86rem;">Escaneie pelo app do banco ou use o código abaixo.</span>
+          </div>
+        </div>
         <div class="pix-code-area">
           <textarea id="pix-code" readonly></textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -477,13 +545,15 @@
   <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp</p>
 </footer>
 
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script src="/js/utils.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
   const pedidoId = parseInt(params.get('pedido') || params.get('id'), 10);
   let pedidoAtual = null;
   let sessaoAtual = null;
-  let metodoAtual = 'pix';
+  let paymentBrickController = null;
+  let brickPronto = false;
 
   function moeda(centavos) {
     return (Number(centavos || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -494,6 +564,7 @@
       pendente: 'Pendente',
       checkout: 'Aguardando checkout',
       aguardando_pagamento: 'Aguardando pagamento',
+      aguardando_credito: 'Confirmando créditos',
       pago: 'Pago',
       falhou: 'Falhou',
       cancelado: 'Cancelado',
@@ -514,6 +585,11 @@
     if (!email.value) email.value = sessaoAtual.usuario.email || '';
   }
 
+  function atualizarStatusBrick(texto) {
+    const el = document.getElementById('mp-status');
+    if (el) el.textContent = texto;
+  }
+
   function renderizarPedido(pedido) {
     pedidoAtual = pedido;
     const coins = Number(pedido.coins || 0);
@@ -526,25 +602,35 @@
     document.getElementById('resumo-unitario').textContent = moeda(unitario);
     document.getElementById('resumo-status').textContent = statusBonito(pedido.status);
     document.getElementById('resumo-total').textContent = moeda(total);
+    atualizarStatusBrick(statusBonito(pedido.status));
 
     if (pedido.buyer_name) document.getElementById('cliente-nome').value = pedido.buyer_name;
     if (pedido.buyer_email) document.getElementById('cliente-email').value = pedido.buyer_email;
     if (pedido.buyer_cpf) document.getElementById('cliente-cpf').value = pedido.buyer_cpf;
 
     if (pedido.pix_code) {
-      mostrarPix(pedido.pix_code, pedido.status);
+      mostrarPix(pedido.pix_code, pedido.status, pedido.pix_qr_code_base64);
     }
 
     if (pedido.status === 'pago') {
       document.getElementById('checkout-sucesso').classList.add('visivel');
-      document.getElementById('btn-gerar-pagamento').disabled = true;
+      atualizarStatusBrick('Pago');
     }
   }
 
-  function mostrarPix(codigo, status) {
+  function mostrarPix(codigo, status, qrBase64) {
     document.getElementById('pix-code').value = codigo || '';
     document.getElementById('pix-status').textContent = statusBonito(status || 'aguardando_pagamento');
     document.getElementById('pix-box').classList.add('visivel');
+
+    const qrWrap = document.getElementById('pix-qr-wrap');
+    const qrImg = document.getElementById('pix-qr-img');
+    if (qrBase64) {
+      qrImg.src = `data:image/png;base64,${qrBase64}`;
+      qrWrap.classList.add('visivel');
+    } else {
+      qrWrap.classList.remove('visivel');
+    }
   }
 
   async function carregarPedido() {
@@ -573,31 +659,70 @@
     return { nome, email, cpf };
   }
 
-  async function gerarPagamento() {
-    const btn = document.getElementById('btn-gerar-pagamento');
-    limparAviso('aviso-checkout');
+  async function inicializarMercadoPagoBrick() {
+    if (!pedidoAtual || brickPronto) return;
 
     try {
-      const comprador = validarDados();
-      btnCarregando(btn, true);
+      const config = await apiFetch('/zapcoins/mercadopago/config');
+      const mp = new MercadoPago(config.public_key, { locale: config.locale || 'pt-BR' });
+      const bricksBuilder = mp.bricks();
+      const amount = Number((Number(pedidoAtual.preco_centavos || 0) / 100).toFixed(2));
 
-      const resp = await apiFetch(`/zapcoins/pedido/${pedidoId}/pagar`, {
-        method: 'POST',
-        body: JSON.stringify({
-          metodo: metodoAtual,
-          nome: comprador.nome,
-          email: comprador.email,
-          cpf: comprador.cpf
-        })
+      paymentBrickController = await bricksBuilder.create('payment', 'paymentBrick_container', {
+        initialization: {
+          amount,
+          payer: {
+            email: document.getElementById('cliente-email').value.trim() || sessaoAtual?.usuario?.email || ''
+          }
+        },
+        customization: {
+          visual: {
+            style: {
+              theme: 'default'
+            }
+          },
+          paymentMethods: {
+            creditCard: 'all',
+            debitCard: 'all',
+            bankTransfer: 'all',
+            maxInstallments: 1
+          }
+        },
+        callbacks: {
+          onReady: () => {
+            brickPronto = true;
+            atualizarStatusBrick('Pronto para pagamento');
+          },
+          onSubmit: async ({ selectedPaymentMethod, formData }) => {
+            limparAviso('aviso-checkout');
+            const comprador = validarDados();
+
+            const resp = await apiFetch(`/zapcoins/pedido/${pedidoId}/mercadopago/processar`, {
+              method: 'POST',
+              body: JSON.stringify({
+                ...comprador,
+                selectedPaymentMethod,
+                formData
+              })
+            });
+
+            renderizarPedido(resp.pedido);
+            if (resp.pix_code) mostrarPix(resp.pix_code, resp.pedido.status, resp.pix_qr_code_base64);
+
+            const ok = resp.pedido?.status === 'pago' || resp.status === 'pago';
+            mostrarAviso('aviso-checkout', resp.mensagem || 'Pagamento enviado ao Mercado Pago.', ok ? 'ok' : 'erro');
+
+            return resp;
+          },
+          onError: (error) => {
+            console.error('[mercadopago/payment-brick]', error);
+            mostrarAviso('aviso-checkout', 'Erro no bloco de pagamento do Mercado Pago. Recarregue a página e tente novamente.');
+          }
+        }
       });
-
-      renderizarPedido(resp.pedido);
-      if (resp.pix_code) mostrarPix(resp.pix_code, resp.pedido.status);
-      mostrarAviso('aviso-checkout', resp.mensagem || 'Pagamento gerado com sucesso.', 'ok');
     } catch (err) {
-      mostrarAviso('aviso-checkout', err.message);
-    } finally {
-      btnCarregando(btn, false);
+      console.error('[checkout/mp]', err);
+      mostrarAviso('aviso-checkout', err.message || 'Não foi possível carregar o Mercado Pago.');
     }
   }
 
@@ -616,7 +741,6 @@
     }
   }
 
-  document.getElementById('btn-gerar-pagamento').addEventListener('click', gerarPagamento);
   document.getElementById('btn-verificar-pagamento').addEventListener('click', verificarPagamento);
   document.getElementById('btn-copiar-pix').addEventListener('click', async () => {
     const codigo = document.getElementById('pix-code').value;
@@ -629,22 +753,11 @@
     }
   });
 
-  document.getElementById('tab-pix').addEventListener('click', () => {
-    metodoAtual = 'pix';
-    document.getElementById('tab-pix').classList.add('ativo');
-    document.getElementById('tab-cartao').classList.remove('ativo');
-    document.getElementById('cartao-alerta').hidden = true;
-    document.getElementById('btn-gerar-pagamento').textContent = 'Gerar Pix';
-  });
-
-  document.getElementById('tab-cartao').addEventListener('click', () => {
-    document.getElementById('cartao-alerta').hidden = false;
-  });
-
   async function montar() {
     sessaoAtual = await iniciarPagina({ requerLogin: true });
     preencherComprador();
     await carregarPedido();
+    await inicializarMercadoPagoBrick();
   }
 
   montar();

@@ -97,8 +97,9 @@ function migrar() {
       coins INTEGER NOT NULL,
       preco_centavos INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'pendente',
-      gateway TEXT DEFAULT 'syncpay',
+      gateway TEXT DEFAULT 'mercadopago',
       gateway_payment_id TEXT,
+      gateway_preference_id TEXT,
       checkout_url TEXT,
       criado_em TEXT NOT NULL DEFAULT (datetime('now')),
       pago_em TEXT,
@@ -107,6 +108,7 @@ function migrar() {
     )
   `, [], '[db] ZapCoin: tabela zapcoin_orders verificada.', '[db] Erro ao criar zapcoin_orders:');
 
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN gateway_preference_id TEXT');
   tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_name TEXT');
   tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_email TEXT');
   tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_cpf TEXT');
