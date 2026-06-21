@@ -4,116 +4,600 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meus grupos — WhatsApp Grupos</title>
+  <meta name="description" content="Gerencie seus grupos, acompanhe aprovações e organize suas comunidades no WhatsApp Grupos.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/img/icon.png">
   <link rel="apple-touch-icon" href="/img/icon.png">
   <link rel="stylesheet" href="/css/global.css">
   <style>
     .pagina-meus {
-      max-width: 760px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 40px 20px 60px;
+      padding: 34px 20px 70px;
     }
 
-    .cabecalho-pagina {
+    .meus-hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    .meus-hero-card,
+    .zap-wallet-card {
+      border-radius: 24px;
+      border: 1px solid rgba(221, 226, 232, 0.9);
+      box-shadow: 0 18px 46px rgba(15, 23, 42, 0.10);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .meus-hero-card {
+      background:
+        radial-gradient(circle at 92% 0%, rgba(53, 190, 114, 0.26), transparent 17rem),
+        linear-gradient(135deg, #202a35 0%, #163923 100%);
+      color: #ffffff;
+      padding: 18px 20px;
+      min-height: auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 32px;
+    }
+
+    .meus-hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -46px -88px auto;
+      width: 170px;
+      height: 170px;
+      background: rgba(53, 190, 114, 0.12);
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .meus-hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #bff7d5;
+      font-size: 0.64rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .meus-hero-card h1 {
+      color: #ffffff;
+      font-size: clamp(1.18rem, 2.4vw, 1.55rem);
+      line-height: 1.08;
+      letter-spacing: -0.65px;
+      max-width: 620px;
+      margin-bottom: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .meus-hero-card p {
+      display: none;
+    }
+
+    .meus-hero-acoes {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 0;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .meus-hero-acoes .btn {
+      min-height: 36px;
+      padding: 9px 13px;
+      font-size: 0.78rem;
+    }
+
+    .zap-wallet-card {
+      background: #ffffff;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .zap-wallet-topo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .zapcoin-icone {
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 25%, #fff8b0 0%, #ffe066 18%, transparent 36%),
+        linear-gradient(135deg, #21c765 0%, #0e7a3c 100%);
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 255, 255, 0.65),
+        0 14px 28px rgba(18, 126, 67, 0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 950;
+      font-size: 1.45rem;
+      letter-spacing: -1px;
+      flex: 0 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .zapcoin-icone::after {
+      content: "⚡";
+      position: absolute;
+      right: 8px;
+      bottom: 6px;
+      font-size: 0.75rem;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,.2));
+    }
+
+    .zapcoin-icone-sm {
+      width: 28px;
+      height: 28px;
+      font-size: 0.86rem;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.65);
+    }
+
+    .zapcoin-icone-sm::after {
+      right: 3px;
+      bottom: 2px;
+      font-size: 0.45rem;
+    }
+
+    .zap-wallet-label {
+      display: block;
+      color: var(--cinza-texto);
+      font-weight: 800;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .zap-wallet-saldo {
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .zap-wallet-numero {
+      font-size: 3rem;
+      line-height: 1;
+      letter-spacing: -1.6px;
+      font-weight: 950;
+      color: var(--preto);
+    }
+
+    .zap-wallet-moeda {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--verde-medio);
+      padding-bottom: 6px;
+    }
+
+
+    .zap-wallet-saldo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .zap-wallet-add {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(53, 190, 114, 0.34);
+      background: #eefbf4;
+      color: var(--verde-escuro);
+      font-family: var(--font);
+      font-size: 1.35rem;
+      font-weight: 950;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+      flex: 0 0 auto;
+    }
+
+    .zap-wallet-add:hover {
+      transform: translateY(-2px);
+      background: #dff8ea;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .zap-compra-personalizada {
+      background:
+        radial-gradient(circle at top right, rgba(53, 190, 114, 0.18), transparent 20rem),
+        #ffffff;
+      border: 1px solid rgba(53, 190, 114, 0.22);
+      border-radius: 22px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--sombra-leve);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 250px;
+      gap: 16px;
+      align-items: end;
+    }
+
+    .zap-compra-personalizada h3 {
+      font-size: 1.06rem;
+      margin-bottom: 4px;
+      letter-spacing: -0.25px;
+    }
+
+    .zap-compra-personalizada p {
+      color: var(--cinza-texto);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .zap-compra-form {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .zap-quantidade-input {
+      height: 44px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 12px;
+      padding: 0 12px;
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--preto);
+      outline: none;
+      width: 100%;
+    }
+
+    .zap-quantidade-input:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(53,190,114,.14);
+    }
+
+    .zap-preco-preview {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--cinza-texto);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .zap-preco-preview strong {
+      color: var(--preto);
+      font-size: 1.05rem;
+      font-weight: 950;
+    }
+
+    .zap-selo-empresarial {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #fff4c2;
+      color: #6d4b00;
+      font-size: 0.68rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .zap-wallet-desc {
+      color: #5d6b7d;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .zap-section {
+      margin-top: 24px;
+    }
+
+    .zap-section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
     }
 
-    .cabecalho-pagina h1 { font-size: 1.6rem; }
-    .cabecalho-pagina p { color: var(--cinza-texto); font-size: 0.9rem; margin-top: 4px; }
+    .zap-section-head h2 {
+      font-size: 1.35rem;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .zap-section-head p {
+      color: var(--cinza-texto);
+      font-size: 0.92rem;
+      margin-top: 3px;
+    }
+
+    .zap-pacotes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .zap-pacote-card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--sombra-leve);
+      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .zap-pacote-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(53, 190, 114, 0.45);
+      box-shadow: var(--sombra-card);
+    }
+
+    .zap-pacote-card.destaque {
+      border-color: rgba(53, 190, 114, 0.60);
+      box-shadow: 0 0 0 1px rgba(53, 190, 114, 0.22), var(--sombra-media);
+    }
+
+    .zap-pacote-badge {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #eefbf4;
+      color: var(--verde-escuro);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 950;
+      margin-bottom: 12px;
+    }
+
+    .zap-pacote-nome {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 950;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .zap-pacote-coins {
+      font-size: 1.7rem;
+      line-height: 1;
+      letter-spacing: -0.8px;
+      font-weight: 950;
+      color: var(--preto);
+      margin-bottom: 4px;
+    }
+
+    .zap-pacote-desc {
+      min-height: 42px;
+      color: #617086;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .zap-pacote-preco {
+      font-weight: 950;
+      color: var(--preto);
+      font-size: 1.1rem;
+    }
+
+    .zap-pacote-unitario {
+      color: var(--cinza-texto);
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .meus-grupos-ferramentas {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .meus-grupos-busca {
+      position: relative;
+      flex: 1;
+      min-width: min(100%, 320px);
+      max-width: 460px;
+    }
+
+    .meus-grupos-busca::before {
+      content: "⌕";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #718096;
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    .meus-grupos-busca input {
+      width: 100%;
+      height: 44px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 14px;
+      padding: 0 14px 0 40px;
+      font-family: var(--font);
+      font-weight: 750;
+      color: var(--preto);
+      outline: none;
+      background: #fff;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .meus-grupos-busca input:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(53,190,114,.14);
+    }
 
     .lista-meus-grupos {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
     }
 
     .card-meu-grupo {
       background: var(--branco);
       border: 1px solid var(--cinza-borda);
-      border-radius: var(--radius-lg);
-      padding: 20px;
+      border-radius: 16px;
+      padding: 12px;
       display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      transition: border-color 0.15s;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+      box-shadow: var(--sombra-leve);
     }
 
-    .card-meu-grupo:hover { border-color: var(--verde-claro); }
+    .card-meu-grupo:hover {
+      border-color: rgba(53, 190, 114, 0.45);
+      transform: translateY(-2px);
+      box-shadow: var(--sombra-media);
+    }
 
-    .card-meu-grupo-foto {
-      width: 72px;
-      height: 72px;
-      border-radius: var(--radius);
+    .card-meu-grupo.impulsionado {
+      border-color: rgba(255, 204, 20, 0.82);
+      box-shadow: 0 0 0 1px rgba(255, 204, 20, 0.30), var(--sombra-leve);
+    }
+
+    .card-meu-grupo-foto,
+    .card-meu-grupo-foto-placeholder {
+      width: 100%;
+      height: 108px;
+      border-radius: 13px;
       object-fit: cover;
+      background: #edf2f4;
       flex-shrink: 0;
-      background: var(--cinza-fundo);
     }
 
     .card-meu-grupo-foto-placeholder {
-      width: 72px;
-      height: 72px;
-      border-radius: var(--radius);
-      background: var(--cinza-fundo);
-      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
+      font-size: 1.65rem;
     }
 
     .card-meu-grupo-info {
-      flex: 1;
       min-width: 0;
     }
 
     .card-meu-grupo-topo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       flex-wrap: wrap;
       margin-bottom: 6px;
     }
 
-    .card-meu-grupo-nome {
-      font-size: 1rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .card-meu-grupo-topo .tag {
+      padding: 3px 7px;
+      font-size: 0.66rem;
     }
 
-    .card-meu-grupo-desc {
-      font-size: 0.875rem;
-      color: var(--cinza-texto);
-      margin-bottom: 10px;
+    .card-meu-grupo-nome {
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: var(--preto);
+      line-height: 1.22;
+      letter-spacing: -0.25px;
+      margin-bottom: 5px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    .card-meu-grupo-rodape {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
+    .card-meu-grupo-desc {
+      font-size: 0.76rem;
+      color: var(--cinza-texto);
+      margin-bottom: 8px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .card-meu-grupo-meta {
-      font-size: 0.78rem;
+      display: block;
+      font-size: 0.68rem;
       color: var(--cinza-texto);
+      margin-bottom: 9px;
+      line-height: 1.3;
+    }
+
+    .card-meu-grupo-acoes {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .card-meu-grupo-acoes .btn {
+      min-height: 32px;
+      padding: 7px 9px;
+      font-size: 0.72rem;
+      flex: 1;
+      min-width: 86px;
+    }
+
+    .meus-grupos-mais-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .meus-grupos-mais-wrap[hidden] {
+      display: none;
+    }
+
+    .btn-mostrar-mais-grupos {
+      min-width: 220px;
+      border-radius: 999px;
     }
 
     .motivo-rejeicao {
-      margin-top: 8px;
+      margin: 8px 0 10px;
       padding: 8px 12px;
       background: #fff5f5;
       border: 1px solid #f5c6cb;
@@ -124,31 +608,219 @@
 
     .motivo-rejeicao strong { display: block; margin-bottom: 2px; }
 
-    /* badge de status */
     .badge-pendente  { background: #fff3cd; color: #856404; }
     .badge-aprovado  { background: #d1e7dd; color: #0a3622; }
     .badge-rejeitado { background: #f8d7da; color: #842029; }
+    .badge-boost { background: #fff4c2; color: #6d4b00; }
 
-    /* modal de confirmação */
-    .modal-confirmacao .modal-caixa {
-      max-width: 400px;
+    .modal-confirmacao .modal-caixa,
+    .modal-boost .modal-caixa {
+      max-width: 460px;
     }
 
-    .modal-confirmacao p {
+    .modal-confirmacao p,
+    .modal-boost p {
       color: var(--cinza-texto);
       font-size: 0.95rem;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+    }
+
+    .boost-opcoes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 14px 0 18px;
+    }
+
+    .boost-opcao {
+      border: 1.5px solid var(--cinza-borda);
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color .16s, box-shadow .16s, transform .16s;
+      text-align: left;
+      font-family: var(--font);
+    }
+
+    .boost-opcao:hover {
+      border-color: var(--verde-claro);
+      transform: translateY(-1px);
+    }
+
+    .boost-opcao.ativo {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(53,190,114,.14);
+      background: #f2fff7;
+    }
+
+    .boost-opcao strong {
+      display: block;
+      font-size: 1rem;
+      font-weight: 950;
+      color: var(--preto);
+    }
+
+    .boost-opcao span {
+      color: var(--cinza-texto);
+      font-size: 0.82rem;
+      font-weight: 700;
     }
 
     .modal-acoes {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 540px) {
-      .card-meu-grupo { flex-direction: column; }
-      .card-meu-grupo-foto, .card-meu-grupo-foto-placeholder { width: 100%; height: 140px; }
+    .zap-extrato-lista {
+      display: grid;
+      gap: 8px;
+    }
+
+    .zap-extrato-item {
+      background: #ffffff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .zap-extrato-item strong {
+      display: block;
+      color: var(--preto);
+      font-size: 0.88rem;
+    }
+
+    .zap-extrato-item span {
+      display: block;
+      color: var(--cinza-texto);
+      font-size: 0.76rem;
+    }
+
+    .zap-extrato-valor {
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .zap-extrato-valor.positivo { color: var(--verde-medio); }
+    .zap-extrato-valor.negativo { color: #b42318; }
+
+    @media (max-width: 1024px) {
+      .meus-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .zap-pacotes-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .pagina-meus {
+        padding: 22px 14px 96px;
+      }
+
+      .meus-hero-card,
+      .zap-wallet-card {
+        border-radius: 20px;
+      }
+
+      .meus-hero-card {
+        padding: 16px;
+        min-height: auto;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .meus-hero-card h1 {
+        font-size: 1.28rem;
+      }
+
+      .zap-wallet-numero {
+        font-size: 2.55rem;
+      }
+
+      .zap-pacotes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lista-meus-grupos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .zap-compra-personalizada {
+        grid-template-columns: 1fr;
+      }
+
+      .zap-compra-form {
+        grid-template-columns: 1fr;
+      }
+
+
+      .zap-pacote-desc {
+        min-height: auto;
+      }
+
+      .card-meu-grupo {
+        padding: 10px;
+        border-radius: 14px;
+        gap: 8px;
+      }
+
+      .card-meu-grupo-foto,
+      .card-meu-grupo-foto-placeholder {
+        width: 100%;
+        height: 82px;
+        border-radius: 12px;
+      }
+
+      .card-meu-grupo-nome {
+        font-size: 0.82rem;
+      }
+
+      .card-meu-grupo-desc {
+        -webkit-line-clamp: 1;
+        font-size: 0.7rem;
+      }
+
+      .card-meu-grupo-acoes .btn {
+        flex: 1;
+        min-width: 68px;
+        font-size: 0.68rem;
+        padding-left: 7px;
+        padding-right: 7px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .card-meu-grupo-foto,
+      .card-meu-grupo-foto-placeholder {
+        height: 76px;
+      }
+
+      .card-meu-grupo-topo .tag {
+        font-size: 0.58rem;
+        padding: 2px 6px;
+      }
+
+      .card-meu-grupo-meta {
+        display: none;
+      }
+
+      .boost-opcoes {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-acoes .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -158,22 +830,127 @@
 
 <main class="pagina-meus">
 
-  <div class="cabecalho-pagina">
-    <div>
-      <h1>Meus grupos</h1>
-      <p>Acompanhe o status dos grupos que você enviou para aprovação.</p>
+  <section class="meus-hero">
+    <div class="meus-hero-card">
+      <div>
+        <span class="meus-hero-label">Painel de gestão</span>
+        <h1>Meus grupos</h1>
+      </div>
+
+      <div class="meus-hero-acoes">
+        <a href="/pages/enviar-grupo.html" class="btn btn-primario">+ Enviar novo grupo</a>
+        <a href="#secao-meus-grupos" class="btn btn-contorno-branco">Ver grupos</a>
+      </div>
     </div>
-    <a href="/pages/enviar-grupo.html" class="btn btn-primario">+ Enviar novo grupo</a>
-  </div>
+  </section>
 
   <div id="aviso-meus" class="aviso"></div>
 
-  <div id="lista-meus-grupos" class="lista-meus-grupos">
-    <div class="estado-vazio">
-      <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
-      <p>Carregando...</p>
+  <section class="zap-section" id="secao-meus-grupos">
+    <div class="zap-section-head">
+      <div>
+        <span class="home-secao-label">Publicações</span>
+        <h2>Meus grupos</h2>
+        <p>Essa é sua área principal: acompanhe status, abra grupos publicados e gerencie suas comunidades cadastradas.</p>
+      </div>
     </div>
-  </div>
+
+    <div class="meus-grupos-ferramentas">
+      <div class="meus-grupos-busca">
+        <input type="search" id="busca-meus-grupos" placeholder="Buscar nos meus grupos..." autocomplete="off">
+      </div>
+      <a href="/pages/enviar-grupo.html" class="btn btn-primario btn-sm">+ Enviar grupo</a>
+    </div>
+
+    <div id="lista-meus-grupos" class="lista-meus-grupos">
+      <div class="estado-vazio" style="grid-column: 1/-1;">
+        <div class="spinner spinner-verde" style="margin: 0 auto 16px;"></div>
+        <p>Carregando...</p>
+      </div>
+    </div>
+
+    <div class="meus-grupos-mais-wrap" id="meus-grupos-mais-wrap" hidden>
+      <button class="btn btn-contorno btn-mostrar-mais-grupos" id="btn-mostrar-mais-grupos" type="button">+ Mostrar mais grupos</button>
+    </div>
+  </section>
+
+  <section class="zap-section" id="zapcoin-area">
+    <div class="zap-section-head">
+      <div>
+        <span class="home-secao-label">ZapCoin</span>
+        <h2>Impulsione seu grupo</h2>
+        <p>Eleve o número de visitas no seu grupo, compre ZapCoins e escolha por quanto tempo deseja impulsionar.</p>
+      </div>
+    </div>
+
+    <aside class="zap-wallet-card" aria-label="Carteira ZapCoin">
+      <div class="zap-wallet-topo">
+        <div>
+          <span class="zap-wallet-label">Seu saldo</span>
+          <div class="zap-wallet-saldo-wrap">
+            <div class="zap-wallet-saldo">
+              <strong class="zap-wallet-numero" id="saldo-zapcoin">0</strong>
+              <span class="zap-wallet-moeda">ZapCoins</span>
+            </div>
+            <button class="zap-wallet-add" id="btn-ir-pacotes-zapcoin" type="button" title="Comprar mais ZapCoins" aria-label="Comprar mais ZapCoins">+</button>
+          </div>
+        </div>
+        <span class="zapcoin-icone" aria-hidden="true">Z</span>
+      </div>
+      <p class="zap-wallet-desc">Cada ZapCoin equivale a 12 horas de impulso para 1 grupo aprovado. Você compra saldo, escolhe o grupo e ativa o destaque quando fizer sentido.</p>
+    </aside>
+  </section>
+
+  <section class="zap-section" id="pacotes-zapcoin">
+    <div class="zap-section-head">
+      <div>
+        <span class="home-secao-label">Comprar ZapCoins</span>
+        <h2>Pacotes e quantidade personalizada</h2>
+        <p>Você pode comprar uma quantidade exata ou escolher um pacote com desconto progressivo. A integração com Sync Pay será ligada na próxima etapa.</p>
+      </div>
+    </div>
+
+    <div class="zap-compra-personalizada">
+      <div>
+        <h3>Comprar quantidade personalizada</h3>
+        <p>Escolha qualquer quantidade de ZapCoins. Quanto maior a compra, menor o valor por ZapCoin. Acima de 20 ZapCoins, o preço entra na faixa profissional/empresarial.</p>
+        <div class="zap-preco-preview" id="zap-preco-preview">
+          <strong>1 ZapCoin = R$ 7,99</strong>
+          <span>Cada ZapCoin libera 12 horas de impulso.</span>
+        </div>
+      </div>
+
+      <div class="zap-compra-form">
+        <div>
+          <label class="form-label" for="zapcoin-quantidade">Quantidade</label>
+          <input class="zap-quantidade-input" id="zapcoin-quantidade" type="number" min="1" max="1000" step="1" value="1">
+        </div>
+        <button class="btn btn-primario btn-bloco" id="btn-comprar-personalizado" type="button">Comprar</button>
+      </div>
+    </div>
+
+    <div id="lista-pacotes" class="zap-pacotes-grid">
+      <div class="estado-vazio" style="grid-column: 1/-1; padding: 28px 20px;">
+        <span class="spinner spinner-verde"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="zap-section">
+    <div class="zap-section-head">
+      <div>
+        <span class="home-secao-label">Extrato</span>
+        <h2>Movimentações recentes</h2>
+        <p>Veja compras, usos e ajustes de ZapCoin na sua conta.</p>
+      </div>
+    </div>
+
+    <div id="lista-extrato" class="zap-extrato-lista">
+      <div class="estado-vazio" style="padding: 28px 20px;">
+        <p>Nenhuma movimentação ainda.</p>
+      </div>
+    </div>
+  </section>
 
 </main>
 
@@ -190,6 +967,29 @@
   </div>
 </div>
 
+<!-- modal de impulsionamento -->
+<div class="modal-fundo modal-boost" id="modal-boost">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="btn-fechar-boost">×</button>
+    <h3 class="modal-titulo">Impulsionar grupo</h3>
+    <p id="boost-texto">Escolha por quanto tempo você quer deixar este grupo em destaque.</p>
+
+    <div class="boost-opcoes" id="boost-opcoes">
+      <button class="boost-opcao ativo" type="button" data-zapcoins="1"><strong>12 horas</strong><span>Custa 1 ZapCoin</span></button>
+      <button class="boost-opcao" type="button" data-zapcoins="2"><strong>24 horas</strong><span>Custa 2 ZapCoins</span></button>
+      <button class="boost-opcao" type="button" data-zapcoins="6"><strong>3 dias</strong><span>Custa 6 ZapCoins</span></button>
+      <button class="boost-opcao" type="button" data-zapcoins="14"><strong>7 dias</strong><span>Custa 14 ZapCoins</span></button>
+      <button class="boost-opcao" type="button" data-zapcoins="30"><strong>15 dias</strong><span>Custa 30 ZapCoins</span></button>
+      <button class="boost-opcao" type="button" data-zapcoins="60"><strong>30 dias</strong><span>Custa 60 ZapCoins</span></button>
+    </div>
+
+    <div class="modal-acoes">
+      <button class="btn btn-contorno" id="btn-cancelar-boost">Cancelar</button>
+      <button class="btn btn-primario" id="btn-confirmar-boost">Usar ZapCoins</button>
+    </div>
+  </div>
+</div>
+
 <footer class="footer">
   <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp</p>
 </footer>
@@ -197,6 +997,13 @@
 <script src="/js/utils.js"></script>
 <script>
   let idParaRemover = null;
+  let grupoParaImpulsionar = null;
+  let zapcoinsSelecionados = 1;
+  let saldoZapCoin = 0;
+  let meusGruposCache = [];
+  let gruposExpandidos = false;
+  let termoBuscaGrupos = '';
+  let resizeTimerGrupos = null;
 
   function escaparHtml(str) {
     const d = document.createElement('div');
@@ -205,71 +1012,292 @@
   }
 
   function badgeStatus(status) {
-    const labels = { pendente: 'Pendente', aprovado: 'Aprovado', rejeitado: 'Rejeitado' };
+    const labels = { pendente: 'Pendente', aprovado: 'Aprovado', rejeitado: 'Rejeitado', indisponivel: 'Indisponível' };
     return `<span class="tag badge-${status}">${labels[status] || status}</span>`;
+  }
+
+  function formatarDataSegura(valor) {
+    if (!valor) return '';
+    return formatarData(valor);
+  }
+
+  function formatarDataImpulso(valor) {
+    if (!valor) return '';
+    const data = new Date(String(valor).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(data.getTime())) return formatarData(valor);
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function textoPeriodoPorZapCoins(zapcoins) {
+    const horas = Number(zapcoins || 0) * 12;
+    if (horas < 24) return `${horas} horas`;
+    const dias = horas / 24;
+    if (Number.isInteger(dias)) return `${dias} dia${dias > 1 ? 's' : ''}`;
+    return `${horas} horas`;
+  }
+
+  function atualizarSaldo(valor) {
+    saldoZapCoin = Number(valor || 0);
+    document.getElementById('saldo-zapcoin').textContent = saldoZapCoin;
+  }
+
+  async function carregarZapCoins() {
+    try {
+      const resumo = await apiFetch('/zapcoins/resumo');
+      atualizarSaldo(resumo.saldo);
+      montarPacotes(resumo.pacotes || []);
+      montarExtrato(resumo.historico || []);
+    } catch (err) {
+      mostrarAviso('aviso-meus', 'Não foi possível carregar seus ZapCoins: ' + err.message);
+    }
+  }
+
+  function montarPacotes(pacotes) {
+    const container = document.getElementById('lista-pacotes');
+
+    if (!pacotes.length) {
+      container.innerHTML = '<div class="estado-vazio" style="grid-column:1/-1;padding:28px 20px;"><p>Nenhum pacote disponível no momento.</p></div>';
+      return;
+    }
+
+    container.innerHTML = pacotes.map(p => `
+      <article class="zap-pacote-card ${p.destaque ? 'destaque' : ''}">
+        ${p.destaque ? '<span class="zap-pacote-badge">Melhor escolha</span>' : '<span class="zap-pacote-badge">Pacote</span>'}
+        <div class="zap-pacote-nome">
+          <span class="zapcoin-icone zapcoin-icone-sm" aria-hidden="true">Z</span>
+          ${escaparHtml(p.nome)}
+        </div>
+        <div class="zap-pacote-coins">${p.coins} ZapCoins</div>
+        <p class="zap-pacote-desc">${escaparHtml(p.descricao || 'Saldo para impulsionar grupos aprovados.')}</p>
+        ${p.empresarial ? '<span class="zap-selo-empresarial" style="margin-bottom:10px;">Pacote empresarial</span>' : ''}
+        <div class="zap-pacote-preco">${p.preco_formatado}</div>
+        <div class="zap-pacote-unitario">${p.preco_por_coin_formatado} por ZapCoin${p.economia_centavos > 0 ? ` · economiza ${p.economia_formatada}` : ''}</div>
+        <button class="btn btn-primario btn-bloco btn-comprar-zapcoin" data-coins="${p.coins}" type="button">Comprar</button>
+      </article>
+    `).join('');
+
+    container.querySelectorAll('.btn-comprar-zapcoin').forEach(btn => {
+      btn.addEventListener('click', () => criarPedidoZapCoin(parseInt(btn.dataset.coins, 10), btn));
+    });
+  }
+
+  async function criarPedidoZapCoin(quantidade, btn) {
+    btnCarregando(btn, true);
+    limparAviso('aviso-meus');
+
+    try {
+      const resp = await apiFetch('/zapcoins/comprar', {
+        method: 'POST',
+        body: JSON.stringify({ quantidade })
+      });
+
+      mostrarAviso(
+        'aviso-meus',
+        resp.mensagem || 'Pedido criado. A integração com Sync Pay será ativada na próxima etapa.',
+        'ok'
+      );
+    } catch (err) {
+      mostrarAviso('aviso-meus', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  let timerCalculoZapCoin = null;
+
+  async function calcularCompraPersonalizada() {
+    const input = document.getElementById('zapcoin-quantidade');
+    const preview = document.getElementById('zap-preco-preview');
+    const quantidade = parseInt(input.value, 10);
+
+    if (!quantidade || quantidade < 1) {
+      preview.innerHTML = '<strong>Quantidade inválida</strong><span>Escolha pelo menos 1 ZapCoin.</span>';
+      return;
+    }
+
+    try {
+      const resp = await apiFetch(`/zapcoins/calcular?quantidade=${encodeURIComponent(quantidade)}`);
+      preview.innerHTML = `
+        <strong>${resp.preco_formatado}</strong>
+        <span>${resp.preco_unitario_formatado} por ZapCoin</span>
+        ${resp.economia_centavos > 0 ? `<span>Economia de ${resp.economia_formatada}</span>` : ''}
+        ${resp.empresarial ? '<span class="zap-selo-empresarial">Faixa empresarial</span>' : ''}
+      `;
+    } catch (err) {
+      preview.innerHTML = `<strong>Não foi possível calcular</strong><span>${escaparHtml(err.message)}</span>`;
+    }
+  }
+
+  function agendarCalculoPersonalizado() {
+    clearTimeout(timerCalculoZapCoin);
+    timerCalculoZapCoin = setTimeout(calcularCompraPersonalizada, 250);
+  }
+
+  function montarExtrato(historico) {
+    const container = document.getElementById('lista-extrato');
+
+    if (!historico.length) {
+      container.innerHTML = '<div class="estado-vazio" style="padding:28px 20px;"><p>Nenhuma movimentação ainda.</p></div>';
+      return;
+    }
+
+    container.innerHTML = historico.map(item => {
+      const positivo = Number(item.quantidade) > 0;
+      const valor = `${positivo ? '+' : ''}${item.quantidade} ZC`;
+      return `
+        <div class="zap-extrato-item">
+          <div>
+            <strong>${escaparHtml(item.descricao || traduzirTipoMovimento(item.tipo))}</strong>
+            <span>${formatarDataSegura(item.criado_em)} · Saldo: ${item.saldo_depois} ZapCoins</span>
+          </div>
+          <div class="zap-extrato-valor ${positivo ? 'positivo' : 'negativo'}">${valor}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function traduzirTipoMovimento(tipo) {
+    const mapa = {
+      compra: 'Compra de ZapCoins',
+      uso: 'Uso de ZapCoins',
+      ajuste_admin: 'Ajuste manual',
+      estorno: 'Estorno'
+    };
+    return mapa[tipo] || 'Movimentação';
+  }
+
+  function limiteInicialGrupos() {
+    return window.matchMedia('(max-width: 760px)').matches ? 2 : 4;
+  }
+
+  function normalizarBusca(str) {
+    return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+
+  function filtrarMeusGrupos() {
+    const termo = normalizarBusca(termoBuscaGrupos);
+    if (!termo) return meusGruposCache;
+
+    return meusGruposCache.filter(g => {
+      const base = normalizarBusca(`${g.nome_grupo || ''} ${g.descricao || ''} ${g.categoria_nome || ''} ${g.status || ''}`);
+      return base.includes(termo);
+    });
+  }
+
+  function renderizarMeusGrupos() {
+    const lista = document.getElementById('lista-meus-grupos');
+    const wrapMais = document.getElementById('meus-grupos-mais-wrap');
+    const btnMais = document.getElementById('btn-mostrar-mais-grupos');
+    const gruposFiltrados = filtrarMeusGrupos();
+
+    if (meusGruposCache.length === 0) {
+      wrapMais.hidden = true;
+      lista.innerHTML = `
+        <div class="estado-vazio" style="grid-column:1/-1;">
+          <div class="estado-vazio-icone">📭</div>
+          <h3>Nenhum grupo enviado ainda</h3>
+          <p>Quando você enviar um grupo, ele aparecerá aqui com o status da análise.</p>
+          <a href="/pages/enviar-grupo.html" class="btn btn-primario" style="margin-top:16px">Enviar meu primeiro grupo</a>
+        </div>`;
+      return;
+    }
+
+    if (gruposFiltrados.length === 0) {
+      wrapMais.hidden = true;
+      lista.innerHTML = `
+        <div class="estado-vazio" style="grid-column:1/-1; padding:36px 20px;">
+          <h3>Nenhum grupo encontrado</h3>
+          <p>Tente buscar por outro nome, categoria ou status.</p>
+        </div>`;
+      return;
+    }
+
+    const limite = limiteInicialGrupos();
+    const gruposVisiveis = gruposExpandidos ? gruposFiltrados : gruposFiltrados.slice(0, limite);
+    const ocultos = Math.max(0, gruposFiltrados.length - gruposVisiveis.length);
+
+    lista.innerHTML = gruposVisiveis.map(g => montarCardMeuGrupo(g)).join('');
+
+    wrapMais.hidden = gruposFiltrados.length <= limite;
+    btnMais.textContent = gruposExpandidos ? 'Mostrar menos grupos' : `+ Mostrar mais grupos${ocultos ? ` (${ocultos})` : ''}`;
+
+    lista.querySelectorAll('.card-meu-grupo-foto').forEach(img => {
+      img.addEventListener('error', () => { img.style.display = 'none'; });
+    });
+
+    lista.querySelectorAll('.btn-remover').forEach(btn => {
+      btn.addEventListener('click', () => abrirModalRemover(parseInt(btn.dataset.id, 10)));
+    });
+
+    lista.querySelectorAll('.btn-impulsionar').forEach(btn => {
+      btn.addEventListener('click', () => abrirModalBoost({
+        id: parseInt(btn.dataset.id, 10),
+        nome: btn.dataset.nome || 'Grupo'
+      }));
+    });
   }
 
   async function carregarMeusGrupos() {
     const lista = document.getElementById('lista-meus-grupos');
     try {
       const grupos = await apiFetch('/grupos/meus');
+      meusGruposCache = Array.isArray(grupos) ? grupos : [];
+      renderizarMeusGrupos();
+    } catch (err) {
+      lista.innerHTML = '<div class="estado-vazio" style="grid-column:1/-1;"><p>Erro ao carregar seus grupos. Tente novamente.</p></div>';
+    }
+  }
 
-      if (grupos.length === 0) {
-        lista.innerHTML = `
-          <div class="estado-vazio">
-            <div class="estado-vazio-icone">📭</div>
-            <h3>Nenhum grupo enviado ainda</h3>
-            <p>Quando você enviar um grupo, ele aparecerá aqui com o status da análise.</p>
-            <a href="/pages/enviar-grupo.html" class="btn btn-primario" style="margin-top:16px">Enviar meu primeiro grupo</a>
-          </div>`;
-        return;
-      }
+  function montarCardMeuGrupo(g) {
+    const impulsionado = Boolean(g.impulsionado);
+    const dataImpulso = impulsionado ? formatarDataImpulso(g.impulsionado_ate) : '';
 
-      lista.innerHTML = grupos.map(g => `
-        <div class="card-meu-grupo" data-id="${g.id}">
-          ${g.foto_url
-            ? `<img class="card-meu-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">`
-            : `<div class="card-meu-grupo-foto-placeholder">💬</div>`
+    return `
+      <article class="card-meu-grupo ${impulsionado ? 'impulsionado' : ''}" data-id="${g.id}">
+        ${g.foto_url
+          ? `<img class="card-meu-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="" loading="lazy">`
+          : `<div class="card-meu-grupo-foto-placeholder">💬</div>`
+        }
+
+        <div class="card-meu-grupo-info">
+          <div class="card-meu-grupo-topo">
+            ${badgeStatus(g.status)}
+            <span class="tag tag-cinza">${escaparHtml(g.categoria_nome)}</span>
+            ${impulsionado ? `<span class="tag badge-boost">Até ${dataImpulso}</span>` : ''}
+          </div>
+
+          <h3 class="card-meu-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
+          <p class="card-meu-grupo-desc">${escaparHtml(g.descricao)}</p>
+
+          ${g.status === 'rejeitado' && g.motivo_rejeicao
+            ? `<div class="motivo-rejeicao"><strong>Motivo da rejeição:</strong>${escaparHtml(g.motivo_rejeicao)}</div>`
+            : ''
           }
-          <div class="card-meu-grupo-info">
-            <div class="card-meu-grupo-topo">
-              ${badgeStatus(g.status)}
-              <span class="tag tag-cinza">${escaparHtml(g.categoria_nome)}</span>
-            </div>
-            <h3 class="card-meu-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
-            <p class="card-meu-grupo-desc">${escaparHtml(g.descricao)}</p>
-            ${g.status === 'rejeitado' && g.motivo_rejeicao
-              ? `<div class="motivo-rejeicao"><strong>Motivo da rejeição:</strong>${escaparHtml(g.motivo_rejeicao)}</div>`
-              : ''
+
+          <span class="card-meu-grupo-meta">
+            Enviado em ${formatarDataSegura(g.criado_em)}
+            ${g.status === 'aprovado' && g.aprovado_em ? ` · Aprovado em ${formatarDataSegura(g.aprovado_em)}` : ''}
+          </span>
+
+          <div class="card-meu-grupo-acoes">
+            ${g.status === 'aprovado'
+              ? `<a href="/pages/grupo.html?id=${g.id}" class="btn btn-contorno btn-sm">Ver</a>
+                 <button class="btn btn-primario btn-sm btn-impulsionar" data-id="${g.id}" data-nome="${escaparHtml(g.nome_grupo)}" type="button">
+                   ${impulsionado ? 'Adicionar' : 'Impulsionar'}
+                 </button>`
+              : `<button class="btn btn-contorno btn-sm" disabled type="button">Após aprovação</button>`
             }
-            <div class="card-meu-grupo-rodape">
-              <span class="card-meu-grupo-meta">
-                Enviado em ${formatarData(g.criado_em)}
-                ${g.status === 'aprovado' && g.aprovado_em ? ` · Aprovado em ${formatarData(g.aprovado_em)}` : ''}
-              </span>
-              <div style="display:flex;gap:8px;align-items:center">
-                ${g.status === 'aprovado'
-                  ? `<a href="/pages/grupo.html?id=${g.id}" class="btn btn-contorno btn-sm">Ver publicado</a>`
-                  : ''
-                }
-                <button class="btn btn-perigo btn-sm btn-remover" data-id="${g.id}">Remover</button>
-              </div>
-            </div>
+            <button class="btn btn-perigo btn-sm btn-remover" data-id="${g.id}" type="button">Remover</button>
           </div>
         </div>
-      `).join('');
-
-      lista.querySelectorAll('.card-meu-grupo-foto').forEach(img => {
-        img.addEventListener('error', () => { img.style.display = 'none'; });
-      });
-
-      lista.querySelectorAll('.btn-remover').forEach(btn => {
-        btn.addEventListener('click', () => abrirModalRemover(parseInt(btn.dataset.id, 10)));
-      });
-
-    } catch (err) {
-      lista.innerHTML = '<div class="estado-vazio"><p>Erro ao carregar seus grupos. Tente novamente.</p></div>';
-    }
+      </article>
+    `;
   }
 
   function abrirModalRemover(id) {
@@ -293,8 +1321,56 @@
       fecharModal();
       mostrarAviso('aviso-meus', 'Grupo removido com sucesso.', 'ok');
       carregarMeusGrupos();
+      carregarZapCoins();
     } catch (err) {
       fecharModal();
+      mostrarAviso('aviso-meus', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  function abrirModalBoost(grupo) {
+    grupoParaImpulsionar = grupo;
+    zapcoinsSelecionados = 1;
+
+    document.querySelectorAll('.boost-opcao').forEach(btn => {
+      btn.classList.toggle('ativo', Number(btn.dataset.zapcoins) === zapcoinsSelecionados);
+    });
+
+    document.getElementById('boost-texto').textContent =
+      `Escolha por quanto tempo você quer impulsionar "${grupo.nome}". Cada ZapCoin vale 12 horas. Seu saldo atual é ${saldoZapCoin} ZapCoins.`;
+
+    document.getElementById('modal-boost').classList.add('aberto');
+  }
+
+  function fecharModalBoost() {
+    grupoParaImpulsionar = null;
+    document.getElementById('modal-boost').classList.remove('aberto');
+  }
+
+  async function confirmarBoost() {
+    if (!grupoParaImpulsionar) return;
+
+    const btn = document.getElementById('btn-confirmar-boost');
+    btnCarregando(btn, true);
+    limparAviso('aviso-meus');
+
+    try {
+      const resp = await apiFetch('/zapcoins/impulsionar', {
+        method: 'POST',
+        body: JSON.stringify({
+          grupo_id: grupoParaImpulsionar.id,
+          zapcoins: zapcoinsSelecionados
+        })
+      });
+
+      fecharModalBoost();
+      mostrarAviso('aviso-meus', resp.mensagem || 'Grupo impulsionado com sucesso.', 'ok');
+      atualizarSaldo(resp.saldo);
+      await carregarMeusGrupos();
+      await carregarZapCoins();
+    } catch (err) {
       mostrarAviso('aviso-meus', err.message);
     } finally {
       btnCarregando(btn, false);
@@ -308,9 +1384,60 @@
     if (e.target === e.currentTarget) fecharModal();
   });
 
+  document.getElementById('btn-fechar-boost').addEventListener('click', fecharModalBoost);
+  document.getElementById('btn-cancelar-boost').addEventListener('click', fecharModalBoost);
+  document.getElementById('btn-confirmar-boost').addEventListener('click', confirmarBoost);
+  document.getElementById('modal-boost').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModalBoost();
+  });
+
+  document.querySelectorAll('.boost-opcao').forEach(btn => {
+    btn.addEventListener('click', () => {
+      zapcoinsSelecionados = Number(btn.dataset.zapcoins);
+      document.querySelectorAll('.boost-opcao').forEach(outro => {
+        outro.classList.toggle('ativo', outro === btn);
+      });
+    });
+  });
+
+
+  document.getElementById('btn-ir-pacotes-zapcoin').addEventListener('click', () => {
+    document.getElementById('pacotes-zapcoin').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('busca-meus-grupos').addEventListener('input', (e) => {
+    termoBuscaGrupos = e.target.value;
+    gruposExpandidos = false;
+    renderizarMeusGrupos();
+  });
+
+  document.getElementById('btn-mostrar-mais-grupos').addEventListener('click', () => {
+    gruposExpandidos = !gruposExpandidos;
+    renderizarMeusGrupos();
+    if (!gruposExpandidos) {
+      document.getElementById('secao-meus-grupos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimerGrupos);
+    resizeTimerGrupos = setTimeout(() => {
+      if (!gruposExpandidos) renderizarMeusGrupos();
+    }, 180);
+  });
+
+  document.getElementById('zapcoin-quantidade').addEventListener('input', agendarCalculoPersonalizado);
+  document.getElementById('btn-comprar-personalizado').addEventListener('click', () => {
+    const btn = document.getElementById('btn-comprar-personalizado');
+    const quantidade = parseInt(document.getElementById('zapcoin-quantidade').value, 10);
+    criarPedidoZapCoin(quantidade, btn);
+  });
+
   async function montar() {
     await iniciarPagina({ requerLogin: true });
-    carregarMeusGrupos();
+    await carregarZapCoins();
+    await carregarMeusGrupos();
+    calcularCompraPersonalizada();
   }
 
   montar();

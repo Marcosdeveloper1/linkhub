@@ -4203,3 +4203,98 @@ a
     margin-bottom: 20px;
   }
 }
+
+/* =====================================================
+   ZapCoin / Impulsionados — destaque premium dourado
+   ===================================================== */
+.card-grupo-impulsionado {
+  border-color: rgba(245, 190, 49, 0.92) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 232, 0.98) 0%, #ffffff 58%),
+    #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(245, 190, 49, 0.42),
+    0 18px 38px rgba(146, 98, 12, 0.18) !important;
+  transform: translateZ(0);
+}
+
+.card-grupo-impulsionado::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,0.42) 50%, rgba(255,255,255,0) 62%, transparent 100%);
+  transform: translateX(-120%);
+  animation: brilhoCardImpulsionado 4.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+.card-grupo-impulsionado:hover {
+  border-color: rgba(245, 173, 24, 1) !important;
+  box-shadow:
+    0 0 0 1px rgba(245, 190, 49, 0.68),
+    0 22px 46px rgba(146, 98, 12, 0.24) !important;
+}
+
+.card-grupo-impulsionado .card-grupo-imagem {
+  background: linear-gradient(135deg, #fff1b8, #fffaf0);
+}
+
+.card-grupo-impulsionado .card-grupo-entrada {
+  background: linear-gradient(135deg, #d99a00 0%, #ffbf1f 48%, #b87900 100%);
+  color: #251500;
+  border: 1px solid rgba(124, 80, 0, 0.18);
+  box-shadow: 0 8px 18px rgba(191, 127, 0, 0.22);
+}
+
+.card-grupo-impulsionado .card-grupo-entrada:hover {
+  background: linear-gradient(135deg, #c98d00 0%, #ffcf42 50%, #a66a00 100%);
+  color: #251500;
+}
+
+.selo-destaque-premium {
+  background: linear-gradient(135deg, #17110a 0%, #49320a 100%) !important;
+  color: #ffd45a !important;
+  border: 1px solid rgba(255, 218, 100, 0.56);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.32), 0 0 0 3px rgba(255, 210, 66, 0.20) !important;
+}
+
+.badge-premium-card {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 2px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff4c2, #ffe08a);
+  color: #654100;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes brilhoCardImpulsionado {
+  0%, 72% { transform: translateX(-130%); opacity: 0; }
+  78% { opacity: 1; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+
+@media (max-width: 480px) {
+  .badge-premium-card {
+    font-size: 0.58rem;
+    padding: 4px 7px;
+  }
+
+  .selo-destaque-premium {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}

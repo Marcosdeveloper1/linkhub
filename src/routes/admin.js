@@ -36,6 +36,122 @@ function traduzirTipoRelato(tipo) {
 
 router.use(requireAdmin);
 
+
+function garantirCarteiraUsuario(usuarioId) {
+  db.run(
+    `INSERT OR IGNORE INTO user_wallets (user_id, balance)
+     VALUES (?, 0)`,
+    [usuarioId]
+  );
+
+  return db.queryOne('SELECT user_id, balance FROM user_wallets WHERE user_id = ?', [usuarioId]);
+}
+
+function registrarAjusteZapCoinAdmin({ usuarioId, adminId, quantidade, saldoAntes, saldoDepois, motivo }) {
+  db.run(
+    `INSERT INTO wallet_transactions
+      (user_id, tipo, quantidade, saldo_antes, saldo_depois, referencia_tipo, referencia_id, descricao, admin_id)
+     VALUES (?, 'ajuste_admin', ?, ?, ?, 'admin_adjustment', ?, ?, ?)`,
+    [usuarioId, quantidade, saldoAntes, saldoDepois, adminId, motivo, adminId]
+  );
+}
+
+// Lista usuários para ajuste administrativo de ZapCoins.
+router.get('/zapcoins/usuarios', (req, res) => {
+  try {
+    const busca = sanitizeString(req.query.busca, 120);
+
+    let sql = `
+      SELECT u.id, u.nome, u.email, u.role, u.ativo, u.criado_em,
+             COALESCE(w.balance, 0) as saldo
+      FROM users u
+      LEFT JOIN user_wallets w ON w.user_id = u.id
+    `;
+    const params = [];
+
+    if (busca) {
+      sql += ' WHERE u.nome LIKE ? OR u.email LIKE ?';
+      params.push(`%${busca}%`, `%${busca}%`);
+    }
+
+    sql += ' ORDER BY u.criado_em DESC LIMIT 80';
+
+    res.json(db.query(sql, params));
+  } catch (err) {
+    console.error('[admin/zapcoins/usuarios]', err);
+    res.status(500).json({ erro: 'Erro ao carregar usuários para ZapCoins.' });
+  }
+});
+
+// Ajuste manual auditável de ZapCoins.
+// Segurança: só admin logado, valida quantidade, impede saldo negativo e grava extrato com admin_id.
+router.post('/zapcoins/ajustar', (req, res) => {
+  try {
+    const adminId = req.session.usuario.id;
+    const usuarioId = parseInt(req.body.user_id, 10);
+    const quantidade = parseInt(req.body.quantidade, 10);
+    const motivo = sanitizeString(req.body.motivo, 300);
+
+    if (!usuarioId) {
+      return res.status(400).json({ erro: 'Usuário inválido.' });
+    }
+
+    if (!Number.isInteger(quantidade) || quantidade === 0) {
+      return res.status(400).json({ erro: 'Informe uma quantidade válida. Use positivo para adicionar e negativo para remover.' });
+    }
+
+    if (Math.abs(quantidade) > 5000) {
+      return res.status(400).json({ erro: 'Por segurança, o ajuste máximo por operação é de 5.000 ZapCoins.' });
+    }
+
+    if (!motivo || motivo.length < 5) {
+      return res.status(400).json({ erro: 'Informe um motivo com pelo menos 5 caracteres.' });
+    }
+
+    const usuario = db.queryOne('SELECT id, nome, email FROM users WHERE id = ?', [usuarioId]);
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    const carteira = garantirCarteiraUsuario(usuarioId);
+    const saldoAntes = Number(carteira?.balance || 0);
+    const saldoDepois = saldoAntes + quantidade;
+
+    if (saldoDepois < 0) {
+      return res.status(400).json({ erro: `Saldo insuficiente. O usuário tem ${saldoAntes} ZapCoins.` });
+    }
+
+    db.run(
+      `UPDATE user_wallets
+       SET balance = ?, atualizado_em = datetime('now')
+       WHERE user_id = ?`,
+      [saldoDepois, usuarioId]
+    );
+
+    registrarAjusteZapCoinAdmin({
+      usuarioId,
+      adminId,
+      quantidade,
+      saldoAntes,
+      saldoDepois,
+      motivo: `Ajuste admin: ${motivo}`
+    });
+
+    res.json({
+      ok: true,
+      usuario_id: usuarioId,
+      saldo_antes: saldoAntes,
+      saldo_depois: saldoDepois,
+      quantidade,
+      mensagem: `Saldo de ${usuario.nome} ajustado para ${saldoDepois} ZapCoins.`
+    });
+  } catch (err) {
+    console.error('[admin/zapcoins/ajustar]', err);
+    res.status(500).json({ erro: 'Erro ao ajustar ZapCoins.' });
+  }
+});
+
+
 router.get('/pendentes', (req, res) => {
   try {
     const pendentes = db.query(`

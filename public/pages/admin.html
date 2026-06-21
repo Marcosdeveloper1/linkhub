@@ -173,6 +173,90 @@
       background: #eef2f7;
       color: #475569;
     }
+
+    .admin-zapcoins-toolbar {
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--cinza-fundo);
+      border: 1px solid var(--cinza-borda);
+      border-radius: var(--radius);
+    }
+
+    .admin-zapcoins-toolbar.visivel {
+      display: flex;
+    }
+
+    .admin-zapcoins-toolbar .form-input {
+      max-width: 340px;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+    }
+
+    .zap-admin-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .zap-admin-user {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .zap-admin-user strong {
+      font-size: 1rem;
+      color: var(--preto);
+    }
+
+    .zap-admin-user span {
+      font-size: 0.82rem;
+      color: var(--cinza-texto);
+    }
+
+    .zap-admin-saldo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 92px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: #eefbf4;
+      color: var(--verde-escuro);
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .zap-admin-acoes {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .modal-zapcoin-ajuste .modal-caixa {
+      max-width: 480px;
+    }
+
+    @media (max-width: 680px) {
+      .zap-admin-card {
+        grid-template-columns: 1fr;
+      }
+
+      .zap-admin-acoes {
+        justify-content: stretch;
+      }
+
+      .zap-admin-acoes .btn {
+        flex: 1;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -190,6 +274,7 @@
     <button class="admin-aba" data-status="aprovado">Aprovados</button>
     <button class="admin-aba" data-status="rejeitado">Rejeitados</button>
     <button class="admin-aba" data-status="erros">Erros relatados</button>
+    <button class="admin-aba" data-status="zapcoins">ZapCoins</button>
     <button class="btn btn-contorno btn-sm" id="btn-importar-lote" style="margin-left:auto;">Importar em lote</button>
   </div>
 
@@ -207,6 +292,12 @@
   <!-- Botão "Limpar rejeitados": só aparece na aba Rejeitados -->
   <div id="barra-rejeitados" style="display:none; margin-bottom:16px;">
     <button class="btn btn-perigo btn-sm" id="btn-limpar-rejeitados">Limpar todos os rejeitados</button>
+  </div>
+
+  <!-- Ferramentas de ZapCoin: só aparece na aba ZapCoins -->
+  <div class="admin-zapcoins-toolbar" id="barra-zapcoins-admin">
+    <input type="search" class="form-input" id="busca-zapcoin-usuarios" placeholder="Buscar usuário por nome ou email...">
+    <button class="btn btn-contorno btn-sm" id="btn-atualizar-zapcoins" type="button">Atualizar</button>
   </div>
 
   <!-- Barra de seleção múltipla: só aparece quando há cards marcados na aba Aprovados -->
@@ -312,6 +403,37 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   </div>
 </div>
 
+
+<!-- Modal de ajuste de ZapCoins -->
+<div class="modal-fundo modal-zapcoin-ajuste" id="modal-zapcoin-ajuste">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="fechar-modal-zapcoin">&times;</button>
+    <h3 class="modal-titulo">Ajustar ZapCoins</h3>
+
+    <div id="aviso-zapcoin-ajuste" class="aviso"></div>
+
+    <p style="color:var(--cinza-texto); font-size:0.92rem; margin-bottom:14px;" id="zapcoin-ajuste-usuario">
+      Selecione um usuário.
+    </p>
+
+    <div class="form-grupo">
+      <label class="form-label" for="zapcoin-ajuste-quantidade">Quantidade</label>
+      <input class="form-input" id="zapcoin-ajuste-quantidade" type="number" step="1" placeholder="Ex: 10 para adicionar, -5 para remover">
+      <p class="form-dica">Use número positivo para adicionar e negativo para remover. O sistema não permite saldo ficar negativo.</p>
+    </div>
+
+    <div class="form-grupo" style="margin-top:10px;">
+      <label class="form-label" for="zapcoin-ajuste-motivo">Motivo do ajuste</label>
+      <textarea class="form-textarea" id="zapcoin-ajuste-motivo" maxlength="300" placeholder="Ex: Crédito de teste, correção de pagamento, estorno administrativo..."></textarea>
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap;">
+      <button class="btn btn-contorno" id="cancelar-zapcoin-ajuste" type="button">Cancelar</button>
+      <button class="btn btn-primario" id="confirmar-zapcoin-ajuste" type="button">Salvar ajuste</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ requerAdmin: true });
@@ -322,6 +444,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   let buscaNome = '';
   let idsSelecionados = new Set();
   let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
+  let buscaZapCoinUsuarios = '';
+  let usuarioZapCoinSelecionado = null;
 
 
   function inicializarSeletorCategoria(selectId) {
@@ -464,6 +588,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     // mostra/esconde a barra de ferramentas certa pra cada aba
     document.getElementById('barra-ferramentas-aprovados').style.display = abaAtual === 'aprovado' ? 'flex' : 'none';
     document.getElementById('barra-rejeitados').style.display = abaAtual === 'rejeitado' ? 'block' : 'none';
+    document.getElementById('barra-zapcoins-admin').classList.toggle('visivel', abaAtual === 'zapcoins');
 
     if (abaAtual !== 'aprovado') {
       idsSelecionados.clear();
@@ -474,6 +599,14 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
       if (abaAtual === 'erros') {
         const relatos = await apiFetch('/admin/erros');
         renderizarErros(relatos);
+        return;
+      }
+
+      if (abaAtual === 'zapcoins') {
+        const paramsZap = new URLSearchParams();
+        if (buscaZapCoinUsuarios) paramsZap.set('busca', buscaZapCoinUsuarios);
+        const usuarios = await apiFetch(`/admin/zapcoins/usuarios?${paramsZap.toString()}`);
+        renderizarZapcoins(usuarios);
         return;
       }
 
@@ -537,6 +670,38 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
           <a class="btn btn-contorno btn-sm" href="/pages/grupo.html?id=${r.grupo_id}" target="_blank" rel="noopener">Abrir grupo</a>
           ${r.status !== 'resolvido' ? `<button class="btn btn-primario btn-sm" data-acao="erro-resolver" data-id="${r.id}">Marcar como resolvido</button>` : ''}
           <button class="btn btn-perigo btn-sm" data-acao="erro-remover" data-id="${r.id}">Remover relato</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+
+  function renderizarZapcoins(usuarios) {
+    const area = document.getElementById('lista-area');
+
+    if (!usuarios || usuarios.length === 0) {
+      area.innerHTML = `
+        <div class="estado-vazio">
+          <h3>Nenhum usuário encontrado</h3>
+          <p>Busque por nome ou email para ajustar ZapCoins com segurança.</p>
+        </div>
+      `;
+      return;
+    }
+
+    area.innerHTML = usuarios.map((u) => `
+      <div class="card solicitacao-card zap-admin-card" data-user-id="${u.id}">
+        <div class="zap-admin-user">
+          <strong>${escaparHtml(u.nome || 'Usuário')}</strong>
+          <span>${escaparHtml(u.email || '')}</span>
+          <span>Cadastrado em ${formatarData(u.criado_em)}</span>
+        </div>
+
+        <div class="zap-admin-acoes">
+          <span class="zap-admin-saldo">${Number(u.saldo || 0)} ZapCoins</span>
+          <button class="btn btn-contorno btn-sm" data-acao="zapcoin-ajustar" data-user-id="${u.id}" data-nome="${escaparHtml(u.nome || 'Usuário')}" data-email="${escaparHtml(u.email || '')}" data-saldo="${Number(u.saldo || 0)}" type="button">
+            Ajustar saldo
+          </button>
         </div>
       </div>
     `).join('');
@@ -648,6 +813,14 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (acao === 'remover') return remover(id);
     if (acao === 'erro-resolver') return resolverErro(id);
     if (acao === 'erro-remover') return removerErro(id);
+    if (acao === 'zapcoin-ajustar') {
+      return abrirModalZapCoin({
+        id: parseInt(btn.dataset.userId, 10),
+        nome: btn.dataset.nome || 'Usuário',
+        email: btn.dataset.email || '',
+        saldo: Number(btn.dataset.saldo || 0)
+      });
+    }
   });
 
   // checkbox de seleção (delegação separada, porque é um <input>, não <button>)
@@ -822,8 +995,82 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
       buscaNome = '';
       document.getElementById('filtro-categoria-aprovados').value = '';
       document.getElementById('busca-nome-aprovados').value = '';
+      if (abaAtual !== 'zapcoins') {
+        buscaZapCoinUsuarios = '';
+        document.getElementById('busca-zapcoin-usuarios').value = '';
+      }
       carregarLista();
     });
+  });
+
+
+  function abrirModalZapCoin(usuario) {
+    usuarioZapCoinSelecionado = usuario;
+    document.getElementById('zapcoin-ajuste-usuario').textContent =
+      `${usuario.nome} — ${usuario.email} · saldo atual: ${usuario.saldo} ZapCoins`;
+    document.getElementById('zapcoin-ajuste-quantidade').value = '';
+    document.getElementById('zapcoin-ajuste-motivo').value = '';
+    limparAviso('aviso-zapcoin-ajuste');
+    document.getElementById('modal-zapcoin-ajuste').classList.add('aberto');
+  }
+
+  function fecharModalZapCoin() {
+    usuarioZapCoinSelecionado = null;
+    document.getElementById('modal-zapcoin-ajuste').classList.remove('aberto');
+  }
+
+  async function confirmarAjusteZapCoin() {
+    if (!usuarioZapCoinSelecionado) return;
+
+    const quantidade = parseInt(document.getElementById('zapcoin-ajuste-quantidade').value, 10);
+    const motivo = document.getElementById('zapcoin-ajuste-motivo').value.trim();
+
+    if (!Number.isInteger(quantidade) || quantidade === 0) {
+      return mostrarAviso('aviso-zapcoin-ajuste', 'Informe uma quantidade válida. Use positivo para adicionar e negativo para remover.');
+    }
+
+    if (motivo.length < 5) {
+      return mostrarAviso('aviso-zapcoin-ajuste', 'Informe um motivo com pelo menos 5 caracteres.');
+    }
+
+    const btn = document.getElementById('confirmar-zapcoin-ajuste');
+    btnCarregando(btn, true);
+
+    try {
+      await apiFetch('/admin/zapcoins/ajustar', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: usuarioZapCoinSelecionado.id,
+          quantidade,
+          motivo
+        })
+      });
+
+      fecharModalZapCoin();
+      carregarLista();
+    } catch (err) {
+      mostrarAviso('aviso-zapcoin-ajuste', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  document.getElementById('fechar-modal-zapcoin').addEventListener('click', fecharModalZapCoin);
+  document.getElementById('cancelar-zapcoin-ajuste').addEventListener('click', fecharModalZapCoin);
+  document.getElementById('confirmar-zapcoin-ajuste').addEventListener('click', confirmarAjusteZapCoin);
+  document.getElementById('modal-zapcoin-ajuste').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModalZapCoin();
+  });
+
+  document.getElementById('btn-atualizar-zapcoins').addEventListener('click', () => carregarLista());
+
+  let timeoutBuscaZap = null;
+  document.getElementById('busca-zapcoin-usuarios').addEventListener('input', (e) => {
+    clearTimeout(timeoutBuscaZap);
+    timeoutBuscaZap = setTimeout(() => {
+      buscaZapCoinUsuarios = e.target.value.trim();
+      if (abaAtual === 'zapcoins') carregarLista();
+    }, 350);
   });
 
   async function carregarCategoriasFiltro() {

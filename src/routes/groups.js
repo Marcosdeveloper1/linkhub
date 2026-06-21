@@ -221,11 +221,35 @@ router.get('/', (req, res) => {
 
     const grupos = db.query(
       `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url, g.aprovado_em, g.status, g.regras, g.categoria_id,
-              c.nome as categoria_nome, c.slug as categoria_slug, c.icone as categoria_icone
+              c.nome as categoria_nome, c.slug as categoria_slug, c.icone as categoria_icone,
+              (
+                SELECT MAX(b.ends_at)
+                FROM group_boosts b
+                WHERE b.group_id = g.id
+                  AND b.status = 'ativo'
+                  AND datetime(b.ends_at) > datetime('now')
+              ) as impulsionado_ate,
+              (
+                SELECT MAX(b.criado_em)
+                FROM group_boosts b
+                WHERE b.group_id = g.id
+                  AND b.status = 'ativo'
+                  AND datetime(b.ends_at) > datetime('now')
+              ) as impulsionado_em,
+              CASE
+                WHEN EXISTS (
+                  SELECT 1
+                  FROM group_boosts b2
+                  WHERE b2.group_id = g.id
+                    AND b2.status = 'ativo'
+                    AND datetime(b2.ends_at) > datetime('now')
+                )
+                THEN 1 ELSE 0
+              END as impulsionado
        FROM groups g
        JOIN categories c ON g.categoria_id = c.id
        WHERE ${where}
-       ORDER BY g.aprovado_em DESC
+       ORDER BY impulsionado DESC, datetime(CASE WHEN impulsionado = 1 THEN impulsionado_em ELSE g.aprovado_em END) DESC, datetime(g.aprovado_em) DESC, g.id DESC
        LIMIT ? OFFSET ?`,
       [...params, porPagina, offset]
     );
@@ -241,6 +265,7 @@ router.get('/', (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar grupos.' });
   }
 });
+
 
 router.get('/categorias', (req, res) => {
   try {
@@ -269,7 +294,31 @@ router.get('/meus', requireLogin, (req, res) => {
     const grupos = db.query(
       `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url,
               g.status, g.motivo_rejeicao, g.criado_em, g.aprovado_em,
-              c.nome as categoria_nome
+              c.nome as categoria_nome,
+              (
+                SELECT MAX(b.ends_at)
+                FROM group_boosts b
+                WHERE b.group_id = g.id
+                  AND b.status = 'ativo'
+                  AND datetime(b.ends_at) > datetime('now')
+              ) as impulsionado_ate,
+              (
+                SELECT MAX(b.criado_em)
+                FROM group_boosts b
+                WHERE b.group_id = g.id
+                  AND b.status = 'ativo'
+                  AND datetime(b.ends_at) > datetime('now')
+              ) as impulsionado_em,
+              CASE
+                WHEN EXISTS (
+                  SELECT 1
+                  FROM group_boosts b2
+                  WHERE b2.group_id = g.id
+                    AND b2.status = 'ativo'
+                    AND datetime(b2.ends_at) > datetime('now')
+                )
+                THEN 1 ELSE 0
+              END as impulsionado
        FROM groups g
        JOIN categories c ON g.categoria_id = c.id
        WHERE g.usuario_id = ?
@@ -282,6 +331,7 @@ router.get('/meus', requireLogin, (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar seus grupos.' });
   }
 });
+
 
 // DELETE /api/grupos/meus/:id — usuário remove um grupo próprio
 router.delete('/meus/:id', requireLogin, (req, res) => {
@@ -451,7 +501,24 @@ router.get('/:id', (req, res) => {
     const statusSql = isAdmin ? "g.status IN ('aprovado', 'indisponivel')" : "g.status = 'aprovado'";
 
     const grupo = db.queryOne(`
-      SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug
+      SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug,
+             (
+               SELECT MAX(b.ends_at)
+               FROM group_boosts b
+               WHERE b.group_id = g.id
+                 AND b.status = 'ativo'
+                 AND datetime(b.ends_at) > datetime('now')
+             ) as impulsionado_ate,
+             CASE
+               WHEN EXISTS (
+                 SELECT 1
+                 FROM group_boosts b2
+                 WHERE b2.group_id = g.id
+                   AND b2.status = 'ativo'
+                   AND datetime(b2.ends_at) > datetime('now')
+               )
+               THEN 1 ELSE 0
+             END as impulsionado
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
       WHERE g.id = ? AND ${statusSql}
@@ -483,11 +550,28 @@ router.get('/:id/relacionados', (req, res) => {
     if (!grupo) return res.json([]);
 
     const relacionados = db.query(`
-      SELECT g.id, g.nome_grupo, g.descricao, g.foto_url, c.nome as categoria_nome
+      SELECT g.id, g.nome_grupo, g.descricao, g.foto_url, c.nome as categoria_nome,
+             (
+               SELECT MAX(b.ends_at)
+               FROM group_boosts b
+               WHERE b.group_id = g.id
+                 AND b.status = 'ativo'
+                 AND datetime(b.ends_at) > datetime('now')
+             ) as impulsionado_ate,
+             CASE
+               WHEN EXISTS (
+                 SELECT 1
+                 FROM group_boosts b2
+                 WHERE b2.group_id = g.id
+                   AND b2.status = 'ativo'
+                   AND datetime(b2.ends_at) > datetime('now')
+               )
+               THEN 1 ELSE 0
+             END as impulsionado
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
       WHERE g.categoria_id = ? AND g.status = 'aprovado' AND g.id != ?
-      ORDER BY g.aprovado_em DESC
+      ORDER BY impulsionado DESC, datetime(impulsionado_ate) DESC, datetime(g.aprovado_em) DESC
       LIMIT 6
     `, [grupo.categoria_id, id]);
 
