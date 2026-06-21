@@ -37,6 +37,54 @@ function traduzirTipoRelato(tipo) {
 router.use(requireAdmin);
 
 
+// Resumo geral do painel admin: totais por status, erros e grupos aprovados por categoria.
+router.get('/resumo', (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const porStatus = db.query(`
+      SELECT status, COUNT(*) as total
+      FROM groups
+      GROUP BY status
+    `);
+
+    const totais = {
+      aprovados: 0,
+      pendentes: 0,
+      rejeitados: 0,
+      erros_relatados: 0
+    };
+
+    porStatus.forEach((linha) => {
+      if (linha.status === 'aprovado') totais.aprovados = Number(linha.total || 0);
+      if (linha.status === 'pendente') totais.pendentes = Number(linha.total || 0);
+      if (linha.status === 'rejeitado') totais.rejeitados = Number(linha.total || 0);
+    });
+
+    const erros = db.queryOne(`SELECT COUNT(*) as total FROM error_reports`);
+    totais.erros_relatados = Number(erros?.total || 0);
+
+    const categorias = db.query(`
+      SELECT c.id, c.nome, c.slug,
+             COUNT(CASE WHEN g.status = 'aprovado' THEN 1 END) as total
+      FROM categories c
+      LEFT JOIN groups g ON g.categoria_id = c.id
+      GROUP BY c.id, c.nome, c.slug
+      ORDER BY c.nome ASC
+    `).map((cat) => ({
+      ...cat,
+      total: Number(cat.total || 0)
+    }));
+
+    res.json({ ok: true, totais, categorias });
+  } catch (err) {
+    console.error('[admin/resumo]', err);
+    res.status(500).json({ erro: 'Erro ao carregar resumo do painel.' });
+  }
+});
+
+
+
 function garantirCarteiraUsuario(usuarioId) {
   db.run(
     `INSERT OR IGNORE INTO user_wallets (user_id, balance)
@@ -608,3 +656,4 @@ router.post('/grupos/deletar-lote', (req, res) => {
 });
 
 module.exports = router;
+
