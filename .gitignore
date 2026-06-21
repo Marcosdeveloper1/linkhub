@@ -8,3 +8,10 @@ Thumbs.db
 # WhatsApp group images
 public/img/grupos/*
 !public/img/grupos/.gitkeep
+
+# Banco e backups locais
+data/
+data-backup*/
+*.db
+*.db.gz
+trocar-senha-admin.js
