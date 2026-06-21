@@ -4181,3 +4181,25 @@ a
     padding: 10px 12px;
   }
 }
+
+/* ---- Refino auth gratuito e dica de envio ---- */
+.auth-brand-card .auth-brand-logo {
+  margin-bottom: 34px;
+}
+
+.auth-brand-card .auth-brand-logo + h1 {
+  margin-top: 0;
+}
+
+.form-dica {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  .auth-brand-card .auth-brand-logo {
+    margin-bottom: 20px;
+  }
+}

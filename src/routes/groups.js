@@ -195,7 +195,7 @@ router.get('/', (req, res) => {
     const categoria = req.query.categoria ? sanitizeString(req.query.categoria, 50) : null;
     const busca = req.query.busca ? sanitizeString(req.query.busca, 100) : null;
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
-    const porPagina = 8;
+    const porPagina = 16;
     const offset = (pagina - 1) * porPagina;
 
     const isAdmin = req.session.usuario && req.session.usuario.role === 'admin';
