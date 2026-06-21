@@ -107,6 +107,17 @@ function migrar() {
     )
   `, [], '[db] ZapCoin: tabela zapcoin_orders verificada.', '[db] Erro ao criar zapcoin_orders:');
 
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_name TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_email TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN buyer_cpf TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN payment_method TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN pix_code TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN gateway_status TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN gateway_payload TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN gateway_final_amount_centavos INTEGER');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN credited_at TEXT');
+  tentar('ALTER TABLE zapcoin_orders ADD COLUMN atualizado_em TEXT');
+
   tentar(`
     CREATE TABLE IF NOT EXISTS group_boosts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

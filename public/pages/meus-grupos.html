@@ -1097,9 +1097,19 @@
         body: JSON.stringify({ quantidade })
       });
 
+      if (resp.checkout_url) {
+        window.location.href = resp.checkout_url;
+        return;
+      }
+
+      if (resp.pedido_id) {
+        window.location.href = `/pages/checkout.html?pedido=${resp.pedido_id}`;
+        return;
+      }
+
       mostrarAviso(
         'aviso-meus',
-        resp.mensagem || 'Pedido criado. A integração com Sync Pay será ativada na próxima etapa.',
+        resp.mensagem || 'Pedido criado. Você será direcionado para o checkout.',
         'ok'
       );
     } catch (err) {

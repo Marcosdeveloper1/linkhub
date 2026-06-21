@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout ZapCoin — WhatsApp Grupos</title>
+  <meta name="description" content="Finalize sua compra de ZapCoins com segurança no WhatsApp Grupos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .checkout-page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 20px 70px;
+    }
+
+    .checkout-hero {
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 84% 0%, rgba(255, 214, 67, 0.24), transparent 18rem),
+        radial-gradient(circle at 12% 0%, rgba(53, 190, 114, 0.22), transparent 20rem),
+        linear-gradient(135deg, #202a35 0%, #123f28 100%);
+      color: #fff;
+      padding: 24px;
+      box-shadow: 0 18px 46px rgba(15, 23, 42, 0.13);
+      border: 1px solid rgba(255,255,255,.10);
+      margin-bottom: 18px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .checkout-hero::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      bottom: -120px;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: rgba(255, 204, 20, .12);
+    }
+
+    .checkout-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      color: #ffeaa0;
+      font-size: .7rem;
+      font-weight: 950;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .checkout-hero h1 {
+      color: #fff;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.04;
+      letter-spacing: -1.2px;
+      margin: 0 0 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .checkout-hero p {
+      color: rgba(255,255,255,.76);
+      max-width: 680px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .checkout-card {
+      background: #fff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .checkout-card h2 {
+      margin: 0 0 4px;
+      font-size: 1.25rem;
+      letter-spacing: -.4px;
+    }
+
+    .checkout-card-sub {
+      color: var(--cinza-texto);
+      font-size: .9rem;
+      margin-bottom: 18px;
+    }
+
+    .checkout-resumo {
+      position: sticky;
+      top: 90px;
+      background:
+        radial-gradient(circle at top right, rgba(255, 204, 20, 0.18), transparent 15rem),
+        #ffffff;
+      border: 1px solid rgba(255, 204, 20, .36);
+      box-shadow: 0 12px 30px rgba(15,23,42,.08);
+    }
+
+    .checkout-produto {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid #eef2f7;
+      margin-bottom: 16px;
+    }
+
+    .checkout-coin {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 25%, #fff8b0 0%, #ffe066 18%, transparent 36%),
+        linear-gradient(135deg, #21c765 0%, #0e7a3c 100%);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.65), 0 12px 24px rgba(18,126,67,.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 950;
+      font-size: 1.5rem;
+      flex: 0 0 auto;
+      position: relative;
+    }
+
+    .checkout-coin::after {
+      content: "⚡";
+      position: absolute;
+      right: 8px;
+      bottom: 5px;
+      font-size: .72rem;
+    }
+
+    .checkout-produto strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--preto);
+    }
+
+    .checkout-produto span {
+      display: block;
+      color: var(--cinza-texto);
+      font-size: .82rem;
+    }
+
+    .checkout-linha {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef2f7;
+      color: #465468;
+      font-size: .9rem;
+    }
+
+    .checkout-linha strong {
+      color: var(--preto);
+      font-weight: 950;
+    }
+
+    .checkout-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 16px;
+      align-items: end;
+    }
+
+    .checkout-total span {
+      color: var(--cinza-texto);
+      font-weight: 800;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .checkout-total strong {
+      color: var(--preto);
+      font-size: 1.7rem;
+      letter-spacing: -.8px;
+      line-height: 1;
+    }
+
+    .checkout-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .checkout-form-grid .campo-full {
+      grid-column: 1 / -1;
+    }
+
+    .checkout-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .checkout-tab {
+      border: 1.5px solid var(--cinza-borda);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font);
+      transition: all .16s ease;
+    }
+
+    .checkout-tab strong {
+      display: block;
+      color: var(--preto);
+      font-size: .95rem;
+      font-weight: 950;
+    }
+
+    .checkout-tab span {
+      display: block;
+      color: var(--cinza-texto);
+      font-size: .78rem;
+      margin-top: 2px;
+    }
+
+    .checkout-tab.ativo {
+      border-color: var(--verde-claro);
+      background: #f2fff7;
+      box-shadow: 0 0 0 3px rgba(53,190,114,.14);
+    }
+
+    .checkout-tab[disabled] {
+      opacity: .58;
+      cursor: not-allowed;
+    }
+
+    .checkout-pix-box {
+      border: 1px dashed rgba(53, 190, 114, .55);
+      background: #f2fff7;
+      border-radius: 18px;
+      padding: 16px;
+      display: none;
+      margin-top: 16px;
+    }
+
+    .checkout-pix-box.visivel {
+      display: block;
+    }
+
+    .pix-code-area {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .pix-code-area textarea {
+      width: 100%;
+      min-height: 110px;
+      border-radius: 14px;
+      border: 1px solid rgba(53,190,114,.35);
+      padding: 12px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .78rem;
+      background: #fff;
+      color: #162033;
+    }
+
+    .checkout-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff7d6;
+      color: #6d4b00;
+      font-size: .76rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+
+    .checkout-card-alerta {
+      border-radius: 16px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e7edf4;
+      color: #526174;
+      font-size: .88rem;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .checkout-card-alerta strong {
+      color: var(--preto);
+    }
+
+    .checkout-seguranca {
+      margin-top: 14px;
+      color: var(--cinza-texto);
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
+    .checkout-sucesso {
+      display: none;
+      border-radius: 18px;
+      background: #d1e7dd;
+      color: #0a3622;
+      border: 1px solid #badbcc;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .checkout-sucesso.visivel {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+      .checkout-resumo {
+        position: static;
+        order: -1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .checkout-page {
+        padding: 22px 14px 90px;
+      }
+      .checkout-hero,
+      .checkout-card {
+        border-radius: 20px;
+        padding: 18px;
+      }
+      .checkout-form-grid,
+      .checkout-tabs {
+        grid-template-columns: 1fr;
+      }
+      .checkout-total strong {
+        font-size: 1.45rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<header class="navbar" id="navbar"></header>
+
+<main class="checkout-page">
+  <section class="checkout-hero">
+    <span class="checkout-label">Checkout seguro</span>
+    <h1>Finalizar compra de ZapCoins</h1>
+    <p>Confira a quantidade escolhida, preencha seus dados e gere o pagamento. Os créditos só entram após confirmação do gateway.</p>
+  </section>
+
+  <div id="aviso-checkout" class="aviso"></div>
+
+  <section class="checkout-grid">
+    <div class="checkout-card">
+      <h2>Dados do comprador</h2>
+      <p class="checkout-card-sub">Nome e email são obrigatórios. CPF é opcional.</p>
+
+      <div class="checkout-form-grid">
+        <div class="campo-full">
+          <label class="form-label" for="cliente-nome">Nome completo</label>
+          <input class="form-input" id="cliente-nome" type="text" autocomplete="name" maxlength="120" placeholder="Seu nome" required>
+        </div>
+        <div>
+          <label class="form-label" for="cliente-email">Email</label>
+          <input class="form-input" id="cliente-email" type="email" autocomplete="email" maxlength="160" placeholder="seu@email.com" required>
+        </div>
+        <div>
+          <label class="form-label" for="cliente-cpf">CPF opcional</label>
+          <input class="form-input" id="cliente-cpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00">
+        </div>
+      </div>
+
+      <h2>Pagamento</h2>
+      <p class="checkout-card-sub">Escolha a forma de pagamento.</p>
+
+      <div class="checkout-tabs" role="tablist" aria-label="Forma de pagamento">
+        <button class="checkout-tab ativo" id="tab-pix" type="button" data-metodo="pix">
+          <strong>Pix</strong>
+          <span>Código copia e cola</span>
+        </button>
+        <button class="checkout-tab" id="tab-cartao" type="button" data-metodo="cartao" disabled title="Aguardando endpoint oficial de cartão da Sync Pay">
+          <strong>Cartão de crédito</strong>
+          <span>Estrutura visual pronta</span>
+        </button>
+      </div>
+
+      <div class="checkout-card-alerta" id="cartao-alerta" hidden>
+        <strong>Cartão ainda não foi ativado.</strong><br>
+        A documentação enviada mostra Pix Cash-in e webhooks, mas não trouxe endpoint/tokenização oficial para cartão avulso. Para não adivinhar nem salvar dados sensíveis, a aba de cartão ficou bloqueada até termos o endpoint correto.
+      </div>
+
+      <button class="btn btn-primario btn-bloco" id="btn-gerar-pagamento" type="button">Gerar Pix</button>
+      <p class="checkout-seguranca">Não salvamos dados de cartão no nosso sistema. O Pix é criado pelo backend e confirmado por webhook/consulta de status.</p>
+
+      <div class="checkout-pix-box" id="pix-box">
+        <span class="checkout-status" id="pix-status">Aguardando pagamento</span>
+        <h3>Pix copia e cola</h3>
+        <p style="color:var(--cinza-texto);font-size:.9rem;">Copie o código abaixo, pague no seu banco e depois clique em verificar.</p>
+        <div class="pix-code-area">
+          <textarea id="pix-code" readonly></textarea>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-contorno" id="btn-copiar-pix" type="button">Copiar código Pix</button>
+            <button class="btn btn-primario" id="btn-verificar-pagamento" type="button">Já paguei, verificar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-sucesso" id="checkout-sucesso">
+        <strong>Pagamento confirmado!</strong><br>
+        Seus ZapCoins foram creditados. Você já pode voltar para seus grupos e impulsionar.
+        <div style="margin-top:12px;">
+          <a class="btn btn-primario" href="/pages/meus-grupos.html">Ir para meus grupos</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="checkout-card checkout-resumo" aria-label="Resumo da compra">
+      <h2>Resumo</h2>
+      <p class="checkout-card-sub">Produto digital: créditos ZapCoin.</p>
+      <div class="checkout-produto">
+        <span class="checkout-coin" aria-hidden="true">Z</span>
+        <div>
+          <strong id="resumo-produto">ZapCoins</strong>
+          <span id="resumo-descricao">Carregando pedido...</span>
+        </div>
+      </div>
+      <div class="checkout-linha">
+        <span>Quantidade</span>
+        <strong id="resumo-quantidade">--</strong>
+      </div>
+      <div class="checkout-linha">
+        <span>Valor unitário</span>
+        <strong id="resumo-unitario">--</strong>
+      </div>
+      <div class="checkout-linha">
+        <span>Status</span>
+        <strong id="resumo-status">--</strong>
+      </div>
+      <div class="checkout-total">
+        <span>Total</span>
+        <strong id="resumo-total">--</strong>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp</p>
+</footer>
+
+<script src="/js/utils.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const pedidoId = parseInt(params.get('pedido') || params.get('id'), 10);
+  let pedidoAtual = null;
+  let sessaoAtual = null;
+  let metodoAtual = 'pix';
+
+  function moeda(centavos) {
+    return (Number(centavos || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function statusBonito(status) {
+    const mapa = {
+      pendente: 'Pendente',
+      checkout: 'Aguardando checkout',
+      aguardando_pagamento: 'Aguardando pagamento',
+      pago: 'Pago',
+      falhou: 'Falhou',
+      cancelado: 'Cancelado',
+      valor_divergente: 'Valor divergente'
+    };
+    return mapa[status] || status || '--';
+  }
+
+  function limparCpf(valor) {
+    return String(valor || '').replace(/\D/g, '');
+  }
+
+  function preencherComprador() {
+    if (!sessaoAtual?.usuario) return;
+    const nome = document.getElementById('cliente-nome');
+    const email = document.getElementById('cliente-email');
+    if (!nome.value) nome.value = sessaoAtual.usuario.nome || '';
+    if (!email.value) email.value = sessaoAtual.usuario.email || '';
+  }
+
+  function renderizarPedido(pedido) {
+    pedidoAtual = pedido;
+    const coins = Number(pedido.coins || 0);
+    const total = Number(pedido.preco_centavos || 0);
+    const unitario = coins > 0 ? Math.round(total / coins) : 0;
+
+    document.getElementById('resumo-produto').textContent = `${coins} ZapCoin${coins !== 1 ? 's' : ''}`;
+    document.getElementById('resumo-descricao').textContent = `${coins * 12} horas de impulso disponíveis após confirmação.`;
+    document.getElementById('resumo-quantidade').textContent = `${coins} ZC`;
+    document.getElementById('resumo-unitario').textContent = moeda(unitario);
+    document.getElementById('resumo-status').textContent = statusBonito(pedido.status);
+    document.getElementById('resumo-total').textContent = moeda(total);
+
+    if (pedido.buyer_name) document.getElementById('cliente-nome').value = pedido.buyer_name;
+    if (pedido.buyer_email) document.getElementById('cliente-email').value = pedido.buyer_email;
+    if (pedido.buyer_cpf) document.getElementById('cliente-cpf').value = pedido.buyer_cpf;
+
+    if (pedido.pix_code) {
+      mostrarPix(pedido.pix_code, pedido.status);
+    }
+
+    if (pedido.status === 'pago') {
+      document.getElementById('checkout-sucesso').classList.add('visivel');
+      document.getElementById('btn-gerar-pagamento').disabled = true;
+    }
+  }
+
+  function mostrarPix(codigo, status) {
+    document.getElementById('pix-code').value = codigo || '';
+    document.getElementById('pix-status').textContent = statusBonito(status || 'aguardando_pagamento');
+    document.getElementById('pix-box').classList.add('visivel');
+  }
+
+  async function carregarPedido() {
+    if (!pedidoId) {
+      mostrarAviso('aviso-checkout', 'Pedido não informado. Volte para Meus grupos e tente comprar novamente.');
+      return;
+    }
+
+    try {
+      const pedido = await apiFetch(`/zapcoins/pedido/${pedidoId}`);
+      renderizarPedido(pedido);
+    } catch (err) {
+      mostrarAviso('aviso-checkout', err.message);
+    }
+  }
+
+  function validarDados() {
+    const nome = document.getElementById('cliente-nome').value.trim();
+    const email = document.getElementById('cliente-email').value.trim();
+    const cpf = limparCpf(document.getElementById('cliente-cpf').value);
+
+    if (nome.length < 2) throw new Error('Informe seu nome.');
+    if (!email || !email.includes('@')) throw new Error('Informe um email válido.');
+    if (cpf && cpf.length !== 11) throw new Error('CPF deve ter 11 números ou ficar em branco.');
+
+    return { nome, email, cpf };
+  }
+
+  async function gerarPagamento() {
+    const btn = document.getElementById('btn-gerar-pagamento');
+    limparAviso('aviso-checkout');
+
+    try {
+      const comprador = validarDados();
+      btnCarregando(btn, true);
+
+      const resp = await apiFetch(`/zapcoins/pedido/${pedidoId}/pagar`, {
+        method: 'POST',
+        body: JSON.stringify({
+          metodo: metodoAtual,
+          nome: comprador.nome,
+          email: comprador.email,
+          cpf: comprador.cpf
+        })
+      });
+
+      renderizarPedido(resp.pedido);
+      if (resp.pix_code) mostrarPix(resp.pix_code, resp.pedido.status);
+      mostrarAviso('aviso-checkout', resp.mensagem || 'Pagamento gerado com sucesso.', 'ok');
+    } catch (err) {
+      mostrarAviso('aviso-checkout', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  async function verificarPagamento() {
+    const btn = document.getElementById('btn-verificar-pagamento');
+    limparAviso('aviso-checkout');
+    try {
+      btnCarregando(btn, true);
+      const resp = await apiFetch(`/zapcoins/pedido/${pedidoId}/verificar`, { method: 'POST' });
+      renderizarPedido(resp.pedido);
+      mostrarAviso('aviso-checkout', resp.mensagem || 'Status atualizado.', resp.pedido.status === 'pago' ? 'ok' : 'erro');
+    } catch (err) {
+      mostrarAviso('aviso-checkout', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  document.getElementById('btn-gerar-pagamento').addEventListener('click', gerarPagamento);
+  document.getElementById('btn-verificar-pagamento').addEventListener('click', verificarPagamento);
+  document.getElementById('btn-copiar-pix').addEventListener('click', async () => {
+    const codigo = document.getElementById('pix-code').value;
+    try {
+      await navigator.clipboard.writeText(codigo);
+      mostrarAviso('aviso-checkout', 'Código Pix copiado.', 'ok');
+    } catch {
+      document.getElementById('pix-code').select();
+      mostrarAviso('aviso-checkout', 'Selecione e copie o código Pix.', 'ok');
+    }
+  });
+
+  document.getElementById('tab-pix').addEventListener('click', () => {
+    metodoAtual = 'pix';
+    document.getElementById('tab-pix').classList.add('ativo');
+    document.getElementById('tab-cartao').classList.remove('ativo');
+    document.getElementById('cartao-alerta').hidden = true;
+    document.getElementById('btn-gerar-pagamento').textContent = 'Gerar Pix';
+  });
+
+  document.getElementById('tab-cartao').addEventListener('click', () => {
+    document.getElementById('cartao-alerta').hidden = false;
+  });
+
+  async function montar() {
+    sessaoAtual = await iniciarPagina({ requerLogin: true });
+    preencherComprador();
+    await carregarPedido();
+  }
+
+  montar();
+</script>
+</body>
+</html>

@@ -16,6 +16,8 @@ const TABELA_PRECOS = [
   { min: 100, max: Infinity, centavos: 499, nome: 'Empresarial Plus' }
 ];
 
+let tokenCache = null;
+
 function sqlDate(date) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
@@ -30,6 +32,14 @@ function moedaBRL(centavos) {
     style: 'currency',
     currency: 'BRL'
   });
+}
+
+function centavosParaDecimal(centavos) {
+  return Number((Number(centavos || 0) / 100).toFixed(2));
+}
+
+function decimalParaCentavos(valor) {
+  return Math.round(Number(valor || 0) * 100);
 }
 
 function faixaPreco(quantidade) {
@@ -73,7 +83,7 @@ function formatarPacote(p) {
     nome: p.nome,
     coins: p.coins,
     preco_centavos: p.preco_centavos,
-    preco: preco,
+    preco,
     preco_formatado: preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
     preco_por_coin: precoPorCoin,
     preco_por_coin_formatado: precoPorCoin.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
@@ -144,6 +154,251 @@ function textoPeriodoPorZapCoins(zapcoins) {
   return `${horas} horas`;
 }
 
+function limparCpf(valor) {
+  return String(valor || '').replace(/\D/g, '');
+}
+
+function validarComprador(body) {
+  const nome = String(body.nome || '').trim().slice(0, 120);
+  const email = String(body.email || '').trim().toLowerCase().slice(0, 160);
+  const cpf = limparCpf(body.cpf || '');
+
+  if (nome.length < 2) {
+    return { erro: 'Informe o nome do comprador.' };
+  }
+
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    return { erro: 'Informe um email válido.' };
+  }
+
+  if (cpf && cpf.length !== 11) {
+    return { erro: 'CPF deve ter 11 números ou ficar em branco.' };
+  }
+
+  return { nome, email, cpf: cpf || null };
+}
+
+function syncPayBaseUrl() {
+  return String(process.env.SYNCPAY_BASE_URL || '').replace(/\/$/, '');
+}
+
+function syncPayConfigurado() {
+  return Boolean(syncPayBaseUrl() && process.env.SYNCPAY_CLIENT_ID && process.env.SYNCPAY_CLIENT_SECRET);
+}
+
+async function syncPayRequest(path, { method = 'GET', body = null, auth = true } = {}) {
+  const baseUrl = syncPayBaseUrl();
+  if (!baseUrl) throw new Error('SYNCPAY_BASE_URL não configurado.');
+
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json'
+  };
+
+  if (auth) {
+    headers.Authorization = `Bearer ${await obterTokenSyncPay()}`;
+  }
+
+  const resp = await fetch(`${baseUrl}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  const text = await resp.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!resp.ok) {
+    const detalhe = data?.message || data?.erro || data?.error || `HTTP ${resp.status}`;
+    throw new Error(`Sync Pay: ${detalhe}`);
+  }
+
+  return data;
+}
+
+async function obterTokenSyncPay() {
+  const agora = Date.now();
+  if (tokenCache?.access_token && tokenCache.expires_at_ms && tokenCache.expires_at_ms - 60000 > agora) {
+    return tokenCache.access_token;
+  }
+
+  const data = await syncPayRequest('/api/partner/v1/auth-token', {
+    method: 'POST',
+    auth: false,
+    body: {
+      client_id: process.env.SYNCPAY_CLIENT_ID,
+      client_secret: process.env.SYNCPAY_CLIENT_SECRET
+    }
+  });
+
+  if (!data.access_token) {
+    throw new Error('Sync Pay não retornou access_token.');
+  }
+
+  tokenCache = {
+    access_token: data.access_token,
+    expires_at_ms: data.expires_at ? new Date(data.expires_at).getTime() : agora + Number(data.expires_in || 3600) * 1000
+  };
+
+  return tokenCache.access_token;
+}
+
+function montarWebhookUrl(req) {
+  return process.env.SYNCPAY_WEBHOOK_URL || `${req.protocol}://${req.get('host')}/api/webhooks/syncpay`;
+}
+
+function formatarPedido(pedido) {
+  if (!pedido) return null;
+  const coins = Number(pedido.coins || 0);
+  const precoCentavos = Number(pedido.preco_centavos || 0);
+  const precoUnitario = coins > 0 ? Math.round(precoCentavos / coins) : 0;
+
+  return {
+    id: pedido.id,
+    user_id: pedido.user_id,
+    package_id: pedido.package_id,
+    coins,
+    preco_centavos: precoCentavos,
+    preco_formatado: moedaBRL(precoCentavos),
+    preco_unitario_centavos: precoUnitario,
+    preco_unitario_formatado: moedaBRL(precoUnitario),
+    status: pedido.status,
+    gateway: pedido.gateway,
+    gateway_payment_id: pedido.gateway_payment_id,
+    gateway_status: pedido.gateway_status,
+    payment_method: pedido.payment_method,
+    pix_code: pedido.pix_code,
+    checkout_url: pedido.checkout_url,
+    buyer_name: pedido.buyer_name,
+    buyer_email: pedido.buyer_email,
+    buyer_cpf: pedido.buyer_cpf,
+    criado_em: pedido.criado_em,
+    pago_em: pedido.pago_em,
+    credited_at: pedido.credited_at
+  };
+}
+
+function buscarPedidoDoUsuario(pedidoId, usuarioId) {
+  return db.queryOne(
+    `SELECT * FROM zapcoin_orders WHERE id = ? AND user_id = ?`,
+    [pedidoId, usuarioId]
+  );
+}
+
+function statusPagoSyncPay(status) {
+  return ['completed', 'paid', 'approved', 'captured'].includes(String(status || '').toLowerCase());
+}
+
+function atualizarPedidoGateway({ pedidoId, status, gatewayStatus = null, gatewayPayload = null, pixCode = null, gatewayPaymentId = null }) {
+  db.run(
+    `UPDATE zapcoin_orders
+     SET status = ?,
+         gateway_status = COALESCE(?, gateway_status),
+         gateway_payload = COALESCE(?, gateway_payload),
+         pix_code = COALESCE(?, pix_code),
+         gateway_payment_id = COALESCE(?, gateway_payment_id),
+         atualizado_em = datetime('now')
+     WHERE id = ?`,
+    [status, gatewayStatus, gatewayPayload ? JSON.stringify(gatewayPayload).slice(0, 8000) : null, pixCode, gatewayPaymentId, pedidoId]
+  );
+}
+
+function creditarPedidoPago(pedido, origem = 'syncpay') {
+  const atual = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+  if (!atual) return { ok: false, motivo: 'Pedido não encontrado.' };
+
+  if (atual.credited_at || atual.status === 'pago') {
+    return { ok: true, ja_creditado: true, saldo: obterSaldo(atual.user_id) };
+  }
+
+  const saldoAntes = obterSaldo(atual.user_id);
+  const saldoDepois = saldoAntes + Number(atual.coins || 0);
+
+  db.run(
+    `UPDATE user_wallets
+     SET balance = ?, atualizado_em = datetime('now')
+     WHERE user_id = ?`,
+    [saldoDepois, atual.user_id]
+  );
+
+  registrarMovimento({
+    userId: atual.user_id,
+    tipo: 'compra',
+    quantidade: Number(atual.coins || 0),
+    saldoAntes,
+    saldoDepois,
+    referenciaTipo: 'zapcoin_order',
+    referenciaId: atual.id,
+    descricao: `Compra de ${atual.coins} ZapCoin${Number(atual.coins) > 1 ? 's' : ''} confirmada via ${origem}`
+  });
+
+  db.run(
+    `UPDATE zapcoin_orders
+     SET status = 'pago', pago_em = COALESCE(pago_em, datetime('now')), credited_at = COALESCE(credited_at, datetime('now')), atualizado_em = datetime('now')
+     WHERE id = ?`,
+    [atual.id]
+  );
+
+  return { ok: true, saldo: saldoDepois };
+}
+
+async function criarPixSyncPay(req, pedido, comprador) {
+  if (!syncPayConfigurado()) {
+    throw new Error('Gateway Sync Pay ainda não configurado. Preencha SYNCPAY_BASE_URL, SYNCPAY_CLIENT_ID e SYNCPAY_CLIENT_SECRET no .env.');
+  }
+
+  const client = {
+    name: comprador.nome,
+    email: comprador.email
+  };
+
+  if (comprador.cpf) client.cpf = comprador.cpf;
+
+  const body = {
+    amount: centavosParaDecimal(pedido.preco_centavos),
+    description: `ZapCoin - ${pedido.coins} crédito${Number(pedido.coins) > 1 ? 's' : ''}`,
+    webhook_url: montarWebhookUrl(req),
+    client
+  };
+
+  const resp = await syncPayRequest('/api/partner/v1/cash-in', {
+    method: 'POST',
+    body
+  });
+
+  const identifier = resp.identifier || resp.id || resp.data?.id || resp.data?.identifier;
+  const pixCode = resp.pix_code || resp.paymentCode || resp.data?.pix_code || resp.data?.paymentCode;
+
+  if (!identifier) {
+    throw new Error('Sync Pay não retornou identifier da transação.');
+  }
+
+  if (!pixCode) {
+    throw new Error('Sync Pay não retornou código Pix.');
+  }
+
+  return { identifier, pixCode, raw: resp };
+}
+
+async function consultarSyncPay(identifier) {
+  const resp = await syncPayRequest(`/api/partner/v1/transaction/${encodeURIComponent(identifier)}`, {
+    method: 'GET'
+  });
+
+  return resp.data || resp;
+}
+
+function validarValorGateway(pedido, data) {
+  if (!data || data.amount == null) return true;
+  const amountCentavos = decimalParaCentavos(data.amount);
+  return amountCentavos === Number(pedido.preco_centavos || 0);
+}
+
 // GET /api/zapcoins/resumo
 router.get('/resumo', requireLogin, (req, res) => {
   try {
@@ -210,8 +465,7 @@ router.get('/calcular', requireLogin, (req, res) => {
 });
 
 // POST /api/zapcoins/comprar
-// Cria pedido pendente. O preço é sempre calculado aqui no backend.
-// O front nunca define preço, apenas quantidade.
+// Cria o pedido local e direciona para o checkout próprio.
 router.post('/comprar', requireLogin, (req, res) => {
   try {
     const usuarioId = req.session.usuario.id;
@@ -229,25 +483,175 @@ router.post('/comprar', requireLogin, (req, res) => {
 
     const pedidoId = db.run(
       `INSERT INTO zapcoin_orders
-        (user_id, package_id, coins, preco_centavos, status, gateway)
-       VALUES (?, ?, ?, ?, 'pendente', 'syncpay')`,
-      [usuarioId, pacote?.id || 0, calculo.quantidade, calculo.preco_centavos]
+        (user_id, package_id, coins, preco_centavos, status, gateway, checkout_url)
+       VALUES (?, ?, ?, ?, 'checkout', 'syncpay', ?)`,
+      [usuarioId, pacote?.id || 0, calculo.quantidade, calculo.preco_centavos, `/pages/checkout.html?pedido=`]
     );
+
+    const checkoutUrl = `/pages/checkout.html?pedido=${pedidoId}`;
+    db.run('UPDATE zapcoin_orders SET checkout_url = ? WHERE id = ?', [checkoutUrl, pedidoId]);
 
     res.json({
       ok: true,
       pedido_id: pedidoId,
-      status: 'pendente',
+      status: 'checkout',
       quantidade: calculo.quantidade,
       preco_centavos: calculo.preco_centavos,
       preco_formatado: calculo.preco_formatado,
       preco_unitario_formatado: calculo.preco_unitario_formatado,
-      empresarial: calculo.empresarial,
-      mensagem: `Pedido de ${calculo.quantidade} ZapCoin${calculo.quantidade > 1 ? 's' : ''} criado por ${calculo.preco_formatado}. A Sync Pay será ligada na próxima etapa.`
+      checkout_url: checkoutUrl,
+      mensagem: `Pedido de ${calculo.quantidade} ZapCoin${calculo.quantidade > 1 ? 's' : ''} criado por ${calculo.preco_formatado}.`
     });
   } catch (err) {
     console.error('[zapcoins/comprar]', err);
     res.status(500).json({ erro: 'Erro ao criar pedido de ZapCoins.' });
+  }
+});
+
+// GET /api/zapcoins/pedido/:id
+router.get('/pedido/:id', requireLogin, (req, res) => {
+  try {
+    const pedidoId = parseInt(req.params.id, 10);
+    if (!pedidoId) return res.status(400).json({ erro: 'Pedido inválido.' });
+
+    const pedido = buscarPedidoDoUsuario(pedidoId, req.session.usuario.id);
+    if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' });
+
+    res.json(formatarPedido(pedido));
+  } catch (err) {
+    console.error('[zapcoins/pedido]', err);
+    res.status(500).json({ erro: 'Erro ao carregar pedido.' });
+  }
+});
+
+// POST /api/zapcoins/pedido/:id/pagar
+router.post('/pedido/:id/pagar', requireLogin, async (req, res) => {
+  try {
+    const pedidoId = parseInt(req.params.id, 10);
+    const metodo = String(req.body.metodo || 'pix').toLowerCase();
+    const comprador = validarComprador(req.body);
+
+    if (!pedidoId) return res.status(400).json({ erro: 'Pedido inválido.' });
+    if (comprador.erro) return res.status(400).json({ erro: comprador.erro });
+
+    if (metodo !== 'pix') {
+      return res.status(400).json({
+        erro: 'Cartão de crédito ainda não foi ativado: a documentação enviada não trouxe endpoint/tokenização oficial para cartão avulso. Nenhum dado de cartão será coletado ou salvo.'
+      });
+    }
+
+    const pedido = buscarPedidoDoUsuario(pedidoId, req.session.usuario.id);
+    if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' });
+    if (pedido.status === 'pago' || pedido.credited_at) return res.status(400).json({ erro: 'Este pedido já foi pago.' });
+
+    if (pedido.gateway_payment_id && pedido.pix_code) {
+      db.run(
+        `UPDATE zapcoin_orders
+         SET buyer_name = ?, buyer_email = ?, buyer_cpf = ?, payment_method = 'pix', atualizado_em = datetime('now')
+         WHERE id = ?`,
+        [comprador.nome, comprador.email, comprador.cpf, pedido.id]
+      );
+
+      const pedidoAtualizado = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+      return res.json({
+        ok: true,
+        reutilizado: true,
+        pedido: formatarPedido(pedidoAtualizado),
+        pix_code: pedidoAtualizado.pix_code,
+        mensagem: 'Este pedido já possui um Pix gerado.'
+      });
+    }
+
+    const pix = await criarPixSyncPay(req, pedido, comprador);
+
+    db.run(
+      `UPDATE zapcoin_orders
+       SET status = 'aguardando_pagamento',
+           payment_method = 'pix',
+           buyer_name = ?,
+           buyer_email = ?,
+           buyer_cpf = ?,
+           gateway_payment_id = ?,
+           pix_code = ?,
+           gateway_status = 'pending',
+           gateway_payload = ?,
+           atualizado_em = datetime('now')
+       WHERE id = ?`,
+      [comprador.nome, comprador.email, comprador.cpf, pix.identifier, pix.pixCode, JSON.stringify(pix.raw).slice(0, 8000), pedido.id]
+    );
+
+    const pedidoAtualizado = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+
+    res.json({
+      ok: true,
+      pedido: formatarPedido(pedidoAtualizado),
+      pix_code: pix.pixCode,
+      mensagem: 'Pix gerado com sucesso.'
+    });
+  } catch (err) {
+    console.error('[zapcoins/pagar]', err);
+    res.status(500).json({ erro: err.message || 'Erro ao gerar pagamento.' });
+  }
+});
+
+// POST /api/zapcoins/pedido/:id/verificar
+router.post('/pedido/:id/verificar', requireLogin, async (req, res) => {
+  try {
+    const pedidoId = parseInt(req.params.id, 10);
+    if (!pedidoId) return res.status(400).json({ erro: 'Pedido inválido.' });
+
+    const pedido = buscarPedidoDoUsuario(pedidoId, req.session.usuario.id);
+    if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' });
+
+    if (pedido.status === 'pago' || pedido.credited_at) {
+      return res.json({ ok: true, pedido: formatarPedido(pedido), mensagem: 'Pedido já confirmado.' });
+    }
+
+    if (!pedido.gateway_payment_id) {
+      return res.status(400).json({ erro: 'Gere o Pix antes de verificar o pagamento.' });
+    }
+
+    const data = await consultarSyncPay(pedido.gateway_payment_id);
+
+    if (!validarValorGateway(pedido, data)) {
+      atualizarPedidoGateway({
+        pedidoId: pedido.id,
+        status: 'valor_divergente',
+        gatewayStatus: data.status,
+        gatewayPayload: data
+      });
+      const atualizado = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+      return res.status(400).json({ erro: 'Pagamento localizado com valor divergente. Verifique manualmente no painel.', pedido: formatarPedido(atualizado) });
+    }
+
+    if (statusPagoSyncPay(data.status)) {
+      atualizarPedidoGateway({
+        pedidoId: pedido.id,
+        status: 'aguardando_credito',
+        gatewayStatus: data.status,
+        gatewayPayload: data,
+        pixCode: data.pix_code || null
+      });
+
+      const atualizado = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+      creditarPedidoPago(atualizado, 'Sync Pay');
+      const pago = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+      return res.json({ ok: true, pedido: formatarPedido(pago), mensagem: 'Pagamento confirmado e ZapCoins creditados.' });
+    }
+
+    atualizarPedidoGateway({
+      pedidoId: pedido.id,
+      status: 'aguardando_pagamento',
+      gatewayStatus: data.status || 'pending',
+      gatewayPayload: data,
+      pixCode: data.pix_code || null
+    });
+
+    const atualizado = db.queryOne('SELECT * FROM zapcoin_orders WHERE id = ?', [pedido.id]);
+    res.json({ ok: true, pedido: formatarPedido(atualizado), mensagem: 'Pagamento ainda não confirmado.' });
+  } catch (err) {
+    console.error('[zapcoins/verificar]', err);
+    res.status(500).json({ erro: err.message || 'Erro ao verificar pagamento.' });
   }
 });
 
@@ -256,14 +660,14 @@ router.post('/impulsionar', requireLogin, (req, res) => {
   try {
     const usuarioId = req.session.usuario.id;
     const grupoId = parseInt(req.body.grupo_id, 10);
-    const zapcoinsSolicitados = parseInt(req.body.zapcoins || req.body.quantidade || req.body.dias, 10);
+    const zapcoins = parseInt(req.body.zapcoins || req.body.dias, 10);
 
     if (!grupoId) {
       return res.status(400).json({ erro: 'Grupo inválido.' });
     }
 
-    if (!ZAPCOINS_IMPULSO_PERMITIDOS.has(zapcoinsSolicitados)) {
-      return res.status(400).json({ erro: 'Escolha uma opção válida de impulso: 12 horas, 24 horas, 3 dias, 7 dias, 15 dias ou 30 dias.' });
+    if (!ZAPCOINS_IMPULSO_PERMITIDOS.has(zapcoins)) {
+      return res.status(400).json({ erro: 'Escolha 1, 2, 6, 14, 30 ou 60 ZapCoins de impulso.' });
     }
 
     const grupo = db.queryOne(
@@ -292,7 +696,7 @@ router.post('/impulsionar', requireLogin, (req, res) => {
       return res.status(400).json({ erro: 'Somente grupos aprovados podem ser impulsionados.' });
     }
 
-    const custo = zapcoinsSolicitados;
+    const custo = zapcoins;
     const saldoAntes = obterSaldo(usuarioId);
 
     if (saldoAntes < custo) {
@@ -302,8 +706,8 @@ router.post('/impulsionar', requireLogin, (req, res) => {
     }
 
     const saldoDepois = saldoAntes - custo;
-    const periodo = calcularPeriodoBoost(grupo, zapcoinsSolicitados);
-    const periodoTexto = textoPeriodoPorZapCoins(zapcoinsSolicitados);
+    const periodo = calcularPeriodoBoost(grupo, zapcoins);
+    const periodoTexto = textoPeriodoPorZapCoins(zapcoins);
 
     db.run(
       `UPDATE user_wallets
@@ -344,3 +748,14 @@ router.post('/impulsionar', requireLogin, (req, res) => {
 });
 
 module.exports = router;
+module.exports._internals = {
+  moedaBRL,
+  decimalParaCentavos,
+  statusPagoSyncPay,
+  validarValorGateway,
+  creditarPedidoPago,
+  atualizarPedidoGateway,
+  formatarPedido,
+  syncPayConfigurado,
+  consultarSyncPay
+};

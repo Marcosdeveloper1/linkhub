@@ -79,6 +79,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/grupos', require('./routes/groups'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/zapcoins', require('./routes/zapcoins'));
+app.use('/api/webhooks', require('./routes/webhooks'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
