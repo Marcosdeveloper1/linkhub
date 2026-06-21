@@ -1,4 +1,4 @@
-/* whatsapp-grupos-utils.js — funções compartilhadas entre páginas */
+/* zapgrupos-utils.js — funções compartilhadas entre páginas */
 
 const API = '/api';
 
@@ -33,10 +33,10 @@ function montarNavbar(sessao) {
 
   nav.innerHTML = `
     <div class="navbar-inner">
-      <a href="/" class="navbar-logo" aria-label="WhatsApp Grupos - Página inicial">
+      <a href="/" class="navbar-logo" aria-label="ZapGrupos - Página inicial">
         <img src="/img/icon.png" alt="" class="navbar-logo-icone" width="48" height="48">
         <span class="navbar-logo-texto">
-          <span class="navbar-logo-whatsapp">WhatsApp</span>
+          <span class="navbar-logo-whatsapp">Zap</span>
           <span class="navbar-logo-grupos">Grupos</span>
         </span>
       </a>
@@ -69,7 +69,7 @@ function montarNavbar(sessao) {
       <div class="menu-lateral-topo">
         <div>
           <strong>Menu</strong>
-          <span>WhatsApp Grupos</span>
+          <span>ZapGrupos</span>
         </div>
         <button class="menu-lateral-fechar" type="button" id="btn-fechar-menu" aria-label="Fechar menu">×</button>
       </div>
@@ -89,7 +89,7 @@ function montarNavbar(sessao) {
               <span class="menu-lateral-icone">▣</span>
               <span>Meus grupos</span>
             </a>` : ''}`
-          : `<a href="/pages/cadastro.html" class="menu-lateral-link ${linkAtivo('/pages/cadastro.html')}">
+          : `<a href="/pages/login.html?redirect=/pages/enviar-grupo.html" class="menu-lateral-link ${linkAtivo('/pages/cadastro.html')}">
               <span class="menu-lateral-icone">＋</span>
               <span>Divulgar grupo</span>
             </a>`

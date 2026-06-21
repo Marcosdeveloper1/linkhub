@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="meta-titulo">Grupos no WhatsApp — WhatsApp Grupos</title>
-  <meta name="description" id="meta-descricao" content="Encontre os melhores grupos de WhatsApp organizados por categoria no WhatsApp Grupos.">
+  <title id="meta-titulo">Comunidades por categoria — ZapGrupos</title>
+  <meta name="description" id="meta-descricao" content="Encontre comunidades organizadas por categoria no ZapGrupos.">
   <link rel="canonical" id="meta-canonical" href="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -149,7 +149,7 @@
     <div class="categoria-hero-breadcrumb">
       <a href="/">Início</a> › <span id="breadcrumb-nome">Categoria</span>
     </div>
-    <h1 id="titulo-pagina">Grupos no WhatsApp</h1>
+    <h1 id="titulo-pagina">Comunidades por categoria</h1>
     <p id="descricao-pagina">Encontre os melhores grupos desta categoria e participe agora.</p>
   </div>
 </section>
@@ -178,7 +178,7 @@
 </main>
 
 <footer class="footer">
-  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+  <p>© 2025 ZapGrupos — Diretório independente de comunidades · Não somos afiliados ao WhatsApp ou Meta · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
 
 <script src="/js/utils.js"></script>
@@ -215,14 +215,14 @@
   function montarCardGrupo(g) {
     const destaque = grupoTemDestaque(g);
     const categoria = escaparHtml(g.categoria_nome || nomeCategoria || 'Grupo');
-    const nome = escaparHtml(g.nome_grupo || 'Grupo sem nome');
+    const nome = escaparHtml(g.nome_grupo || 'Comunidade sem nome');
     const descricao = escaparHtml(g.descricao || '');
     const foto = g.foto_url ? escaparHtml(g.foto_url) : '';
 
     return `
       <article class="card-grupo ${destaque ? 'card-grupo-destaque card-grupo-impulsionado' : ''}" data-id="${g.id}">
         <div class="card-grupo-imagem">
-          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="${nome}" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
+          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="${nome}" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">ZapGrupos</div>'}
           <span class="tag tag-card">${categoria}</span>
           ${destaque ? '<span class="selo-destaque selo-destaque-premium" title="Grupo em destaque">★</span>' : ''}
         </div>
@@ -251,17 +251,17 @@
       nomeCategoria = cat.nome;
 
       // Atualiza metas e títulos
-      const titulo = `Grupos de ${cat.nome} no WhatsApp`;
-      document.title = `${titulo} — WhatsApp Grupos`;
-      document.getElementById('meta-titulo').textContent = `${titulo} — WhatsApp Grupos`;
+      const titulo = `Comunidades de ${cat.nome}`;
+      document.title = `${titulo} — ZapGrupos`;
+      document.getElementById('meta-titulo').textContent = `${titulo} — ZapGrupos`;
       document.getElementById('meta-descricao').setAttribute('content',
-        `Encontre os melhores grupos de WhatsApp de ${cat.nome}. Entre agora e participe da comunidade no WhatsApp Grupos.`
+        `Encontre comunidades de ${cat.nome}. Entre agora e participe pelo ZapGrupos.`
       );
       document.getElementById('meta-canonical').setAttribute('href', window.location.href);
       document.getElementById('breadcrumb-nome').textContent = cat.nome;
       document.getElementById('titulo-pagina').textContent = titulo;
       document.getElementById('descricao-pagina').textContent =
-        `Entre nos melhores grupos de ${cat.nome} do WhatsApp. ${cat.total_grupos} grupo${cat.total_grupos !== 1 ? 's' : ''} disponíve${cat.total_grupos !== 1 ? 'is' : 'l'}.`;
+        `Explore comunidades de ${cat.nome}. ${cat.total_grupos} grupo${cat.total_grupos !== 1 ? 's' : ''} disponíve${cat.total_grupos !== 1 ? 'is' : 'l'}.`;
       document.getElementById('subtitulo-lista').textContent = `Grupos de ${cat.nome}`;
 
       // Carrega outras categorias

@@ -115,7 +115,7 @@ async function iniciar() {
     console.log('[db] Banco de dados carregado.');
 
     const servidor = app.listen(PORT, () => {
-      console.log(`[server] WhatsApp Grupos rodando em http://localhost:${PORT}`);
+      console.log(`[server] ZapGrupos rodando em http://localhost:${PORT}`);
     });
 
     servidor.on('error', (err) => {

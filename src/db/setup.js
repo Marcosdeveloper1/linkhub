@@ -166,7 +166,7 @@ async function createDatabase() {
   const adminSenha = bcrypt.hashSync(process.env.ADMIN_SENHA || 'admin123', 12);
   db.run(`
     INSERT OR IGNORE INTO users (nome, email, senha, role)
-    VALUES ('Administrador', 'admin@whatsappgrupos.site', '${adminSenha}', 'admin')
+    VALUES ('Administrador', 'admin@zapgrupos.site', '${adminSenha}', 'admin')
   `);
 
   const categorias = [
@@ -227,7 +227,7 @@ async function createDatabase() {
   db.close();
 
   console.log('Banco de dados criado com sucesso em', DB_PATH);
-  console.log('Admin padrão: admin@whatsappgrupos.site / admin123 (MUDE EM PRODUÇÃO!)');
+  console.log('Admin padrão: admin@zapgrupos.site / admin123 (MUDE EM PRODUÇÃO!)');
 }
 
 createDatabase().catch(console.error);

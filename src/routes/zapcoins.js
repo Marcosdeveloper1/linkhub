@@ -237,7 +237,7 @@ function escolherCheckoutMercadoPagoUrl(preference) {
 async function criarPreferenciaMercadoPago({ req, pedido, usuario }) {
   const baseUrl = siteUrl(req);
   const coins = Number(pedido.coins || 0);
-  const titulo = `${coins} ZapCoin${coins !== 1 ? 's' : ''} - WhatsApp Grupos`;
+  const titulo = `${coins} ZapCoin${coins !== 1 ? 's' : ''} - ZapGrupos`;
 
   const payload = {
     items: [
