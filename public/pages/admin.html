@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
   <title>Painel Admin — WhatsApp Grupos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -248,10 +250,26 @@
 
     <!-- Categoria -->
     <div class="form-grupo">
-      <label class="form-label" for="lote-categoria">Categoria <span style="color:var(--vermelho)">*</span></label>
-      <select class="form-select" id="lote-categoria">
+      <label class="form-label" for="categoria-picker-lote">Categoria <span style="color:var(--vermelho)">*</span></label>
+      <select class="form-select categoria-select-nativo" id="lote-categoria" aria-hidden="true" tabindex="-1">
         <option value="">Selecione a categoria do lote...</option>
       </select>
+
+      <div class="categoria-picker" id="categoria-picker-lote" data-select-id="lote-categoria">
+        <button class="categoria-picker-btn" type="button" data-picker-toggle aria-expanded="false">
+          <span data-picker-label>Selecione a categoria do lote...</span>
+          <span class="categoria-picker-seta" aria-hidden="true">▾</span>
+        </button>
+
+        <div class="categoria-picker-painel" data-picker-panel hidden>
+          <div class="categoria-picker-topo">
+            <strong>Selecionar categoria</strong>
+            <button type="button" class="categoria-picker-fechar" data-picker-close aria-label="Fechar seleção">×</button>
+          </div>
+          <input class="categoria-picker-busca" type="search" placeholder="Buscar categoria..." data-picker-search autocomplete="off">
+          <div class="categoria-picker-lista" data-picker-list></div>
+        </div>
+      </div>
     </div>
 
     <!-- Descrição genérica -->
@@ -304,6 +322,112 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   let buscaNome = '';
   let idsSelecionados = new Set();
   let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
+
+
+  function inicializarSeletorCategoria(selectId) {
+    const select = document.getElementById(selectId);
+    const picker = document.querySelector(`.categoria-picker[data-select-id="${selectId}"]`);
+    if (!select || !picker) return;
+
+    const toggle = picker.querySelector('[data-picker-toggle]');
+    const label = picker.querySelector('[data-picker-label]');
+    const panel = picker.querySelector('[data-picker-panel]');
+    const search = picker.querySelector('[data-picker-search]');
+    const list = picker.querySelector('[data-picker-list]');
+    const closeBtn = picker.querySelector('[data-picker-close]');
+
+    function escaparTextoLocal(str) {
+      if (typeof escaparHtml === 'function') return escaparHtml(str);
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(str || ''));
+      return d.innerHTML;
+    }
+
+    function opcoesValidas() {
+      return Array.from(select.options)
+        .filter(opt => opt.value)
+        .map(opt => ({ value: opt.value, nome: opt.textContent.trim() }));
+    }
+
+    function atualizarLabel() {
+      const opt = select.options[select.selectedIndex];
+      const texto = opt && opt.value ? opt.textContent.trim() : 'Selecione a categoria do lote...';
+      label.textContent = texto;
+      toggle.classList.toggle('categoria-picker-btn-selecionado', Boolean(opt && opt.value));
+    }
+
+    function renderizarLista(filtro = '') {
+      const termo = filtro.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const opcoes = opcoesValidas().filter(opt => {
+        const base = `${opt.nome} ${opt.value}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return !termo || base.includes(termo);
+      });
+
+      if (!opcoes.length) {
+        list.innerHTML = '<div class="categoria-picker-vazio">Nenhuma categoria encontrada.</div>';
+        return;
+      }
+
+      list.innerHTML = opcoes.map(opt => `
+        <button type="button" class="categoria-picker-opcao ${String(select.value) === String(opt.value) ? 'ativa' : ''}" data-value="${opt.value}">
+          <span>${escaparTextoLocal(opt.nome)}</span>
+        </button>
+      `).join('');
+    }
+
+    function abrirPicker() {
+      renderizarLista(search.value || '');
+      panel.hidden = false;
+      picker.classList.add('categoria-picker-aberto');
+      toggle.setAttribute('aria-expanded', 'true');
+      setTimeout(() => search.focus(), 40);
+    }
+
+    function fecharPicker() {
+      panel.hidden = true;
+      picker.classList.remove('categoria-picker-aberto');
+      toggle.setAttribute('aria-expanded', 'false');
+      search.value = '';
+    }
+
+    if (!picker.dataset.pickerInicializado) {
+      toggle.addEventListener('click', () => {
+        if (panel.hidden) abrirPicker();
+        else fecharPicker();
+      });
+
+      closeBtn.addEventListener('click', fecharPicker);
+      search.addEventListener('input', () => renderizarLista(search.value));
+
+      list.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-value]');
+        if (!btn) return;
+
+        select.value = btn.dataset.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        atualizarLabel();
+        fecharPicker();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target)) fecharPicker();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !panel.hidden) fecharPicker();
+      });
+
+      select.addEventListener('change', atualizarLabel);
+      picker.dataset.pickerInicializado = 'true';
+    }
+
+    picker.atualizarCategoriaPicker = () => {
+      atualizarLabel();
+      renderizarLista(search.value || '');
+    };
+
+    atualizarLabel();
+  }
 
   // descrições genéricas por categoria
   const descricoesPorCategoria = {
@@ -734,6 +858,10 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
         sel.appendChild(opt);
       });
     } catch {}
+
+    sel.value = '';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    inicializarSeletorCategoria('lote-categoria');
 
     document.getElementById('modal-importar').classList.add('aberto');
   }
