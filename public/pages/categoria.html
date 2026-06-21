@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="meta-titulo">Grupos no WhatsApp — LinkHub</title>
-  <meta name="description" id="meta-descricao" content="Encontre os melhores grupos de WhatsApp organizados por categoria no LinkHub.">
+  <title id="meta-titulo">Grupos no WhatsApp — WhatsApp Grupos</title>
+  <meta name="description" id="meta-descricao" content="Encontre os melhores grupos de WhatsApp organizados por categoria no WhatsApp Grupos.">
   <link rel="canonical" id="meta-canonical" href="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
   <link rel="stylesheet" href="/css/global.css">
   <style>
     .categoria-hero {
@@ -176,7 +178,7 @@
 </main>
 
 <footer class="footer">
-  <p>© 2025 LinkHub — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
 </footer>
 
 <script src="/js/utils.js"></script>
@@ -213,10 +215,10 @@
 
       // Atualiza metas e títulos
       const titulo = `Grupos de ${cat.nome} no WhatsApp`;
-      document.title = `${titulo} — LinkHub`;
-      document.getElementById('meta-titulo').textContent = `${titulo} — LinkHub`;
+      document.title = `${titulo} — WhatsApp Grupos`;
+      document.getElementById('meta-titulo').textContent = `${titulo} — WhatsApp Grupos`;
       document.getElementById('meta-descricao').setAttribute('content',
-        `Encontre os melhores grupos de WhatsApp de ${cat.nome}. Entre agora e participe da comunidade no LinkHub.`
+        `Encontre os melhores grupos de WhatsApp de ${cat.nome}. Entre agora e participe da comunidade no WhatsApp Grupos.`
       );
       document.getElementById('meta-canonical').setAttribute('href', window.location.href);
       document.getElementById('breadcrumb-nome').textContent = cat.nome;

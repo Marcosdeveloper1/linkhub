@@ -1,4 +1,4 @@
-/* linkhub-utils.js — funções compartilhadas entre páginas */
+/* whatsapp-grupos-utils.js — funções compartilhadas entre páginas */
 
 const API = '/api';
 

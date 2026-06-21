@@ -3,78 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Entrar — LinkHub</title>
+  <title>Entrar — WhatsApp Grupos</title>
+  <meta name="description" content="Entre na sua conta do WhatsApp Grupos para enviar, acompanhar e gerenciar seus grupos publicados no diretório.">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .pagina-auth {
-      min-height: calc(100vh - 60px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .caixa-auth {
-      background: var(--branco);
-      border: 1px solid var(--cinza-borda);
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      width: 100%;
-      max-width: 420px;
-    }
-    .auth-logo {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-    .auth-logo a { font-size: 1.6rem; font-weight: 700; color: var(--verde-escuro); }
-    .auth-logo a span { color: var(--verde-claro); }
-    .auth-logo p { font-size: 0.9rem; color: var(--cinza-texto); margin-top: 4px; }
-    .auth-form { display: flex; flex-direction: column; gap: 18px; }
-    .auth-footer { text-align: center; margin-top: 20px; font-size: 0.875rem; color: var(--cinza-texto); }
-    .auth-footer a { color: var(--verde-medio); font-weight: 500; }
-  </style>
 </head>
 <body>
 
 <header class="navbar" id="navbar"></header>
 
-<div class="pagina-auth">
-  <div class="caixa-auth">
-    <div class="auth-logo">
-      <a href="/">Link<span>Hub</span></a>
-      <p>Entre na sua conta</p>
-    </div>
+<main class="auth-premium-page">
+  <div class="auth-premium-shell">
+    <aside class="auth-brand-card" aria-label="Sobre o WhatsApp Grupos">
+      <a href="/" class="auth-brand-logo" aria-label="Voltar para a página inicial">
+        <img src="/img/icon.png" alt="" width="54" height="54">
+        <span>WhatsApp Grupos</span>
+      </a>
 
-    <div id="aviso-login" class="aviso"></div>
+      <span class="auth-brand-kicker">Diretório brasileiro de comunidades</span>
+      <h1>Entre para divulgar e acompanhar seus grupos.</h1>
+      <p>Use sua conta do WhatsApp Grupos para enviar comunidades, acompanhar aprovação e acessar recursos do diretório.</p>
 
-    <form class="auth-form" id="form-login" onsubmit="login(event)">
-      <div class="form-grupo">
-        <label class="form-label" for="email">Email</label>
-        <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+      <div class="auth-brand-lista">
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">✓</span>
+          <span><strong>Conta do site</strong>Este login é somente para sua conta criada aqui no WhatsApp Grupos.</span>
+        </div>
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">🔒</span>
+          <span><strong>Mais transparência</strong>Nunca pedimos senha do WhatsApp, Gmail, Instagram ou qualquer outro serviço.</span>
+        </div>
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">💬</span>
+          <span><strong>Divulgação simples</strong>Cadastre grupos para análise e acompanhe tudo pelo painel da sua conta.</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="auth-form-card" aria-label="Formulário de login">
+      <div class="auth-form-topo">
+        <a href="/" class="auth-mini-logo" aria-label="WhatsApp Grupos">
+          <img src="/img/icon.png" alt="" width="40" height="40">
+        </a>
+        <h2>Entrar na conta</h2>
+        <p>Acesse sua conta do WhatsApp Grupos para enviar e acompanhar seus grupos.</p>
       </div>
 
-      <div class="form-grupo">
-        <label class="form-label" for="senha">Senha</label>
-        <input class="form-input" type="password" id="senha" name="senha" placeholder="Sua senha" required autocomplete="current-password">
+      <div class="auth-seguranca-box">
+        <span>🔐</span>
+        <span><strong>Atenção</strong>Use apenas a senha criada neste site. Não use nem informe senha do WhatsApp ou de outros aplicativos.</span>
       </div>
 
-      <button type="submit" class="btn btn-primario btn-bloco" id="btn-login" style="margin-top:4px">
-        Entrar
-      </button>
-    </form>
+      <div id="aviso-login" class="aviso"></div>
 
-    <div class="auth-footer">
-      <p>Não tem conta? <a href="/pages/cadastro.html">Criar conta grátis</a></p>
-    </div>
+      <form class="auth-form" id="form-login">
+        <div class="form-grupo">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="senha">Senha da sua conta</label>
+          <div class="campo-senha-wrap">
+            <input class="form-input" type="password" id="senha" name="senha" placeholder="Digite sua senha" required autocomplete="current-password">
+            <button class="btn-ver-senha" type="button" data-target="senha" aria-label="Mostrar senha">Ver</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primario btn-bloco auth-submit" id="btn-login">
+          Entrar
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Não tem conta? <a href="/pages/cadastro.html">Criar conta grátis</a></p>
+      </div>
+
+      <p class="auth-disclaimer">WhatsApp Grupos é um diretório independente de comunidades. Não somos afiliados ao WhatsApp ou à Meta.</p>
+    </section>
   </div>
-</div>
+</main>
 
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ seLogadoIrPara: '/' });
 
   document.getElementById('form-login').addEventListener('submit', login);
+  document.querySelectorAll('.btn-ver-senha').forEach(btn => {
+    btn.addEventListener('click', () => alternarSenha(btn));
+  });
+
+  function alternarSenha(btn) {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    const visivel = input.type === 'text';
+    input.type = visivel ? 'password' : 'text';
+    btn.textContent = visivel ? 'Ver' : 'Ocultar';
+    btn.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Ocultar senha');
+  }
 
   async function login(e) {
     e.preventDefault();
@@ -82,7 +111,7 @@
     const btn = document.getElementById('btn-login');
     btnCarregando(btn, true);
 
-    const email = document.getElementById('email').value;
+    const email = document.getElementById('email').value.trim();
     const senha = document.getElementById('senha').value;
 
     try {

@@ -3,87 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Criar conta — LinkHub</title>
+  <title>Criar conta — WhatsApp Grupos</title>
+  <meta name="description" content="Crie sua conta gratuita no WhatsApp Grupos para enviar comunidades e acompanhar a análise dos seus grupos.">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .pagina-auth {
-      min-height: calc(100vh - 60px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .caixa-auth {
-      background: var(--branco);
-      border: 1px solid var(--cinza-borda);
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      width: 100%;
-      max-width: 440px;
-    }
-    .auth-logo { text-align: center; margin-bottom: 28px; }
-    .auth-logo a { font-size: 1.6rem; font-weight: 700; color: var(--verde-escuro); }
-    .auth-logo a span { color: var(--verde-claro); }
-    .auth-logo p { font-size: 0.9rem; color: var(--cinza-texto); margin-top: 4px; }
-    .auth-form { display: flex; flex-direction: column; gap: 16px; }
-    .auth-footer { text-align: center; margin-top: 20px; font-size: 0.875rem; color: var(--cinza-texto); }
-    .auth-footer a { color: var(--verde-medio); font-weight: 500; }
-    .requisitos-senha { font-size: 0.8rem; color: var(--cinza-texto); margin-top: 4px; }
-    .req { display: inline-block; padding: 2px 0; }
-    .req.ok { color: var(--verde-medio); }
-  </style>
 </head>
 <body>
 
 <header class="navbar" id="navbar"></header>
 
-<div class="pagina-auth">
-  <div class="caixa-auth">
-    <div class="auth-logo">
-      <a href="/">Link<span>Hub</span></a>
-      <p>Crie sua conta gratuita</p>
-    </div>
+<main class="auth-premium-page">
+  <div class="auth-premium-shell">
+    <aside class="auth-brand-card" aria-label="Sobre o WhatsApp Grupos">
+      <a href="/" class="auth-brand-logo" aria-label="Voltar para a página inicial">
+        <img src="/img/icon.png" alt="" width="54" height="54">
+        <span>WhatsApp Grupos</span>
+      </a>
 
-    <div id="aviso-cadastro" class="aviso"></div>
+      <span class="auth-brand-kicker">Divulgação gratuita</span>
+      <h1>Crie sua conta para enviar grupos com segurança.</h1>
+      <p>Cadastre sua conta no diretório, envie comunidades para análise e acompanhe o status dos seus grupos.</p>
 
-    <form class="auth-form" id="form-cadastro">
-      <div class="form-grupo">
-        <label class="form-label" for="nome">Nome completo</label>
-        <input class="form-input" type="text" id="nome" name="nome" placeholder="Seu nome" required minlength="2" maxlength="100" autocomplete="name">
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label" for="email">Email</label>
-        <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label" for="senha">Senha</label>
-        <input class="form-input" type="password" id="senha" name="senha" placeholder="Crie uma senha forte" required minlength="8" autocomplete="new-password">
-        <div class="requisitos-senha">
-          <span class="req" id="req-tamanho">✗ Mínimo 8 caracteres</span> ·
-          <span class="req" id="req-maiuscula">✗ Uma letra maiúscula</span> ·
-          <span class="req" id="req-numero">✗ Um número</span>
+      <div class="auth-brand-lista">
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">⚡</span>
+          <span><strong>Cadastro rápido</strong>Você só precisa de nome, email e uma senha para este site.</span>
+        </div>
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">🔐</span>
+          <span><strong>Senha exclusiva</strong>Não use senha do WhatsApp, Gmail, Instagram ou banco. Crie uma senha própria.</span>
+        </div>
+        <div class="auth-brand-item">
+          <span class="auth-brand-icon">✅</span>
+          <span><strong>Análise manual</strong>Os grupos enviados passam por aprovação antes de aparecerem no diretório.</span>
         </div>
       </div>
+    </aside>
 
-      <div class="form-grupo">
-        <label class="form-label" for="confirmar-senha">Confirmar senha</label>
-        <input class="form-input" type="password" id="confirmar-senha" placeholder="Repita a senha" required autocomplete="new-password">
+    <section class="auth-form-card" aria-label="Formulário de cadastro">
+      <div class="auth-form-topo">
+        <a href="/" class="auth-mini-logo" aria-label="WhatsApp Grupos">
+          <img src="/img/icon.png" alt="" width="40" height="40">
+        </a>
+        <h2>Criar conta grátis</h2>
+        <p>Use esta conta para enviar grupos, acompanhar a análise e gerenciar suas publicações.</p>
       </div>
 
-      <button type="submit" class="btn btn-primario btn-bloco" id="btn-cadastro" style="margin-top:4px">
-        Criar conta
-      </button>
-    </form>
+      <div class="auth-seguranca-box">
+        <span>🔐</span>
+        <span><strong>Conta independente</strong>Esta senha é somente para o WhatsApp Grupos. Nunca pedimos senha do WhatsApp ou de outros serviços.</span>
+      </div>
 
-    <div class="auth-footer">
-      <p>Já tem conta? <a href="/pages/login.html">Entrar</a></p>
-    </div>
+      <div id="aviso-cadastro" class="aviso"></div>
+
+      <form class="auth-form" id="form-cadastro">
+        <div class="form-grupo">
+          <label class="form-label" for="nome">Nome completo</label>
+          <input class="form-input" type="text" id="nome" name="nome" placeholder="Seu nome" required minlength="2" maxlength="100" autocomplete="name">
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="senha">Crie uma senha para este site</label>
+          <div class="campo-senha-wrap">
+            <input class="form-input" type="password" id="senha" name="senha" placeholder="Crie uma senha forte" required minlength="8" autocomplete="new-password">
+            <button class="btn-ver-senha" type="button" data-target="senha" aria-label="Mostrar senha">Ver</button>
+          </div>
+          <div class="requisitos-senha">
+            <span class="req" id="req-tamanho">✗ Mínimo 8 caracteres</span>
+            <span class="req" id="req-maiuscula">✗ Uma letra maiúscula</span>
+            <span class="req" id="req-numero">✗ Um número</span>
+          </div>
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="confirmar-senha">Confirmar senha</label>
+          <div class="campo-senha-wrap">
+            <input class="form-input" type="password" id="confirmar-senha" placeholder="Repita a senha" required autocomplete="new-password">
+            <button class="btn-ver-senha" type="button" data-target="confirmar-senha" aria-label="Mostrar senha">Ver</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primario btn-bloco auth-submit" id="btn-cadastro">
+          Criar conta
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Já tem conta? <a href="/pages/login.html">Entrar</a></p>
+      </div>
+
+      <p class="auth-disclaimer">WhatsApp Grupos é um diretório independente de comunidades. Não somos afiliados ao WhatsApp ou à Meta.</p>
+    </section>
   </div>
-</div>
+</main>
 
 <script src="/js/utils.js"></script>
 <script>
@@ -93,7 +113,20 @@
     validarSenha(e.target.value);
   });
 
+  document.querySelectorAll('.btn-ver-senha').forEach(btn => {
+    btn.addEventListener('click', () => alternarSenha(btn));
+  });
+
   document.getElementById('form-cadastro').addEventListener('submit', cadastrar);
+
+  function alternarSenha(btn) {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    const visivel = input.type === 'text';
+    input.type = visivel ? 'password' : 'text';
+    btn.textContent = visivel ? 'Ver' : 'Ocultar';
+    btn.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Ocultar senha');
+  }
 
   function validarSenha(valor) {
     const tamanho = document.getElementById('req-tamanho');
@@ -119,7 +152,7 @@
     limparAviso('aviso-cadastro');
 
     const nome = document.getElementById('nome').value.trim();
-    const email = document.getElementById('email').value;
+    const email = document.getElementById('email').value.trim();
     const senha = document.getElementById('senha').value;
     const confirmar = document.getElementById('confirmar-senha').value;
 
