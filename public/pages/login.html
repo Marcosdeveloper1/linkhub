@@ -32,44 +32,26 @@
         </div>
         <div class="auth-brand-item">
           <span class="auth-brand-icon">🔒</span>
-          <span><strong>Conta do site</strong>Use apenas a senha criada aqui. Não pedimos senha do WhatsApp ou de outros serviços.</span>
+          <span><strong>Login seguro</strong>Entramos com sua conta Google. Não temos acesso à sua senha do Google.</span>
         </div>
       </div>
     </aside>
 
-    <section class="auth-form-card" aria-label="Formulário de login">
+    <section class="auth-form-card" aria-label="Entrar com Google">
       <div class="auth-form-topo">
         <a href="/" class="auth-mini-logo" aria-label="WhatsApp Grupos">
           <img src="/img/icon.png" alt="" width="40" height="40">
         </a>
         <h2>Entrar na conta</h2>
-        <p>Entre para gerenciar suas comunidades e enviar novos grupos gratuitamente.</p>
+        <p>Entre com sua conta Google para gerenciar suas comunidades e enviar novos grupos gratuitamente.</p>
       </div>
 
       <div id="aviso-login" class="aviso"></div>
 
-      <form class="auth-form" id="form-login">
-        <div class="form-grupo">
-          <label class="form-label" for="email">Email</label>
-          <input class="form-input" type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
-        </div>
-
-        <div class="form-grupo">
-          <label class="form-label" for="senha">Senha da sua conta</label>
-          <div class="campo-senha-wrap">
-            <input class="form-input" type="password" id="senha" name="senha" placeholder="Digite sua senha" required autocomplete="current-password">
-            <button class="btn-ver-senha" type="button" data-target="senha" aria-label="Mostrar senha">Ver</button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primario btn-bloco auth-submit" id="btn-login">
-          Entrar
-        </button>
-      </form>
-
-      <div class="auth-footer">
-        <p>Não tem conta? <a href="/pages/cadastro.html">Criar conta grátis</a></p>
-      </div>
+      <a href="#" id="btn-google-login" class="btn btn-bloco btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="20" height="20" style="margin-right:8px;vertical-align:middle;">
+        Entrar com Google
+      </a>
 
       <p class="auth-disclaimer">WhatsApp Grupos é um diretório independente de comunidades e não solicita dados de acesso de outros aplicativos.</p>
     </section>
@@ -80,41 +62,24 @@
 <script>
   iniciarPagina({ seLogadoIrPara: '/' });
 
-  document.getElementById('form-login').addEventListener('submit', login);
-  document.querySelectorAll('.btn-ver-senha').forEach(btn => {
-    btn.addEventListener('click', () => alternarSenha(btn));
-  });
-
-  function alternarSenha(btn) {
-    const input = document.getElementById(btn.dataset.target);
-    if (!input) return;
-    const visivel = input.type === 'text';
-    input.type = visivel ? 'password' : 'text';
-    btn.textContent = visivel ? 'Ver' : 'Ocultar';
-    btn.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Ocultar senha');
+  const erro = new URLSearchParams(window.location.search).get('erro');
+  if (erro) {
+    const mensagens = {
+      google_cancelado: 'Login cancelado.',
+      email_nao_verificado: 'Seu email do Google precisa estar verificado.',
+      conta_desativada: 'Conta desativada. Entre em contato com o suporte.',
+      sessao: 'Erro ao iniciar sessão. Tente novamente.',
+      google_falhou: 'Não foi possível entrar com o Google. Tente novamente.'
+    };
+    mostrarAviso('aviso-login', mensagens[erro] || 'Não foi possível entrar.');
   }
 
-  async function login(e) {
+  document.getElementById('btn-google-login').addEventListener('click', (e) => {
     e.preventDefault();
-    limparAviso('aviso-login');
-    const btn = document.getElementById('btn-login');
-    btnCarregando(btn, true);
-
-    const email = document.getElementById('email').value.trim();
-    const senha = document.getElementById('senha').value;
-
-    try {
-      await apiFetch('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, senha })
-      });
-      const redirect = new URLSearchParams(window.location.search).get('redirect');
-      window.location.href = redirect || '/';
-    } catch (err) {
-      mostrarAviso('aviso-login', err.message);
-      btnCarregando(btn, false);
-    }
-  }
+    const redirect = new URLSearchParams(window.location.search).get('redirect');
+    const url = '/api/auth/google' + (redirect ? '?redirect=' + encodeURIComponent(redirect) : '');
+    window.location.href = url;
+  });
 </script>
 </body>
 </html>
