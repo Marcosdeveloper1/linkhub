@@ -542,6 +542,13 @@
     );
   }
 
+  function formatarDataImpulso(valor) {
+    if (!valor) return '';
+    const data = new Date(String(valor).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(data.getTime())) return '';
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
   function montarCardGrupo(g) {
     const destaque = grupoTemDestaque(g);
     const categoria = escaparHtml(g.categoria_nome || 'Grupo');
@@ -553,7 +560,7 @@
     const estaChecado = selecionadosLote.has(g.id) ? 'checked' : '';
 
     return `
-      <article class="card-grupo ${destaque ? 'card-grupo-destaque' : ''}" data-id="${g.id}" data-href="/pages/grupo.html?id=${g.id}" role="link" tabindex="0" aria-label="Abrir detalhes do grupo">
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque card-grupo-impulsionado' : ''}" data-id="${g.id}" data-href="/pages/grupo.html?id=${g.id}" role="link" tabindex="0" aria-label="Abrir detalhes do grupo">
         <div class="card-grupo-imagem" style="position: relative;">
           ${ehAdmin ? `
             <div class="admin-card-selecao-container">
@@ -563,10 +570,11 @@
           ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
           <span class="tag tag-card">${categoria}</span>
           ${g.status === 'indisponivel' ? '<span class="tag tag-indisponivel" style="position: absolute; right: 8px; top: 8px; z-index: 10;">Indisponível</span>' : ''}
-          ${destaque ? '<span class="selo-destaque" title="Grupo impulsionado">★</span>' : ''}
+          ${destaque ? `<span class="selo-destaque selo-destaque-premium" title="Grupo em destaque">★</span>` : ''}
         </div>
 
         <div class="card-grupo-corpo">
+          ${destaque ? `<div class="badge-premium-card">⚡ Destaque</div>` : ''}
           <h3 class="card-grupo-nome">${nome}</h3>
           <p class="card-grupo-desc">${descricao}</p>
         </div>

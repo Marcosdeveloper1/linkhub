@@ -201,6 +201,43 @@
     return d.innerHTML;
   }
 
+  function grupoTemDestaque(g) {
+    return Boolean(g.impulsionado || g.destaque || g.premium || g.patrocinado || g.is_impulsionado);
+  }
+
+  function formatarDataImpulso(valor) {
+    if (!valor) return '';
+    const data = new Date(String(valor).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(data.getTime())) return '';
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
+  function montarCardGrupo(g) {
+    const destaque = grupoTemDestaque(g);
+    const categoria = escaparHtml(g.categoria_nome || nomeCategoria || 'Grupo');
+    const nome = escaparHtml(g.nome_grupo || 'Grupo sem nome');
+    const descricao = escaparHtml(g.descricao || '');
+    const foto = g.foto_url ? escaparHtml(g.foto_url) : '';
+
+    return `
+      <article class="card-grupo ${destaque ? 'card-grupo-destaque card-grupo-impulsionado' : ''}" data-id="${g.id}">
+        <div class="card-grupo-imagem">
+          ${foto ? `<img class="card-grupo-foto" src="${foto}" alt="${nome}" loading="lazy">` : '<div class="card-grupo-foto card-grupo-placeholder">WhatsApp Grupos</div>'}
+          <span class="tag tag-card">${categoria}</span>
+          ${destaque ? '<span class="selo-destaque selo-destaque-premium" title="Grupo em destaque">★</span>' : ''}
+        </div>
+        <div class="card-grupo-corpo">
+          ${destaque ? `<div class="badge-premium-card">⚡ Destaque</div>` : ''}
+          <h3 class="card-grupo-nome">${nome}</h3>
+          <p class="card-grupo-desc">${descricao}</p>
+        </div>
+        <div class="card-grupo-rodape">
+          <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">Entrar</a>
+        </div>
+      </article>
+    `;
+  }
+
   async function carregarCategoria() {
     try {
       const cats = await apiFetch('/grupos/categorias');
@@ -269,22 +306,7 @@
         return;
       }
 
-      lista.innerHTML = grupos.map(g => `
-        <article class="card-grupo">
-          ${g.foto_url ? `<img class="card-grupo-foto" src="${escaparHtml(g.foto_url)}" alt="${escaparHtml(g.nome_grupo)}" loading="lazy">` : ''}
-          <div class="card-grupo-cabecalho">
-            <span class="tag tag-verde">${escaparHtml(g.categoria_nome)}</span>
-          </div>
-          <h3 class="card-grupo-nome">${escaparHtml(g.nome_grupo)}</h3>
-          <p class="card-grupo-desc">${escaparHtml(g.descricao)}</p>
-          <div class="card-grupo-rodape">
-            <span style="font-size:0.78rem;color:var(--cinza-texto)">${g.aprovado_em ? formatarData(g.aprovado_em) : ''}</span>
-            <a href="/pages/grupo.html?id=${g.id}" class="card-grupo-entrada">
-              Ver grupo →
-            </a>
-          </div>
-        </article>
-      `).join('');
+      lista.innerHTML = grupos.map(g => montarCardGrupo(g)).join('');
 
       lista.querySelectorAll('.card-grupo-foto').forEach(img => {
         img.addEventListener('error', () => { img.style.display = 'none'; });
