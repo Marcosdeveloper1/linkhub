@@ -299,19 +299,19 @@
 
   function montarPaginacao() {
     const container = document.getElementById('paginacao');
-    if (totalPaginas <= 1) { container.innerHTML = ''; return; }
-
-    let html = '';
-    html += `<button class="paginacao-btn" data-page="${paginaAtual - 1}" ${paginaAtual === 1 ? 'disabled' : ''}>‹</button>`;
-    for (let i = 1; i <= totalPaginas; i++) {
-      if (i === 1 || i === totalPaginas || Math.abs(i - paginaAtual) <= 1) {
-        html += `<button class="paginacao-btn ${i === paginaAtual ? 'ativo' : ''}" data-page="${i}">${i}</button>`;
-      } else if (Math.abs(i - paginaAtual) === 2) {
-        html += `<button class="paginacao-btn" disabled>…</button>`;
-      }
+    if (totalPaginas <= 1) {
+      container.innerHTML = '';
+      return;
     }
-    html += `<button class="paginacao-btn" data-page="${paginaAtual + 1}" ${paginaAtual === totalPaginas ? 'disabled' : ''}>›</button>`;
-    container.innerHTML = html;
+
+    container.innerHTML = `
+      <button class="paginacao-btn paginacao-btn-nav" data-page="${paginaAtual - 1}" ${paginaAtual === 1 ? 'disabled' : ''}>
+        ← Anterior
+      </button>
+      <button class="paginacao-btn paginacao-btn-nav" data-page="${paginaAtual + 1}" ${paginaAtual === totalPaginas ? 'disabled' : ''}>
+        Próxima →
+      </button>
+    `;
   }
 
   document.getElementById('paginacao').addEventListener('click', (e) => {

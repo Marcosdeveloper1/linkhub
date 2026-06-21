@@ -4009,3 +4009,175 @@ a
     padding: 7px 8px;
   }
 }
+
+
+/* =====================================================
+   Ajustes de responsividade e paginação — 16 cards
+   ===================================================== */
+.auth-brand-logo {
+  cursor: default;
+  user-select: none;
+}
+
+.auth-brand-logo:hover {
+  color: var(--branco);
+}
+
+.paginacao {
+  align-items: center;
+  gap: 12px;
+}
+
+.paginacao-btn-nav {
+  min-width: 138px;
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+}
+
+.paginacao-btn-nav:not(:disabled):hover {
+  border-color: rgba(53, 190, 114, 0.55);
+  color: var(--verde-escuro);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.10);
+}
+
+.paginacao-status {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .categorias-grid {
+    max-height: 88px;
+  }
+
+  .categorias-grid.categorias-abertas {
+    max-height: 760px;
+  }
+
+  .auth-premium-page {
+    padding: 22px 14px 46px;
+  }
+
+  .auth-premium-shell {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .auth-brand-card {
+    min-height: auto;
+    padding: 24px 20px;
+    border-radius: 22px;
+  }
+
+  .auth-brand-card h1 {
+    font-size: 2rem;
+    line-height: 1.08;
+  }
+
+  .auth-brand-card p {
+    font-size: 0.94rem;
+  }
+
+  .auth-brand-lista {
+    gap: 10px;
+  }
+
+  .auth-brand-item {
+    padding: 12px;
+  }
+
+  .auth-form-card {
+    padding: 24px 18px;
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .categorias-grid {
+    max-height: 88px;
+  }
+
+  .categorias-grid.categorias-abertas {
+    max-height: 980px;
+  }
+
+  .busca-diretorio::before {
+    top: 22px;
+    transform: none;
+  }
+
+  .busca-diretorio:focus-within::before {
+    transform: scale(1.04);
+  }
+
+  .busca-diretorio input {
+    min-height: 48px;
+    font-size: 0.98rem;
+  }
+
+  .busca-diretorio button {
+    min-height: 48px;
+  }
+
+  .auth-premium-page {
+    padding: 18px 12px 42px;
+  }
+
+  .auth-brand-card {
+    padding: 20px 16px;
+  }
+
+  .auth-brand-logo img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .auth-brand-logo span {
+    font-size: 1.08rem;
+  }
+
+  .auth-brand-kicker {
+    font-size: 0.68rem;
+  }
+
+  .auth-brand-card h1 {
+    font-size: 1.72rem;
+    letter-spacing: -0.75px;
+  }
+
+  .auth-brand-card p {
+    font-size: 0.88rem;
+  }
+
+  .auth-brand-item {
+    gap: 10px;
+  }
+
+  .auth-form-card {
+    padding: 22px 16px;
+  }
+
+  .auth-form-topo h2 {
+    font-size: 1.42rem;
+  }
+
+  .requisitos-senha {
+    gap: 6px;
+  }
+
+  .req {
+    font-size: 0.72rem;
+  }
+
+  .paginacao {
+    gap: 8px;
+  }
+
+  .paginacao-btn-nav {
+    min-width: 0;
+    flex: 1 1 calc(50% - 8px);
+    padding: 10px 12px;
+  }
+}
