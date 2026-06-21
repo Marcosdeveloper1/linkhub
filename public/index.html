@@ -83,39 +83,13 @@
 
 <header class="navbar" id="navbar"></header>
 
-<section class="home-topo" id="home-topo">
-  <div class="container home-topo-container">
-    <div class="home-topo-grid">
-      <div class="home-topo-texto">
-        <span class="home-label">Diretório brasileiro de comunidades</span>
-        <h1>Encontre comunidades por tema, cidade ou interesse</h1>
-        <p>Explore comunidades ativas, filtre por categoria e entre nos grupos que fazem sentido para você.</p>
-      </div>
-
-      <div class="home-topo-card">
-        <strong>Divulgação gratuita</strong>
-        <span>Cadastre sua comunidade e apareça no diretório após aprovação.</span>
-      </div>
-    </div>
-
-    <div class="home-topo-acoes">
-      <button class="btn-home-topo-toggle btn-home-topo-esconder" type="button" id="btn-esconder-home-topo" aria-controls="home-topo" aria-expanded="true">
-        <span class="btn-home-topo-seta" aria-hidden="true">↑</span>
-        <span>Ocultar topo</span>
-      </button>
+<section class="home-anuncio-topo" aria-label="Espaço de anúncio superior">
+  <div class="container">
+    <div class="ad-slot ad-slot-horizontal ad-slot-home-topo" id="ad-home-topo">
+      <span>Publicidade</span>
     </div>
   </div>
 </section>
-
-<div class="home-topo-barra-fechada" id="home-topo-barra-fechada" hidden>
-  <div class="container home-topo-barra-inner">
-    <button class="btn-home-topo-toggle btn-home-topo-mostrar" type="button" id="btn-mostrar-home-topo" aria-controls="home-topo" aria-expanded="false">
-      <img class="btn-home-topo-img" src="/img/icones/expandir.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
-      <span>Ver topo do site</span>
-      <span class="btn-home-topo-seta" aria-hidden="true">↓</span>
-    </button>
-  </div>
-</div>
 
 <section class="home-busca">
   <div class="container">
@@ -776,60 +750,6 @@
   }
 
 
-  const CHAVE_BANNER_HOME = 'zapgrupos_home_topo_oculto';
-
-  function aplicarEstadoBannerHome(oculto, salvar = false) {
-    const banner = document.getElementById('home-topo');
-    const barraFechada = document.getElementById('home-topo-barra-fechada');
-    const btnEsconder = document.getElementById('btn-esconder-home-topo');
-    const btnMostrar = document.getElementById('btn-mostrar-home-topo');
-
-    if (!banner || !barraFechada) return;
-
-    banner.classList.toggle('home-topo-oculto', oculto);
-
-    if (oculto) {
-      barraFechada.hidden = false;
-      requestAnimationFrame(() => {
-        barraFechada.classList.add('visivel');
-      });
-    } else {
-      barraFechada.classList.remove('visivel');
-      setTimeout(() => {
-        if (!barraFechada.classList.contains('visivel')) {
-          barraFechada.hidden = true;
-        }
-      }, 260);
-    }
-
-    if (btnEsconder) btnEsconder.setAttribute('aria-expanded', oculto ? 'false' : 'true');
-    if (btnMostrar) btnMostrar.setAttribute('aria-expanded', oculto ? 'false' : 'true');
-
-    if (salvar) {
-      localStorage.setItem(CHAVE_BANNER_HOME, oculto ? '1' : '0');
-    }
-  }
-
-  function configurarBannerHome() {
-    const btnEsconder = document.getElementById('btn-esconder-home-topo');
-    const btnMostrar = document.getElementById('btn-mostrar-home-topo');
-    const bannerOculto = localStorage.getItem(CHAVE_BANNER_HOME) === '1';
-
-    aplicarEstadoBannerHome(bannerOculto, false);
-
-    if (btnEsconder) {
-      btnEsconder.addEventListener('click', () => {
-        aplicarEstadoBannerHome(true, true);
-      });
-    }
-
-    if (btnMostrar) {
-      btnMostrar.addEventListener('click', () => {
-        aplicarEstadoBannerHome(false, true);
-      });
-    }
-  }
-
   async function popularCategoriasSelect() {
     try {
       const cats = await apiFetch('/grupos/categorias');
@@ -1063,8 +983,6 @@
   });
 
   async function montar() {
-    configurarBannerHome();
-
     categoriaAtiva = obterSlugDaUrl();
     atualizarSeoCategoria();
     atualizarTituloSecao();

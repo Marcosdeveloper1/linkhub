@@ -4060,3 +4060,45 @@ a
     font-size: 1rem;
   }
 }
+
+/* ---- Espaços de anúncio ---- */
+.home-anuncio-topo {
+  background: #ffffff;
+  border-bottom: 1px solid var(--cinza-borda);
+  padding: 16px 0;
+}
+
+.ad-slot {
+  width: 100%;
+  border: 1px dashed #cbd3dd;
+  background: linear-gradient(135deg, #f8fafc, #eef3f1);
+  color: #7b8794;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ad-slot-horizontal {
+  min-height: 96px;
+}
+
+.ad-slot-home-topo {
+  max-width: 970px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .home-anuncio-topo {
+    padding: 10px 0;
+  }
+
+  .ad-slot-horizontal {
+    min-height: 80px;
+  }
+}
