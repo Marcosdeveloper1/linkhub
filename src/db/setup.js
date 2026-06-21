@@ -38,6 +38,12 @@ async function createDatabase() {
       descricao TEXT NOT NULL,
       categoria_id INTEGER NOT NULL,
       usuario_id INTEGER,
+      owner_email TEXT,
+      owner_user_id INTEGER,
+      ownership_status TEXT NOT NULL DEFAULT 'sem_dono',
+      ownership_claimed_at TEXT,
+      owner_assigned_at TEXT,
+      owner_assigned_by INTEGER,
       nome_contato TEXT NOT NULL,
       email_contato TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pendente',
@@ -48,7 +54,9 @@ async function createDatabase() {
       criado_em TEXT NOT NULL DEFAULT (datetime('now')),
       aprovado_em TEXT,
       FOREIGN KEY (categoria_id) REFERENCES categories(id),
-      FOREIGN KEY (usuario_id) REFERENCES users(id)
+      FOREIGN KEY (usuario_id) REFERENCES users(id),
+      FOREIGN KEY (owner_user_id) REFERENCES users(id),
+      FOREIGN KEY (owner_assigned_by) REFERENCES users(id)
     )
   `);
 

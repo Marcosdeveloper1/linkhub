@@ -24,6 +24,27 @@ function emailsAdminPermitidos() {
     .filter(Boolean);
 }
 
+function vincularGruposPendentesAoUsuario(usuario) {
+  const email = String(usuario.email || '').toLowerCase().trim();
+  if (!email || !usuario?.id) return;
+
+  try {
+    db.run(
+      `UPDATE groups
+       SET usuario_id = ?,
+           owner_user_id = ?,
+           ownership_status = 'vinculado',
+           ownership_claimed_at = COALESCE(ownership_claimed_at, datetime('now'))
+       WHERE LOWER(COALESCE(owner_email, '')) = ?
+         AND (usuario_id IS NULL OR usuario_id = ?)
+         AND (owner_user_id IS NULL OR owner_user_id = ?)`,
+      [usuario.id, usuario.id, email, usuario.id, usuario.id]
+    );
+  } catch (err) {
+    console.error('[auth] falha ao vincular grupos pendentes:', err.message);
+  }
+}
+
 // GET /api/auth/google — redireciona o usuário pro Google
 router.get('/google', (req, res) => {
   const redirectFinal = typeof req.query.redirect === 'string' ? req.query.redirect : '/';
@@ -85,6 +106,8 @@ router.get('/google/callback', async (req, res) => {
     if (!usuario.ativo) {
       return res.redirect('/pages/login.html?erro=conta_desativada');
     }
+
+    vincularGruposPendentesAoUsuario(usuario);
 
     req.session.regenerate((err) => {
       if (err) return res.redirect('/pages/login.html?erro=sessao');

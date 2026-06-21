@@ -504,6 +504,58 @@
       padding: 0 6px;
     }
 
+
+    .dono-grupo-box {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border: 1px solid #e7edf4;
+      background: #f8fafc;
+      border-radius: 12px;
+      font-size: 0.81rem;
+      color: var(--cinza-texto);
+      overflow-wrap: anywhere;
+    }
+
+    .dono-grupo-box strong {
+      color: var(--preto);
+      font-weight: 900;
+    }
+
+    .dono-grupo-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.70rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 5px;
+    }
+
+    .dono-grupo-status.vinculado {
+      background: #eefbf4;
+      color: var(--verde-escuro);
+      border: 1px solid rgba(53, 190, 114, .25);
+    }
+
+    .dono-grupo-status.pendente {
+      background: #fff7db;
+      color: #806000;
+      border: 1px solid rgba(255, 193, 7, .35);
+    }
+
+    .dono-grupo-status.sem-dono {
+      background: #eef2f7;
+      color: #475569;
+      border: 1px solid #dbe3ec;
+    }
+
+    .modal-vincular-dono .modal-caixa {
+      max-width: 520px;
+    }
+
     @media (max-width: 900px) {
       .admin-resumo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .lista-solicitacoes.admin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -750,6 +802,32 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   </div>
 </div>
 
+
+<!-- Modal de vínculo de dono do grupo -->
+<div class="modal-fundo modal-vincular-dono" id="modal-vincular-dono">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="fechar-modal-vincular-dono">&times;</button>
+    <h3 class="modal-titulo">Vincular dono do grupo</h3>
+
+    <div id="aviso-vincular-dono" class="aviso"></div>
+
+    <p style="color:var(--cinza-texto); font-size:0.92rem; margin-bottom:14px;" id="texto-vincular-dono">
+      Informe o e-mail Google do administrador do grupo.
+    </p>
+
+    <div class="form-grupo">
+      <label class="form-label" for="email-dono-grupo">E-mail Google do dono</label>
+      <input class="form-input" id="email-dono-grupo" type="email" placeholder="exemplo@gmail.com" autocomplete="email">
+      <p class="form-dica">Se esse usuário já tiver conta, o grupo aparece em “Meus grupos” imediatamente. Se ainda não tiver, será vinculado quando ele entrar com Google.</p>
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap;">
+      <button class="btn btn-contorno" id="cancelar-vincular-dono" type="button">Cancelar</button>
+      <button class="btn btn-primario" id="confirmar-vincular-dono" type="button">Salvar vínculo</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ requerAdmin: true });
@@ -762,6 +840,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
   let buscaZapCoinUsuarios = '';
   let usuarioZapCoinSelecionado = null;
+  let grupoDonoSelecionado = null;
   let resumoAdmin = null;
   let buscaCategoriaAprovados = '';
   let paginaAtualAdmin = 1;
@@ -774,6 +853,40 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   function textoGrupoQuantidade(total) {
     return `${total} grupo${total === 1 ? '' : 's'} cadastrado${total === 1 ? '' : 's'}`;
+  }
+
+  function obterStatusDonoGrupo(g) {
+    if (g.owner_user_id || g.usuario_id) return 'vinculado';
+    if (g.owner_email || g.ownership_status === 'convite_pendente') return 'convite_pendente';
+    return 'sem_dono';
+  }
+
+  function montarResumoDonoGrupo(g) {
+    const status = obterStatusDonoGrupo(g);
+    const email = g.owner_usuario_email || g.owner_email || '';
+    const nome = g.owner_nome || '';
+
+    if (status === 'vinculado') {
+      return `
+        <div class="dono-grupo-box">
+          <span class="dono-grupo-status vinculado">Dono vinculado</span><br>
+          <strong>${escaparHtml(nome || 'Usuário')}</strong>${email ? ` — ${escaparHtml(email)}` : ''}
+        </div>`;
+    }
+
+    if (status === 'convite_pendente') {
+      return `
+        <div class="dono-grupo-box">
+          <span class="dono-grupo-status pendente">Aguardando login</span><br>
+          E-mail reservado: <strong>${escaparHtml(email)}</strong>
+        </div>`;
+    }
+
+    return `
+      <div class="dono-grupo-box">
+        <span class="dono-grupo-status sem-dono">Sem dono</span><br>
+        Grupo importado ou ainda não vinculado a um perfil.
+      </div>`;
   }
 
   function obterCategoriaResumo(slug) {
@@ -1182,6 +1295,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
           Link: <a href="${g.link_whatsapp}" target="_blank" rel="noopener">${g.link_whatsapp}</a><br>
           Contato: ${escaparHtml(g.nome_contato)} — ${escaparHtml(g.email_contato)}
         </div>
+        ${montarResumoDonoGrupo(g)}
         ${g.status === 'pendente' ? `
           <div class="solicitacao-detalhe-expandido" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--cinza-borda); font-size:0.85rem;">
             <p><strong>Nome do grupo:</strong> ${escaparHtml(g.nome_grupo)}</p>
@@ -1204,6 +1318,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
             <button class="btn btn-perigo btn-sm" data-acao="rejeitar" data-id="${g.id}">Rejeitar</button>
           ` : ''}
           ${g.status === 'aprovado' || g.status === 'indisponivel' ? `
+            <button class="btn btn-contorno btn-sm" data-acao="vincular-dono" data-id="${g.id}">Vincular dono</button>
+            ${(g.owner_user_id || g.usuario_id || g.owner_email) ? `<button class="btn btn-contorno btn-sm" data-acao="remover-dono" data-id="${g.id}">Remover dono</button>` : ''}
             <button class="btn btn-perigo btn-sm" data-acao="remover" data-id="${g.id}">Remover do site</button>
           ` : ''}
         </div>
@@ -1256,6 +1372,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (acao === 'remover') return remover(id);
     if (acao === 'erro-resolver') return resolverErro(id);
     if (acao === 'erro-remover') return removerErro(id);
+    if (acao === 'vincular-dono') return abrirModalVincularDono(id);
+    if (acao === 'remover-dono') return removerDonoGrupo(id);
     if (acao === 'zapcoin-ajustar') {
       return abrirModalZapCoin({
         id: parseInt(btn.dataset.userId, 10),
@@ -1486,6 +1604,70 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     });
   });
 
+
+
+  function abrirModalVincularDono(id) {
+    const grupo = gruposCarregados.find(g => String(g.id) === String(id));
+    grupoDonoSelecionado = { id: parseInt(id, 10), nome: grupo?.nome_grupo || 'Grupo' };
+
+    document.getElementById('texto-vincular-dono').textContent = `Informe o e-mail Google do administrador de: ${grupoDonoSelecionado.nome}`;
+    document.getElementById('email-dono-grupo').value = grupo?.owner_email || grupo?.owner_usuario_email || '';
+    limparAviso('aviso-vincular-dono');
+    document.getElementById('modal-vincular-dono').classList.add('aberto');
+    setTimeout(() => document.getElementById('email-dono-grupo').focus(), 80);
+  }
+
+  function fecharModalVincularDono() {
+    grupoDonoSelecionado = null;
+    document.getElementById('modal-vincular-dono').classList.remove('aberto');
+  }
+
+  async function confirmarVincularDono() {
+    if (!grupoDonoSelecionado) return;
+
+    const email = document.getElementById('email-dono-grupo').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      return mostrarAviso('aviso-vincular-dono', 'Informe um e-mail Google válido.');
+    }
+
+    const btn = document.getElementById('confirmar-vincular-dono');
+    btnCarregando(btn, true);
+
+    try {
+      const resp = await apiFetch(`/admin/grupos/${grupoDonoSelecionado.id}/vincular-dono`, {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+
+      fecharModalVincularDono();
+      alert(resp.mensagem || 'Dono vinculado com sucesso.');
+      carregarResumoAdmin();
+      carregarLista();
+    } catch (err) {
+      mostrarAviso('aviso-vincular-dono', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  async function removerDonoGrupo(id) {
+    if (!confirm('Remover o dono vinculado deste grupo? Ele deixará de aparecer em “Meus grupos” para esse usuário.')) return;
+
+    try {
+      await apiFetch(`/admin/grupos/${id}/remover-dono`, { method: 'POST' });
+      carregarResumoAdmin();
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  document.getElementById('fechar-modal-vincular-dono').addEventListener('click', fecharModalVincularDono);
+  document.getElementById('cancelar-vincular-dono').addEventListener('click', fecharModalVincularDono);
+  document.getElementById('confirmar-vincular-dono').addEventListener('click', confirmarVincularDono);
+  document.getElementById('modal-vincular-dono').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModalVincularDono();
+  });
 
   function abrirModalZapCoin(usuario) {
     usuarioZapCoinSelecionado = usuario;
