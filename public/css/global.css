@@ -4357,3 +4357,13 @@ a
     justify-content: center;
   }
 }
+/* Hotfix: tamanho do ícone do botão mobile de atalhos */
+.navbar-mobile-atalhos-icone img,
+.navbar-mobile-atalhos-btn img {
+  width: 22px !important;
+  height: 22px !important;
+  max-width: 22px !important;
+  max-height: 22px !important;
+  object-fit: contain !important;
+  display: block !important;
+}

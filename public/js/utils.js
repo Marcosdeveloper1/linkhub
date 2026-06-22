@@ -50,28 +50,28 @@ function montarNavbar(sessao) {
       ${logado ? `
         <div class="navbar-mobile-atalhos" id="navbar-mobile-atalhos">
           <button class="navbar-mobile-atalhos-btn" type="button" id="btn-mobile-atalhos" aria-label="Abrir atalhos" aria-expanded="false" aria-controls="menu-mobile-atalhos">
-            <span class="navbar-mobile-atalhos-icone" aria-hidden="true">▦</span>
+            <span class="navbar-mobile-atalhos-icone" aria-hidden="true"><img src="/img/icones/grade.png" alt=""></span>
             <span class="navbar-mobile-atalhos-texto">Ações</span>
           </button>
 
           <div class="navbar-mobile-atalhos-menu" id="menu-mobile-atalhos" aria-hidden="true">
             <a href="/pages/enviar-grupo.html" class="navbar-mobile-atalho-link ${linkAtivo('/pages/enviar-grupo.html')}">
               <span class="navbar-mobile-atalho-icone">
-                <img src="/img/enviargrupo.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <img src="/img/icones/enviargrupo.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
                 <span class="navbar-mobile-atalho-fallback" style="display:none;">＋</span>
               </span>
               <span>Enviar grupo</span>
             </a>
             <a href="/pages/meus-grupos.html" class="navbar-mobile-atalho-link ${linkAtivo('/pages/meus-grupos.html')}">
               <span class="navbar-mobile-atalho-icone">
-                <img src="/img/meusgrupos.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <img src="/img/icones/meusgrupos.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
                 <span class="navbar-mobile-atalho-fallback" style="display:none;">▣</span>
               </span>
               <span>Meus grupos</span>
             </a>
             ${ehAdmin ? `<a href="/pages/admin.html" class="navbar-mobile-atalho-link ${linkAtivo('/pages/admin.html')}">
               <span class="navbar-mobile-atalho-icone">
-                <img src="/img/paineladmin.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <img src="/img/icones/paineladmin.png" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
                 <span class="navbar-mobile-atalho-fallback" style="display:none;">⚙</span>
               </span>
               <span>Painel Admin</span>
