@@ -1,7 +1,8 @@
 /* Busca a foto e o nome públicos de um grupo a partir do link de convite,
    usando as tags Open Graph que o WhatsApp expõe pra gerar prévias de link.
-   A foto é baixada UMA VEZ pelo servidor e salva localmente, porque o CDN
-   do WhatsApp bloqueia hotlinking direto do navegador (retorna 403).
+   A foto é baixada UMA VEZ pelo servidor, redimensionada e comprimida com
+   sharp, e salva localmente como WebP — evita hotlinking (403), economiza
+   espaço em disco e acelera o carregamento nos cards.
 
    IMPORTANTE — limitador de velocidade (rate limit):
    O WhatsApp bloqueia com erro 429 quando recebemos várias requisições
@@ -14,8 +15,16 @@
 
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 const PASTA_FOTOS = path.join(__dirname, '../../public/img/grupos');
+
+// Tamanho final das fotos salvas: 120x120px, formato WebP, qualidade 75.
+// WebP é ~30% menor que JPEG na mesma qualidade visual.
+// 120x120 é suficiente para os avatares circulares dos cards.
+const FOTO_LARGURA = 120;
+const FOTO_ALTURA = 120;
+const FOTO_QUALIDADE = 75;
 
 // Intervalo mínimo entre requisições ao WhatsApp (ms). 1.5s é conservador
 // o suficiente pra evitar 429 mesmo em importações de várias dezenas de links.
@@ -115,8 +124,8 @@ async function buscarPreviewGrupo(link) {
   }
 }
 
-// Baixa a imagem do CDN do WhatsApp e salva localmente em public/img/grupos/.
-// Retorna o caminho público (ex: /img/grupos/grupo-42.jpg) ou null se falhar.
+// Baixa, redimensiona e salva a foto do grupo localmente como WebP 120x120.
+// Retorna o caminho público (ex: /img/grupos/grupo-42.webp) ou null se falhar.
 async function baixarFotoGrupo(urlImagem, idGrupo) {
   if (!urlImagem) {
     console.log(`[whatsappPreview] grupo ${idGrupo}: nenhuma URL de foto pra baixar (og:image ausente).`);
@@ -139,18 +148,26 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
     }
 
     const buffer = Buffer.from(await resp.arrayBuffer());
-    console.log(`[whatsappPreview] grupo ${idGrupo}: foto baixada, ${buffer.length} bytes`);
+    console.log(`[whatsappPreview] grupo ${idGrupo}: ${buffer.length} bytes baixados, processando com sharp...`);
 
     if (!fs.existsSync(PASTA_FOTOS)) {
       fs.mkdirSync(PASTA_FOTOS, { recursive: true });
       console.log(`[whatsappPreview] pasta criada: ${PASTA_FOTOS}`);
     }
 
-    const nomeArquivo = `grupo-${idGrupo}.jpg`;
+    const nomeArquivo = `grupo-${idGrupo}.webp`;
     const caminhoCompleto = path.join(PASTA_FOTOS, nomeArquivo);
-    fs.writeFileSync(caminhoCompleto, buffer);
 
-    console.log(`[whatsappPreview] grupo ${idGrupo}: foto salva em ${caminhoCompleto}`);
+    // Redimensiona pra 120x120, cobre o espaço (cover) e converte pra WebP.
+    // Sharp processa em stream via libvips — não precisa ter a imagem inteira
+    // na heap do Node, ideal pra VPS com RAM limitada.
+    await sharp(buffer)
+      .resize(FOTO_LARGURA, FOTO_ALTURA, { fit: 'cover', position: 'centre' })
+      .webp({ quality: FOTO_QUALIDADE })
+      .toFile(caminhoCompleto);
+
+    const stats = fs.statSync(caminhoCompleto);
+    console.log(`[whatsappPreview] grupo ${idGrupo}: foto salva em ${nomeArquivo} (${Math.round(stats.size / 1024)}KB)`);
 
     return `/img/grupos/${nomeArquivo}`;
   } catch (err) {
