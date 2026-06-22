@@ -153,6 +153,12 @@ function migrar() {
     )
   `, [], '[db] ZapCoin: tabela group_boosts verificada.', '[db] Erro ao criar group_boosts:');
 
+  tentar('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)', [], '[db] Índice idx_users_email verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions(user_id)', [], '[db] Índice idx_wallet_transactions_user_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_zapcoin_orders_user_id ON zapcoin_orders(user_id)', [], '[db] Índice idx_zapcoin_orders_user_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_group_id ON group_boosts(group_id)', [], '[db] Índice idx_group_boosts_group_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_user_id ON group_boosts(user_id)', [], '[db] Índice idx_group_boosts_user_id verificado.');
+
   const pacotesZapCoin = [
     ['avulso', 'Avulso', 1, 799, '1 ZapCoin para testar ou completar saldo. Valor base: R$ 7,99 por ZapCoin.', 0, 1],
     ['starter', 'Starter', 5, 3495, 'Entrada ideal para testar impulsos com desconto. R$ 6,99 por ZapCoin.', 0, 2],
