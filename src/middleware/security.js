@@ -3,8 +3,8 @@ const session = require('express-session');
 const crypto = require('crypto');
 
 const limiterGeral = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 5 * 60 * 1000, // janela menor (5 min em vez de 15) — libera mais rápido
+  max: 600,
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: 'Muitas requisições. Tente novamente em 15 minutos.' }

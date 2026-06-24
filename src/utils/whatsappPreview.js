@@ -1,19 +1,96 @@
 /* Busca a foto e o nome públicos de um grupo a partir do link de convite,
    usando as tags Open Graph que o WhatsApp expõe pra gerar prévias de link.
    A foto é baixada UMA VEZ pelo servidor e salva localmente, porque o CDN
-   do WhatsApp bloqueia hotlinking direto do navegador (retorna 403). */
+   do WhatsApp bloqueia hotlinking direto do navegador (retorna 403).
+
+   IMPORTANTE — limitador de velocidade (rate limit):
+   O WhatsApp bloqueia com erro 429 quando recebemos várias requisições
+   rápido demais (ex: importação em lote de muitos links). Por isso, toda
+   chamada que bate no WhatsApp passa por `aguardarProximaJanela()`, que
+   garante um intervalo mínimo entre uma requisição e outra — mesmo que
+   sejam disparadas por rotas diferentes (importação em lote, cadastro
+   normal, verificação de link, etc.), porque o controle é global no
+   processo, não por chamada individual. */
 
 const fs = require('fs');
 const path = require('path');
 
 const PASTA_FOTOS = path.join(__dirname, '../../public/img/grupos');
 
+// Intervalo mínimo entre requisições ao WhatsApp (ms). 1.5s é conservador
+// o suficiente pra evitar 429 mesmo em importações de várias dezenas de links.
+const INTERVALO_MINIMO_MS = 1500;
+
+// Quantas vezes tenta de novo se receber 429, e quanto tempo espera a cada tentativa.
+const MAX_TENTATIVAS_429 = 3;
+const ESPERA_BASE_429_MS = 5000; // primeira espera: 5s, depois 10s, depois 20s (backoff exponencial)
+
+const TIMEOUT_REQUISICAO_MS = 15000; // 15s — evita travar pra sempre numa requisição sem resposta
+
+let proximaJanelaDisponivel = 0;
+
+// Garante que, no mínimo, INTERVALO_MINIMO_MS tenha passado desde a última
+// requisição feita ao WhatsApp por qualquer parte do sistema.
+async function aguardarProximaJanela() {
+  const agora = Date.now();
+  const espera = Math.max(0, proximaJanelaDisponivel - agora);
+
+  // Reserva a próxima janela já considerando a espera atual, antes mesmo
+  // de aguardar — assim, chamadas concorrentes (ex: vários itens de um
+  // lote disparados quase juntos) se enfileiram corretamente em vez de
+  // todas acharem que "a vez é agora".
+  proximaJanelaDisponivel = Math.max(proximaJanelaDisponivel, agora) + INTERVALO_MINIMO_MS;
+
+  if (espera > 0) {
+    await dormir(espera);
+  }
+}
+
+function dormir(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Wrapper de fetch com timeout e respeito ao limitador de velocidade global.
+async function fetchControlado(url, opcoes = {}) {
+  await aguardarProximaJanela();
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_REQUISICAO_MS);
+
+  try {
+    return await fetch(url, { ...opcoes, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// Igual ao fetchControlado, mas com retry automático e backoff exponencial
+// especificamente para erro 429 (rate limit do WhatsApp).
+async function fetchComRetry429(url, opcoes = {}, contexto = '') {
+  for (let tentativa = 0; tentativa <= MAX_TENTATIVAS_429; tentativa++) {
+    const resp = await fetchControlado(url, opcoes);
+
+    if (resp.status !== 429) {
+      return resp;
+    }
+
+    if (tentativa === MAX_TENTATIVAS_429) {
+      console.warn(`[whatsappPreview] ${contexto} esgotou tentativas após 429 repetido: ${url}`);
+      return resp;
+    }
+
+    const espera = ESPERA_BASE_429_MS * Math.pow(2, tentativa);
+    console.warn(`[whatsappPreview] ${contexto} recebeu 429 (tentativa ${tentativa + 1}/${MAX_TENTATIVAS_429}), aguardando ${espera}ms antes de tentar de novo: ${url}`);
+    await dormir(espera);
+  }
+}
+
 async function buscarPreviewGrupo(link) {
   try {
-    const resp = await fetch(link, {
+    const resp = await fetchComRetry429(link, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)' },
       redirect: 'follow'
-    });
+    }, 'buscarPreviewGrupo');
 
     if (!resp.ok) {
       console.warn(`[whatsappPreview] página do link retornou ${resp.status}: ${link}`);
@@ -49,12 +126,12 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
   try {
     console.log(`[whatsappPreview] grupo ${idGrupo}: tentando baixar foto de ${urlImagem}`);
 
-    const resp = await fetch(urlImagem, {
+    const resp = await fetchComRetry429(urlImagem, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)',
         'Referer': 'https://chat.whatsapp.com/'
       }
-    });
+    }, `baixarFotoGrupo grupo ${idGrupo}`);
 
     if (!resp.ok) {
       console.warn(`[whatsappPreview] grupo ${idGrupo}: download da foto retornou ${resp.status} ${resp.statusText}`);
@@ -90,10 +167,10 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
 // já que não existe endpoint oficial para checar "este grupo ainda existe?".
 async function linkAindaValido(link) {
   try {
-    const resp = await fetch(link, {
+    const resp = await fetchComRetry429(link, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)' },
       redirect: 'follow'
-    });
+    }, 'linkAindaValido');
 
     if (!resp.ok) {
       console.warn(`[whatsappPreview] verificação: ${link} retornou ${resp.status}`);
