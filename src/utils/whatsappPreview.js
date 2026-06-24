@@ -1,4 +1,4 @@
-A foto é baixada UMA VEZ pelo servidor, redimensionada e comprimida com
+/*A foto é baixada UMA VEZ pelo servidor, redimensionada e comprimida com
    sharp, e salva localmente como WebP — evita hotlinking (403), economiza
    espaço em disco e acelera o carregamento nos cards.
 
