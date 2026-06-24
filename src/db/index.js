@@ -45,6 +45,23 @@ function migrar() {
   tentar('ALTER TABLE groups ADD COLUMN regras TEXT');
   tentar('ALTER TABLE groups ADD COLUMN total_acessos INTEGER NOT NULL DEFAULT 0');
 
+  tentar('ALTER TABLE groups ADD COLUMN owner_email TEXT');
+  tentar('ALTER TABLE groups ADD COLUMN owner_user_id INTEGER');
+  tentar("ALTER TABLE groups ADD COLUMN ownership_status TEXT NOT NULL DEFAULT 'sem_dono'");
+  tentar('ALTER TABLE groups ADD COLUMN ownership_claimed_at TEXT');
+  tentar('ALTER TABLE groups ADD COLUMN owner_assigned_at TEXT');
+  tentar('ALTER TABLE groups ADD COLUMN owner_assigned_by INTEGER');
+
+  tentar(`
+    UPDATE groups
+    SET owner_user_id = usuario_id,
+        owner_email = COALESCE(owner_email, (SELECT email FROM users WHERE users.id = groups.usuario_id)),
+        ownership_status = 'vinculado',
+        ownership_claimed_at = COALESCE(ownership_claimed_at, datetime('now'))
+    WHERE usuario_id IS NOT NULL
+      AND (owner_user_id IS NULL OR ownership_status IS NULL OR ownership_status = 'sem_dono')
+  `);
+
   tentar(`
     CREATE TABLE IF NOT EXISTS user_wallets (
       user_id INTEGER PRIMARY KEY,
@@ -135,6 +152,12 @@ function migrar() {
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `, [], '[db] ZapCoin: tabela group_boosts verificada.', '[db] Erro ao criar group_boosts:');
+
+  tentar('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)', [], '[db] Índice idx_users_email verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions(user_id)', [], '[db] Índice idx_wallet_transactions_user_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_zapcoin_orders_user_id ON zapcoin_orders(user_id)', [], '[db] Índice idx_zapcoin_orders_user_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_group_id ON group_boosts(group_id)', [], '[db] Índice idx_group_boosts_group_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_user_id ON group_boosts(user_id)', [], '[db] Índice idx_group_boosts_user_id verificado.');
 
   const pacotesZapCoin = [
     ['avulso', 'Avulso', 1, 799, '1 ZapCoin para testar ou completar saldo. Valor base: R$ 7,99 por ZapCoin.', 0, 1],

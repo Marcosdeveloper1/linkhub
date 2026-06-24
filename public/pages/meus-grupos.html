@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meus grupos — WhatsApp Grupos</title>
-  <meta name="description" content="Gerencie seus grupos, acompanhe aprovações e organize suas comunidades no WhatsApp Grupos.">
+  <title>Meus grupos — ZapGrupos</title>
+  <meta name="description" content="Gerencie seus grupos, acompanhe aprovações e organize suas comunidades no ZapGrupos.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/img/icon.png">
@@ -990,8 +990,21 @@
   </div>
 </div>
 
-<footer class="footer">
-  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp</p>
+<footer class="footer site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <strong>ZapGrupos</strong>
+      <p>Diretório independente de comunidades. Não somos afiliados ao WhatsApp ou Meta.</p>
+    </div>
+
+    <nav class="site-footer-links" aria-label="Links institucionais">
+      <a href="/pages/faq.html">FAQ</a>
+      <a href="/pages/termos.html">Termos de uso</a>
+      <a href="/pages/privacidade.html">Política de privacidade</a>
+    </nav>
+
+    <p class="site-footer-copy">© 2025 ZapGrupos — Diretório independente de comunidades</p>
+  </div>
 </footer>
 
 <script src="/js/utils.js"></script>
@@ -1443,11 +1456,23 @@
     criarPedidoZapCoin(quantidade, btn);
   });
 
+  function rolarParaZapCoinsSeNecessario() {
+    if (window.location.hash !== '#zapcoin-area') return;
+
+    const alvo = document.getElementById('zapcoin-area');
+    if (!alvo) return;
+
+    setTimeout(() => {
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+  }
+
   async function montar() {
     await iniciarPagina({ requerLogin: true });
     await carregarZapCoins();
     await carregarMeusGrupos();
     calcularCompraPersonalizada();
+    rolarParaZapCoinsSeNecessario();
   }
 
   montar();

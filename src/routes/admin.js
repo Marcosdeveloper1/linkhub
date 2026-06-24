@@ -1,4 +1,5 @@
 const express = require('express');
+const validator = require('validator');
 const router = express.Router();
 const db = require('../db');
 const { requireAdmin, sanitizeString, isValidWhatsAppLink } = require('../middleware/security');
@@ -35,6 +36,54 @@ function traduzirTipoRelato(tipo) {
 }
 
 router.use(requireAdmin);
+
+
+// Resumo geral do painel admin: totais por status, erros e grupos aprovados por categoria.
+router.get('/resumo', (req, res) => {
+  try {
+    garantirTabelaRelatosErro();
+
+    const porStatus = db.query(`
+      SELECT status, COUNT(*) as total
+      FROM groups
+      GROUP BY status
+    `);
+
+    const totais = {
+      aprovados: 0,
+      pendentes: 0,
+      rejeitados: 0,
+      erros_relatados: 0
+    };
+
+    porStatus.forEach((linha) => {
+      if (linha.status === 'aprovado') totais.aprovados = Number(linha.total || 0);
+      if (linha.status === 'pendente') totais.pendentes = Number(linha.total || 0);
+      if (linha.status === 'rejeitado') totais.rejeitados = Number(linha.total || 0);
+    });
+
+    const erros = db.queryOne(`SELECT COUNT(*) as total FROM error_reports`);
+    totais.erros_relatados = Number(erros?.total || 0);
+
+    const categorias = db.query(`
+      SELECT c.id, c.nome, c.slug,
+             COUNT(CASE WHEN g.status = 'aprovado' THEN 1 END) as total
+      FROM categories c
+      LEFT JOIN groups g ON g.categoria_id = c.id
+      GROUP BY c.id, c.nome, c.slug
+      ORDER BY c.nome ASC
+    `).map((cat) => ({
+      ...cat,
+      total: Number(cat.total || 0)
+    }));
+
+    res.json({ ok: true, totais, categorias });
+  } catch (err) {
+    console.error('[admin/resumo]', err);
+    res.status(500).json({ erro: 'Erro ao carregar resumo do painel.' });
+  }
+});
+
 
 
 function garantirCarteiraUsuario(usuarioId) {
@@ -155,9 +204,11 @@ router.post('/zapcoins/ajustar', (req, res) => {
 router.get('/pendentes', (req, res) => {
   try {
     const pendentes = db.query(`
-      SELECT g.*, c.nome as categoria_nome
+      SELECT g.*, c.nome as categoria_nome,
+             u.nome as owner_nome, u.email as owner_usuario_email
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
+      LEFT JOIN users u ON u.id = COALESCE(g.owner_user_id, g.usuario_id)
       WHERE g.status = 'pendente'
       ORDER BY g.criado_em ASC
     `);
@@ -177,9 +228,11 @@ router.get('/grupos', (req, res) => {
     const busca = sanitizeString(req.query.busca, 100);
 
     let sql = `
-      SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug
+      SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug,
+             u.nome as owner_nome, u.email as owner_usuario_email
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
+      LEFT JOIN users u ON u.id = COALESCE(g.owner_user_id, g.usuario_id)
     `;
     const condicoes = [];
     const params = [];
@@ -206,6 +259,101 @@ router.get('/grupos', (req, res) => {
   } catch (err) {
     console.error('[admin/grupos]', err);
     res.status(500).json({ erro: 'Erro ao carregar grupos.' });
+  }
+});
+
+
+// Vincula um grupo importado/sem dono a um e-mail Google.
+// Se o usuário já existir, o vínculo fica ativo na hora. Se ainda não existir,
+// o grupo fica aguardando o primeiro login desse e-mail no Google.
+router.post('/grupos/:id/vincular-dono', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const email = String(sanitizeString(req.body.email, 254) || '').toLowerCase().trim();
+
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ erro: 'Informe um e-mail Google válido.' });
+    }
+
+    const grupo = db.queryOne('SELECT id, nome_grupo FROM groups WHERE id = ?', [id]);
+    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado.' });
+
+    const usuario = db.queryOne(
+      'SELECT id, nome, email FROM users WHERE LOWER(email) = ?',
+      [email]
+    );
+
+    if (usuario) {
+      db.run(
+        `UPDATE groups
+         SET usuario_id = ?,
+             owner_user_id = ?,
+             owner_email = ?,
+             ownership_status = 'vinculado',
+             ownership_claimed_at = datetime('now'),
+             owner_assigned_at = datetime('now'),
+             owner_assigned_by = ?
+         WHERE id = ?`,
+        [usuario.id, usuario.id, usuario.email, req.session.usuario.id, id]
+      );
+
+      return res.json({
+        ok: true,
+        status: 'vinculado',
+        mensagem: `Grupo vinculado ao usuário ${usuario.email}.`,
+        usuario
+      });
+    }
+
+    db.run(
+      `UPDATE groups
+       SET owner_email = ?,
+           owner_user_id = NULL,
+           ownership_status = 'convite_pendente',
+           owner_assigned_at = datetime('now'),
+           owner_assigned_by = ?
+       WHERE id = ?`,
+      [email, req.session.usuario.id, id]
+    );
+
+    res.json({
+      ok: true,
+      status: 'convite_pendente',
+      mensagem: `E-mail salvo. Quando ${email} entrar com Google, o grupo será assumido automaticamente.`
+    });
+  } catch (err) {
+    console.error('[admin/vincular-dono]', err);
+    res.status(500).json({ erro: 'Erro ao vincular dono do grupo.' });
+  }
+});
+
+// Remove o dono/vínculo de um grupo, deixando ele sem proprietário no painel.
+router.post('/grupos/:id/remover-dono', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ erro: 'ID inválido.' });
+
+    const grupo = db.queryOne('SELECT id FROM groups WHERE id = ?', [id]);
+    if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado.' });
+
+    db.run(
+      `UPDATE groups
+       SET usuario_id = NULL,
+           owner_user_id = NULL,
+           owner_email = NULL,
+           ownership_status = 'sem_dono',
+           ownership_claimed_at = NULL,
+           owner_assigned_at = datetime('now'),
+           owner_assigned_by = ?
+       WHERE id = ?`,
+      [req.session.usuario.id, id]
+    );
+
+    res.json({ ok: true, mensagem: 'Dono removido. O grupo ficou sem proprietário.' });
+  } catch (err) {
+    console.error('[admin/remover-dono]', err);
+    res.status(500).json({ erro: 'Erro ao remover dono do grupo.' });
   }
 });
 
@@ -468,7 +616,7 @@ router.post('/grupos/importar-lote', async (req, res) => {
       const id = db.run(
         `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, regras, status, aprovado_em)
          VALUES (?, ?, ?, ?, NULL, ?, ?, ?, 'aprovado', datetime('now'))`,
-        [nomeGrupo, link, descricao, categoria.id, 'Importação WhatsApp Grupos', 'admin@whatsappgrupos.site', regrasTexto]
+        [nomeGrupo, link, descricao, categoria.id, 'Importação ZapGrupos', 'admin@zapgrupos.site', regrasTexto]
       );
 
       let fotoLocal = null;

@@ -38,6 +38,12 @@ async function createDatabase() {
       descricao TEXT NOT NULL,
       categoria_id INTEGER NOT NULL,
       usuario_id INTEGER,
+      owner_email TEXT,
+      owner_user_id INTEGER,
+      ownership_status TEXT NOT NULL DEFAULT 'sem_dono',
+      ownership_claimed_at TEXT,
+      owner_assigned_at TEXT,
+      owner_assigned_by INTEGER,
       nome_contato TEXT NOT NULL,
       email_contato TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pendente',
@@ -48,7 +54,9 @@ async function createDatabase() {
       criado_em TEXT NOT NULL DEFAULT (datetime('now')),
       aprovado_em TEXT,
       FOREIGN KEY (categoria_id) REFERENCES categories(id),
-      FOREIGN KEY (usuario_id) REFERENCES users(id)
+      FOREIGN KEY (usuario_id) REFERENCES users(id),
+      FOREIGN KEY (owner_user_id) REFERENCES users(id),
+      FOREIGN KEY (owner_assigned_by) REFERENCES users(id)
     )
   `);
 
@@ -166,7 +174,7 @@ async function createDatabase() {
   const adminSenha = bcrypt.hashSync(process.env.ADMIN_SENHA || 'admin123', 12);
   db.run(`
     INSERT OR IGNORE INTO users (nome, email, senha, role)
-    VALUES ('Administrador', 'admin@whatsappgrupos.site', '${adminSenha}', 'admin')
+    VALUES ('Administrador', 'admin@zapgrupos.site', '${adminSenha}', 'admin')
   `);
 
   const categorias = [
@@ -227,7 +235,7 @@ async function createDatabase() {
   db.close();
 
   console.log('Banco de dados criado com sucesso em', DB_PATH);
-  console.log('Admin padrão: admin@whatsappgrupos.site / admin123 (MUDE EM PRODUÇÃO!)');
+  console.log('Admin padrão: admin@zapgrupos.site / admin123 (MUDE EM PRODUÇÃO!)');
 }
 
 createDatabase().catch(console.error);

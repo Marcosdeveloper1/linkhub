@@ -294,6 +294,7 @@ router.get('/meus', requireLogin, (req, res) => {
     const grupos = db.query(
       `SELECT g.id, g.nome_grupo, g.descricao, g.link_whatsapp, g.foto_url,
               g.status, g.motivo_rejeicao, g.criado_em, g.aprovado_em,
+              g.owner_email, g.owner_user_id, g.ownership_status, g.ownership_claimed_at,
               c.nome as categoria_nome,
               (
                 SELECT MAX(b.ends_at)
@@ -322,8 +323,10 @@ router.get('/meus', requireLogin, (req, res) => {
        FROM groups g
        JOIN categories c ON g.categoria_id = c.id
        WHERE g.usuario_id = ?
+          OR g.owner_user_id = ?
+          OR LOWER(COALESCE(g.owner_email, '')) = LOWER(?)
        ORDER BY g.criado_em DESC`,
-      [req.session.usuario.id]
+      [req.session.usuario.id, req.session.usuario.id, req.session.usuario.email]
     );
     res.json(grupos);
   } catch (err) {
@@ -340,13 +343,17 @@ router.delete('/meus/:id', requireLogin, (req, res) => {
     if (!id) return res.status(400).json({ erro: 'ID inválido.' });
 
     const grupo = db.queryOne(
-      'SELECT id, usuario_id FROM groups WHERE id = ?',
+      'SELECT id, usuario_id, owner_user_id, owner_email FROM groups WHERE id = ?',
       [id]
     );
 
     if (!grupo) return res.status(404).json({ erro: 'Grupo não encontrado.' });
 
-    if (grupo.usuario_id !== req.session.usuario.id) {
+    const ehDono = grupo.usuario_id === req.session.usuario.id ||
+      grupo.owner_user_id === req.session.usuario.id ||
+      String(grupo.owner_email || '').toLowerCase() === String(req.session.usuario.email || '').toLowerCase();
+
+    if (!ehDono) {
       return res.status(403).json({ erro: 'Você não tem permissão para remover este grupo.' });
     }
 
@@ -430,9 +437,21 @@ router.post('/enviar', requireLogin, limiterGrupo, async (req, res) => {
     const preview = await buscarPreviewGrupo(link);
 
     const id = db.run(
-      `INSERT INTO groups (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, nome_contato, email_contato, regras, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendente')`,
-      [nomeGrupo, link, descricao, categoriaId, req.session.usuario.id, nomeContato, validator.normalizeEmail(emailContato), regras]
+      `INSERT INTO groups
+        (nome_grupo, link_whatsapp, descricao, categoria_id, usuario_id, owner_email, owner_user_id, ownership_status, ownership_claimed_at, nome_contato, email_contato, regras, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'vinculado', datetime('now'), ?, ?, ?, 'pendente')`,
+      [
+        nomeGrupo,
+        link,
+        descricao,
+        categoriaId,
+        req.session.usuario.id,
+        req.session.usuario.email,
+        req.session.usuario.id,
+        nomeContato,
+        validator.normalizeEmail(emailContato),
+        regras
+      ]
     );
 
     if (preview.foto) {

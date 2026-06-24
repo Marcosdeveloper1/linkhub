@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/img/icon.png">
   <link rel="apple-touch-icon" href="/img/icon.png">
-  <title>Enviar grupo — WhatsApp Grupos</title>
+  <title>Enviar grupo — ZapGrupos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
@@ -27,7 +27,7 @@
             <div class="card-grupo-imagem">
               <img class="card-grupo-foto" id="preview-foto" src="" alt="" style="display:none;">
               <div class="preview-foto-placeholder" id="preview-placeholder">
-                A foto do grupo será buscada automaticamente pelo link do WhatsApp.
+                A foto da comunidade será buscada automaticamente pelo link público do convite.
               </div>
               <span class="tag tag-card" id="preview-categoria">Categoria</span>
             </div>
@@ -79,7 +79,7 @@
             </div>
 
             <div class="form-grupo">
-              <label class="form-label" for="link-whatsapp">Link do grupo WhatsApp <span style="color:var(--vermelho)">*</span></label>
+              <label class="form-label" for="link-whatsapp">Link público do grupo <span style="color:var(--vermelho)">*</span></label>
               <input class="form-input" type="url" id="link-whatsapp" placeholder="https://chat.whatsapp.com/CODIGO" required>
               <p class="form-dica">Vá nas configurações do grupo → Link de convite → Copiar link</p>
             </div>
@@ -175,8 +175,21 @@
 
 </main>
 
-<footer class="footer">
-  <p>© 2025 WhatsApp Grupos — Diretório gratuito de grupos de WhatsApp · <a href="/pages/termos.html">Termos de uso</a></p>
+<footer class="footer site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <strong>ZapGrupos</strong>
+      <p>Diretório independente de comunidades. Não somos afiliados ao WhatsApp ou Meta.</p>
+    </div>
+
+    <nav class="site-footer-links" aria-label="Links institucionais">
+      <a href="/pages/faq.html">FAQ</a>
+      <a href="/pages/termos.html">Termos de uso</a>
+      <a href="/pages/privacidade.html">Política de privacidade</a>
+    </nav>
+
+    <p class="site-footer-copy">© 2025 ZapGrupos — Diretório independente de comunidades</p>
+  </div>
 </footer>
 
 <script src="/js/utils.js"></script>
@@ -435,7 +448,7 @@
       return;
     }
 
-    setPreviewStatus('Buscando prévia...', 'Tentando carregar a foto pública do grupo pelo link do WhatsApp.');
+    setPreviewStatus('Buscando prévia...', 'Tentando carregar a foto pública do grupo pelo link do convite.');
 
     timerPreviewLink = setTimeout(async () => {
       try {
@@ -520,7 +533,7 @@
   document.getElementById('preview-foto').addEventListener('error', () => {
     previewFotoUrl = '';
     atualizarPreviewImagem();
-    setPreviewStatus('Imagem indisponível', 'O WhatsApp não permitiu carregar a foto agora. O grupo ainda pode ser enviado.');
+    setPreviewStatus('Imagem indisponível', 'Não foi possível carregar a foto agora. O grupo ainda pode ser enviado.');
   });
 
   carregarCategorias();

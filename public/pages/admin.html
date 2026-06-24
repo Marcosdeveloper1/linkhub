@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/img/icon.png">
   <link rel="apple-touch-icon" href="/img/icon.png">
-  <title>Painel Admin — WhatsApp Grupos</title>
+  <title>Painel Admin — ZapGrupos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css">
   <style>
-    .pagina-admin { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+    .pagina-admin { max-width: 1180px; margin: 0 auto; padding: 32px 20px 60px; }
     .admin-cabecalho { margin-bottom: 24px; }
     .admin-abas { display: flex; gap: 4px; border-bottom: 1px solid var(--cinza-borda); margin-bottom: 24px; flex-wrap: wrap; }
     .admin-aba {
@@ -243,7 +243,331 @@
       max-width: 480px;
     }
 
+
+    .admin-resumo-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .admin-resumo-card {
+      background: #ffffff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--sombra-leve);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-resumo-card::after {
+      content: "";
+      position: absolute;
+      right: -28px;
+      top: -28px;
+      width: 86px;
+      height: 86px;
+      border-radius: 999px;
+      background: rgba(53, 190, 114, 0.10);
+    }
+
+    .admin-resumo-card span {
+      display: block;
+      color: var(--cinza-texto);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .admin-resumo-card strong {
+      display: block;
+      color: var(--preto);
+      font-size: 2rem;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: -0.8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .admin-resumo-card.aprovados::after { background: rgba(53, 190, 114, 0.13); }
+    .admin-resumo-card.pendentes::after { background: rgba(255, 193, 7, 0.16); }
+    .admin-resumo-card.rejeitados::after { background: rgba(220, 53, 69, 0.10); }
+    .admin-resumo-card.erros::after { background: rgba(59, 130, 246, 0.10); }
+
+    .admin-aprovados-painel {
+      display: none;
+      gap: 14px;
+      flex-direction: column;
+      margin-bottom: 16px;
+    }
+
+    .admin-aprovados-painel.visivel {
+      display: flex;
+    }
+
+    .admin-aprovados-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .admin-categoria-resumo {
+      flex: 1;
+      min-width: min(100%, 280px);
+      background:
+        radial-gradient(circle at top right, rgba(53, 190, 114, 0.15), transparent 16rem),
+        #ffffff;
+      border: 1px solid rgba(53, 190, 114, 0.24);
+      border-radius: 18px;
+      padding: 15px 16px;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .admin-categoria-resumo span {
+      display: block;
+      color: var(--cinza-texto);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+    }
+
+    .admin-categoria-resumo strong {
+      display: block;
+      color: var(--preto);
+      font-size: 1.18rem;
+      font-weight: 950;
+      letter-spacing: -0.35px;
+    }
+
+    .admin-importar-box {
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .admin-categorias-box {
+      background: #ffffff;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--sombra-leve);
+    }
+
+    .admin-categorias-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .admin-categorias-head h3 {
+      margin: 0;
+      color: var(--preto);
+      font-size: 1rem;
+      font-weight: 950;
+      letter-spacing: -0.25px;
+    }
+
+    .admin-categorias-busca {
+      min-width: min(100%, 260px);
+      height: 40px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 12px;
+      padding: 0 12px;
+      font-family: var(--font);
+      font-size: 0.86rem;
+      outline: none;
+      background: #fff;
+    }
+
+    .admin-categorias-busca:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(53,190,114,.14);
+    }
+
+    .admin-categorias-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .admin-categoria-item {
+      border: 1px solid #e7edf4;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+      font-family: var(--font);
+      text-align: left;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .admin-categoria-item:hover {
+      border-color: rgba(53, 190, 114, .50);
+      background: #f2fff7;
+      transform: translateY(-1px);
+    }
+
+    .admin-categoria-item.ativa {
+      border-color: var(--verde-claro);
+      background: #eefbf4;
+      box-shadow: 0 0 0 3px rgba(53,190,114,.12);
+    }
+
+    .admin-categoria-item strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--preto);
+      font-size: 0.86rem;
+      font-weight: 900;
+    }
+
+    .admin-categoria-item span {
+      flex: 0 0 auto;
+      min-width: 32px;
+      text-align: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #fff;
+      color: var(--verde-escuro);
+      font-size: 0.72rem;
+      font-weight: 950;
+      border: 1px solid rgba(53, 190, 114, .22);
+    }
+
+    .lista-solicitacoes.admin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .lista-solicitacoes.admin-grid .solicitacao-card {
+      min-width: 0;
+      height: 100%;
+    }
+
+    .lista-solicitacoes.admin-grid .solicitacao-topo {
+      align-items: center;
+    }
+
+    .lista-solicitacoes.admin-grid .solicitacao-desc {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .lista-solicitacoes.admin-grid .solicitacao-contato {
+      overflow-wrap: anywhere;
+    }
+
+    .admin-paginacao {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .admin-paginacao.visivel {
+      display: flex;
+    }
+
+    .admin-paginacao-info {
+      color: var(--cinza-texto);
+      font-size: 0.86rem;
+      font-weight: 800;
+      padding: 0 6px;
+    }
+
+
+    .dono-grupo-box {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border: 1px solid #e7edf4;
+      background: #f8fafc;
+      border-radius: 12px;
+      font-size: 0.81rem;
+      color: var(--cinza-texto);
+      overflow-wrap: anywhere;
+    }
+
+    .dono-grupo-box strong {
+      color: var(--preto);
+      font-weight: 900;
+    }
+
+    .dono-grupo-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.70rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 5px;
+    }
+
+    .dono-grupo-status.vinculado {
+      background: #eefbf4;
+      color: var(--verde-escuro);
+      border: 1px solid rgba(53, 190, 114, .25);
+    }
+
+    .dono-grupo-status.pendente {
+      background: #fff7db;
+      color: #806000;
+      border: 1px solid rgba(255, 193, 7, .35);
+    }
+
+    .dono-grupo-status.sem-dono {
+      background: #eef2f7;
+      color: #475569;
+      border: 1px solid #dbe3ec;
+    }
+
+    .modal-vincular-dono .modal-caixa {
+      max-width: 520px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-resumo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .lista-solicitacoes.admin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 680px) {
+      .admin-resumo-grid { grid-template-columns: 1fr; }
+      .admin-categorias-grid { grid-template-columns: 1fr; max-height: 360px; }
+      .lista-solicitacoes.admin-grid { grid-template-columns: 1fr; }
+      .admin-aprovados-topo { flex-direction: column; }
+      .admin-importar-box { justify-content: stretch; }
+      .admin-importar-box .btn { width: 100%; }
       .zap-admin-card {
         grid-template-columns: 1fr;
       }
@@ -269,25 +593,63 @@
     <p style="color:var(--cinza-texto); margin-top:6px;">Aprove, rejeite ou remova grupos cadastrados na plataforma.</p>
   </div>
 
+  <section class="admin-resumo-grid" id="admin-resumo-grid" aria-label="Resumo do painel">
+    <article class="admin-resumo-card aprovados">
+      <span>Aprovados</span>
+      <strong id="total-aprovados">0</strong>
+    </article>
+    <article class="admin-resumo-card pendentes">
+      <span>Pendentes</span>
+      <strong id="total-pendentes">0</strong>
+    </article>
+    <article class="admin-resumo-card rejeitados">
+      <span>Rejeitados</span>
+      <strong id="total-rejeitados">0</strong>
+    </article>
+    <article class="admin-resumo-card erros">
+      <span>Erros relatados</span>
+      <strong id="total-erros">0</strong>
+    </article>
+  </section>
+
   <div class="admin-abas">
     <button class="admin-aba ativa" data-status="pendente">Pendentes</button>
     <button class="admin-aba" data-status="aprovado">Aprovados</button>
     <button class="admin-aba" data-status="rejeitado">Rejeitados</button>
     <button class="admin-aba" data-status="erros">Erros relatados</button>
     <button class="admin-aba" data-status="zapcoins">ZapCoins</button>
-    <button class="btn btn-contorno btn-sm" id="btn-importar-lote" style="margin-left:auto;">Importar em lote</button>
   </div>
 
-  <!-- Barra de ferramentas: só aparece na aba Aprovados -->
-  <div class="barra-ferramentas" id="barra-ferramentas-aprovados" style="display:none;">
-    <select class="form-select" id="filtro-categoria-aprovados">
-      <option value="">Todas as categorias</option>
-    </select>
-    <input type="search" class="form-input" id="busca-nome-aprovados" placeholder="Buscar por nome...">
-    <div class="barra-ferramentas-acoes">
-      <button class="btn btn-contorno btn-sm" id="btn-verificar-links">Verificar links</button>
+  <!-- Painel da aba Aprovados -->
+  <section class="admin-aprovados-painel" id="painel-aprovados">
+    <div class="admin-aprovados-topo">
+      <div class="admin-categoria-resumo">
+        <span>Resumo da categoria</span>
+        <strong id="resumo-categoria-atual">Todas as categorias: 0 grupos cadastrados</strong>
+      </div>
+      <div class="admin-importar-box">
+        <button class="btn btn-contorno btn-sm" id="btn-importar-lote" type="button">Importar em lote</button>
+      </div>
     </div>
-  </div>
+
+    <div class="admin-categorias-box">
+      <div class="admin-categorias-head">
+        <h3>Categorias aprovadas</h3>
+        <input class="admin-categorias-busca" id="busca-categoria-aprovados" type="search" placeholder="Buscar categoria..." autocomplete="off">
+      </div>
+      <select class="form-select" id="filtro-categoria-aprovados" hidden>
+        <option value="">Todas as categorias</option>
+      </select>
+      <div class="admin-categorias-grid" id="lista-categorias-aprovados"></div>
+    </div>
+
+    <div class="barra-ferramentas" id="barra-ferramentas-aprovados">
+      <input type="search" class="form-input" id="busca-nome-aprovados" placeholder="Buscar grupo por nome...">
+      <div class="barra-ferramentas-acoes">
+        <button class="btn btn-contorno btn-sm" id="btn-verificar-links">Verificar links</button>
+      </div>
+    </div>
+  </section>
 
   <!-- Botão "Limpar rejeitados": só aparece na aba Rejeitados -->
   <div id="barra-rejeitados" style="display:none; margin-bottom:16px;">
@@ -311,6 +673,12 @@
 
   <div id="lista-area" class="lista-solicitacoes">
     <p style="color:var(--cinza-texto);">Carregando...</p>
+  </div>
+
+  <div id="admin-paginacao" class="admin-paginacao">
+    <button class="btn btn-contorno btn-sm" id="btn-pagina-anterior" type="button">Anterior</button>
+    <span class="admin-paginacao-info" id="admin-paginacao-info">Página 1 de 1</span>
+    <button class="btn btn-contorno btn-sm" id="btn-pagina-proxima" type="button">Próxima</button>
   </div>
 </main>
 
@@ -434,6 +802,32 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   </div>
 </div>
 
+
+<!-- Modal de vínculo de dono do grupo -->
+<div class="modal-fundo modal-vincular-dono" id="modal-vincular-dono">
+  <div class="modal-caixa">
+    <button class="modal-fechar" id="fechar-modal-vincular-dono">&times;</button>
+    <h3 class="modal-titulo">Vincular dono do grupo</h3>
+
+    <div id="aviso-vincular-dono" class="aviso"></div>
+
+    <p style="color:var(--cinza-texto); font-size:0.92rem; margin-bottom:14px;" id="texto-vincular-dono">
+      Informe o e-mail Google do administrador do grupo.
+    </p>
+
+    <div class="form-grupo">
+      <label class="form-label" for="email-dono-grupo">E-mail Google do dono</label>
+      <input class="form-input" id="email-dono-grupo" type="email" placeholder="exemplo@gmail.com" autocomplete="email">
+      <p class="form-dica">Se esse usuário já tiver conta, o grupo aparece em “Meus grupos” imediatamente. Se ainda não tiver, será vinculado quando ele entrar com Google.</p>
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap;">
+      <button class="btn btn-contorno" id="cancelar-vincular-dono" type="button">Cancelar</button>
+      <button class="btn btn-primario" id="confirmar-vincular-dono" type="button">Salvar vínculo</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/utils.js"></script>
 <script>
   iniciarPagina({ requerAdmin: true });
@@ -446,6 +840,155 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
   let buscaZapCoinUsuarios = '';
   let usuarioZapCoinSelecionado = null;
+  let grupoDonoSelecionado = null;
+  let resumoAdmin = null;
+  let buscaCategoriaAprovados = '';
+  let paginaAtualAdmin = 1;
+  const ITENS_POR_PAGINA_ADMIN = 15;
+
+
+  function numeroSeguro(valor) {
+    return Number(valor || 0);
+  }
+
+  function textoGrupoQuantidade(total) {
+    return `${total} grupo${total === 1 ? '' : 's'} cadastrado${total === 1 ? '' : 's'}`;
+  }
+
+  function obterStatusDonoGrupo(g) {
+    if (g.owner_user_id || g.usuario_id) return 'vinculado';
+    if (g.owner_email || g.ownership_status === 'convite_pendente') return 'convite_pendente';
+    return 'sem_dono';
+  }
+
+  function montarResumoDonoGrupo(g) {
+    const status = obterStatusDonoGrupo(g);
+    const email = g.owner_usuario_email || g.owner_email || '';
+    const nome = g.owner_nome || '';
+
+    if (status === 'vinculado') {
+      return `
+        <div class="dono-grupo-box">
+          <span class="dono-grupo-status vinculado">Dono vinculado</span><br>
+          <strong>${escaparHtml(nome || 'Usuário')}</strong>${email ? ` — ${escaparHtml(email)}` : ''}
+        </div>`;
+    }
+
+    if (status === 'convite_pendente') {
+      return `
+        <div class="dono-grupo-box">
+          <span class="dono-grupo-status pendente">Aguardando login</span><br>
+          E-mail reservado: <strong>${escaparHtml(email)}</strong>
+        </div>`;
+    }
+
+    return `
+      <div class="dono-grupo-box">
+        <span class="dono-grupo-status sem-dono">Sem dono</span><br>
+        Grupo importado ou ainda não vinculado a um perfil.
+      </div>`;
+  }
+
+  function obterCategoriaResumo(slug) {
+    const categorias = resumoAdmin?.categorias || [];
+    if (!slug) {
+      const total = numeroSeguro(resumoAdmin?.totais?.aprovados);
+      return { slug: '', nome: 'Todas as categorias', total };
+    }
+    return categorias.find(cat => String(cat.slug) === String(slug)) || { slug, nome: slug, total: 0 };
+  }
+
+  async function carregarResumoAdmin() {
+    try {
+      resumoAdmin = await apiFetch('/admin/resumo');
+
+      document.getElementById('total-aprovados').textContent = numeroSeguro(resumoAdmin?.totais?.aprovados);
+      document.getElementById('total-pendentes').textContent = numeroSeguro(resumoAdmin?.totais?.pendentes);
+      document.getElementById('total-rejeitados').textContent = numeroSeguro(resumoAdmin?.totais?.rejeitados);
+      document.getElementById('total-erros').textContent = numeroSeguro(resumoAdmin?.totais?.erros_relatados);
+
+      popularSelectCategoriasAprovados();
+      renderizarCategoriasAprovados();
+      atualizarResumoCategoriaAtual();
+    } catch (err) {
+      console.warn('[admin] Não foi possível carregar resumo:', err.message);
+    }
+  }
+
+  function popularSelectCategoriasAprovados() {
+    const sel = document.getElementById('filtro-categoria-aprovados');
+    if (!sel || !resumoAdmin) return;
+
+    sel.innerHTML = '<option value="">Todas as categorias</option>';
+    (resumoAdmin.categorias || []).forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat.slug;
+      opt.textContent = cat.nome;
+      sel.appendChild(opt);
+    });
+
+    sel.value = categoriaFiltro || '';
+  }
+
+  function renderizarCategoriasAprovados() {
+    const lista = document.getElementById('lista-categorias-aprovados');
+    if (!lista) return;
+
+    const termo = String(buscaCategoriaAprovados || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const categoriasBase = resumoAdmin?.categorias || [];
+    const categorias = [
+      { slug: '', nome: 'Todas as categorias', total: numeroSeguro(resumoAdmin?.totais?.aprovados) },
+      ...categoriasBase
+    ].filter(cat => {
+      const base = `${cat.nome || ''} ${cat.slug || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return !termo || base.includes(termo);
+    });
+
+    if (!categorias.length) {
+      lista.innerHTML = '<div class="estado-vazio" style="grid-column:1/-1;padding:18px;"><p>Nenhuma categoria encontrada.</p></div>';
+      return;
+    }
+
+    lista.innerHTML = categorias.map(cat => `
+      <button class="admin-categoria-item ${String(categoriaFiltro || '') === String(cat.slug || '') ? 'ativa' : ''}" type="button" data-categoria="${escaparHtml(cat.slug || '')}">
+        <strong>${escaparHtml(cat.nome || 'Categoria')}</strong>
+        <span>${numeroSeguro(cat.total)}</span>
+      </button>
+    `).join('');
+  }
+
+  function atualizarResumoCategoriaAtual() {
+    const el = document.getElementById('resumo-categoria-atual');
+    if (!el) return;
+
+    const cat = obterCategoriaResumo(categoriaFiltro);
+    const total = numeroSeguro(cat.total);
+    el.textContent = `${cat.nome}: ${textoGrupoQuantidade(total)}`;
+  }
+
+  function renderizarPaginacao(totalItens) {
+    const paginacao = document.getElementById('admin-paginacao');
+    const info = document.getElementById('admin-paginacao-info');
+    const btnAnterior = document.getElementById('btn-pagina-anterior');
+    const btnProxima = document.getElementById('btn-pagina-proxima');
+
+    const totalPaginas = Math.max(1, Math.ceil(totalItens / ITENS_POR_PAGINA_ADMIN));
+    paginaAtualAdmin = Math.min(Math.max(1, paginaAtualAdmin), totalPaginas);
+
+    if (totalItens <= ITENS_POR_PAGINA_ADMIN) {
+      paginacao.classList.remove('visivel');
+      return;
+    }
+
+    paginacao.classList.add('visivel');
+    info.textContent = `Página ${paginaAtualAdmin} de ${totalPaginas}`;
+    btnAnterior.disabled = paginaAtualAdmin <= 1;
+    btnProxima.disabled = paginaAtualAdmin >= totalPaginas;
+  }
+
+  function esconderPaginacao() {
+    document.getElementById('admin-paginacao').classList.remove('visivel');
+  }
 
 
   function inicializarSeletorCategoria(selectId) {
@@ -585,10 +1128,11 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     const area = document.getElementById('lista-area');
     area.innerHTML = '<p style="color:var(--cinza-texto);">Carregando...</p>';
 
-    // mostra/esconde a barra de ferramentas certa pra cada aba
-    document.getElementById('barra-ferramentas-aprovados').style.display = abaAtual === 'aprovado' ? 'flex' : 'none';
+    // mostra/esconde as ferramentas certas pra cada aba
+    document.getElementById('painel-aprovados').classList.toggle('visivel', abaAtual === 'aprovado');
     document.getElementById('barra-rejeitados').style.display = abaAtual === 'rejeitado' ? 'block' : 'none';
     document.getElementById('barra-zapcoins-admin').classList.toggle('visivel', abaAtual === 'zapcoins');
+    if (abaAtual === 'aprovado') atualizarResumoCategoriaAtual();
 
     if (abaAtual !== 'aprovado') {
       idsSelecionados.clear();
@@ -633,6 +1177,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   function renderizarErros(relatos) {
     const area = document.getElementById('lista-area');
+    area.classList.remove('admin-grid');
+    esconderPaginacao();
 
     if (!relatos || relatos.length === 0) {
       area.innerHTML = `
@@ -678,6 +1224,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   function renderizarZapcoins(usuarios) {
     const area = document.getElementById('lista-area');
+    area.classList.remove('admin-grid');
+    esconderPaginacao();
 
     if (!usuarios || usuarios.length === 0) {
       area.innerHTML = `
@@ -709,10 +1257,12 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   function renderizarLista(grupos) {
     const area = document.getElementById('lista-area');
+    area.classList.add('admin-grid');
 
     if (grupos.length === 0) {
+      esconderPaginacao();
       area.innerHTML = `
-        <div class="estado-vazio">
+        <div class="estado-vazio" style="grid-column:1/-1;">
           <h3>Nada por aqui</h3>
           <p>Não há grupos com este status no momento.</p>
         </div>
@@ -720,9 +1270,13 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
       return;
     }
 
+    const totalPaginas = Math.max(1, Math.ceil(grupos.length / ITENS_POR_PAGINA_ADMIN));
+    paginaAtualAdmin = Math.min(Math.max(1, paginaAtualAdmin), totalPaginas);
+    const inicio = (paginaAtualAdmin - 1) * ITENS_POR_PAGINA_ADMIN;
+    const gruposPagina = grupos.slice(inicio, inicio + ITENS_POR_PAGINA_ADMIN);
     const mostrarCheckbox = abaAtual === 'aprovado';
 
-    area.innerHTML = grupos.map(g => `
+    area.innerHTML = gruposPagina.map(g => `
       <div class="card solicitacao-card ${idsSelecionados.has(g.id) ? 'card-selecionado' : ''}" data-id="${g.id}">
         <div class="solicitacao-topo">
           ${mostrarCheckbox ? `<input type="checkbox" class="solicitacao-checkbox" data-id="${g.id}" ${idsSelecionados.has(g.id) ? 'checked' : ''}>` : ''}
@@ -741,6 +1295,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
           Link: <a href="${g.link_whatsapp}" target="_blank" rel="noopener">${g.link_whatsapp}</a><br>
           Contato: ${escaparHtml(g.nome_contato)} — ${escaparHtml(g.email_contato)}
         </div>
+        ${montarResumoDonoGrupo(g)}
         ${g.status === 'pendente' ? `
           <div class="solicitacao-detalhe-expandido" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--cinza-borda); font-size:0.85rem;">
             <p><strong>Nome do grupo:</strong> ${escaparHtml(g.nome_grupo)}</p>
@@ -763,6 +1318,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
             <button class="btn btn-perigo btn-sm" data-acao="rejeitar" data-id="${g.id}">Rejeitar</button>
           ` : ''}
           ${g.status === 'aprovado' || g.status === 'indisponivel' ? `
+            <button class="btn btn-contorno btn-sm" data-acao="vincular-dono" data-id="${g.id}">Vincular dono</button>
+            ${(g.owner_user_id || g.usuario_id || g.owner_email) ? `<button class="btn btn-contorno btn-sm" data-acao="remover-dono" data-id="${g.id}">Remover dono</button>` : ''}
             <button class="btn btn-perigo btn-sm" data-acao="remover" data-id="${g.id}">Remover do site</button>
           ` : ''}
         </div>
@@ -772,6 +1329,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     area.querySelectorAll('img').forEach(img => {
       img.addEventListener('error', () => { img.style.display = 'none'; });
     });
+
+    renderizarPaginacao(grupos.length);
   }
 
   function escaparHtml(str) {
@@ -813,6 +1372,8 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (acao === 'remover') return remover(id);
     if (acao === 'erro-resolver') return resolverErro(id);
     if (acao === 'erro-remover') return removerErro(id);
+    if (acao === 'vincular-dono') return abrirModalVincularDono(id);
+    if (acao === 'remover-dono') return removerDonoGrupo(id);
     if (acao === 'zapcoin-ajustar') {
       return abrirModalZapCoin({
         id: parseInt(btn.dataset.userId, 10),
@@ -902,6 +1463,9 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   document.getElementById('filtro-categoria-aprovados').addEventListener('change', (e) => {
     categoriaFiltro = e.target.value;
+    paginaAtualAdmin = 1;
+    atualizarResumoCategoriaAtual();
+    renderizarCategoriasAprovados();
     carregarLista();
   });
 
@@ -910,8 +1474,42 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     clearTimeout(timeoutBusca);
     timeoutBusca = setTimeout(() => {
       buscaNome = e.target.value.trim();
+      paginaAtualAdmin = 1;
       carregarLista();
     }, 400);
+  });
+
+
+  document.getElementById('busca-categoria-aprovados').addEventListener('input', (e) => {
+    buscaCategoriaAprovados = e.target.value.trim();
+    renderizarCategoriasAprovados();
+  });
+
+  document.getElementById('lista-categorias-aprovados').addEventListener('click', (e) => {
+    const btn = e.target.closest('.admin-categoria-item');
+    if (!btn) return;
+
+    categoriaFiltro = btn.dataset.categoria || '';
+    document.getElementById('filtro-categoria-aprovados').value = categoriaFiltro;
+    paginaAtualAdmin = 1;
+    atualizarResumoCategoriaAtual();
+    renderizarCategoriasAprovados();
+    carregarLista();
+  });
+
+  document.getElementById('btn-pagina-anterior').addEventListener('click', () => {
+    if (paginaAtualAdmin <= 1) return;
+    paginaAtualAdmin -= 1;
+    renderizarLista(gruposCarregados);
+    document.getElementById('lista-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('btn-pagina-proxima').addEventListener('click', () => {
+    const totalPaginas = Math.max(1, Math.ceil(gruposCarregados.length / ITENS_POR_PAGINA_ADMIN));
+    if (paginaAtualAdmin >= totalPaginas) return;
+    paginaAtualAdmin += 1;
+    renderizarLista(gruposCarregados);
+    document.getElementById('lista-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   async function aprovar(id) {
@@ -993,8 +1591,11 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
       abaAtual = aba.dataset.status;
       categoriaFiltro = '';
       buscaNome = '';
+      paginaAtualAdmin = 1;
       document.getElementById('filtro-categoria-aprovados').value = '';
       document.getElementById('busca-nome-aprovados').value = '';
+      atualizarResumoCategoriaAtual();
+      renderizarCategoriasAprovados();
       if (abaAtual !== 'zapcoins') {
         buscaZapCoinUsuarios = '';
         document.getElementById('busca-zapcoin-usuarios').value = '';
@@ -1003,6 +1604,70 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     });
   });
 
+
+
+  function abrirModalVincularDono(id) {
+    const grupo = gruposCarregados.find(g => String(g.id) === String(id));
+    grupoDonoSelecionado = { id: parseInt(id, 10), nome: grupo?.nome_grupo || 'Grupo' };
+
+    document.getElementById('texto-vincular-dono').textContent = `Informe o e-mail Google do administrador de: ${grupoDonoSelecionado.nome}`;
+    document.getElementById('email-dono-grupo').value = grupo?.owner_email || grupo?.owner_usuario_email || '';
+    limparAviso('aviso-vincular-dono');
+    document.getElementById('modal-vincular-dono').classList.add('aberto');
+    setTimeout(() => document.getElementById('email-dono-grupo').focus(), 80);
+  }
+
+  function fecharModalVincularDono() {
+    grupoDonoSelecionado = null;
+    document.getElementById('modal-vincular-dono').classList.remove('aberto');
+  }
+
+  async function confirmarVincularDono() {
+    if (!grupoDonoSelecionado) return;
+
+    const email = document.getElementById('email-dono-grupo').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      return mostrarAviso('aviso-vincular-dono', 'Informe um e-mail Google válido.');
+    }
+
+    const btn = document.getElementById('confirmar-vincular-dono');
+    btnCarregando(btn, true);
+
+    try {
+      const resp = await apiFetch(`/admin/grupos/${grupoDonoSelecionado.id}/vincular-dono`, {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+
+      fecharModalVincularDono();
+      alert(resp.mensagem || 'Dono vinculado com sucesso.');
+      carregarResumoAdmin();
+      carregarLista();
+    } catch (err) {
+      mostrarAviso('aviso-vincular-dono', err.message);
+    } finally {
+      btnCarregando(btn, false);
+    }
+  }
+
+  async function removerDonoGrupo(id) {
+    if (!confirm('Remover o dono vinculado deste grupo? Ele deixará de aparecer em “Meus grupos” para esse usuário.')) return;
+
+    try {
+      await apiFetch(`/admin/grupos/${id}/remover-dono`, { method: 'POST' });
+      carregarResumoAdmin();
+      carregarLista();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  document.getElementById('fechar-modal-vincular-dono').addEventListener('click', fecharModalVincularDono);
+  document.getElementById('cancelar-vincular-dono').addEventListener('click', fecharModalVincularDono);
+  document.getElementById('confirmar-vincular-dono').addEventListener('click', confirmarVincularDono);
+  document.getElementById('modal-vincular-dono').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModalVincularDono();
+  });
 
   function abrirModalZapCoin(usuario) {
     usuarioZapCoinSelecionado = usuario;
@@ -1170,7 +1835,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     }
   });
 
-  carregarCategoriasFiltro();
+  carregarResumoAdmin();
   carregarLista();
 </script>
 </body>
