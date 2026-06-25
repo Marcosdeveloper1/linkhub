@@ -6,6 +6,11 @@ Disallow: /pages/meus-grupos.html
 Disallow: /pages/checkout.html
 Disallow: /pages/login.html
 Disallow: /pages/cadastro.html
-Disallow: /api/
+
+Allow: /api/grupos
+Disallow: /api/admin
+Disallow: /api/auth
+Disallow: /api/zapcoins
+Disallow: /api/webhooks
 
 Sitemap: https://zapgrupos.site/sitemap.xml

@@ -4367,3 +4367,62 @@ a
   object-fit: contain !important;
   display: block !important;
 }
+
+/* ---- SEO Home ---- */
+.seo-home {
+  margin: 48px 0 20px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 16px;
+  box-shadow: var(--sombra-leve);
+}
+
+.seo-home h2 {
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+  letter-spacing: -0.3px;
+}
+
+.seo-home p {
+  color: #475467;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.seo-home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.seo-home-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #eefbf4;
+  color: var(--verde-escuro);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.seo-home-links a:hover {
+  background: #def8e9;
+  color: var(--verde-escuro);
+}
+
+@media (max-width: 768px) {
+  .seo-home {
+    margin-top: 32px;
+    padding: 22px;
+  }
+
+  .seo-home-links a {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
