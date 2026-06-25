@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/img/icon.png">
   <link rel="apple-touch-icon" href="/img/icon.png">
-  <title>ZapGrupos — Grupos e comunidades por tema</title>
-  <meta name="description" content="Encontre grupos e comunidades por tema, cidade ou interesse no ZapGrupos. Explore categorias, veja grupos em destaque e divulgue sua comunidade gratuitamente.">
+  <title>ZapGrupos - Links de Grupos de WhatsApp</title>
+<meta name="description" content="A melhor lista de links de grupos de WhatsApp que você já conheceu. É grátis, simples e fácil você encontrar e entrar em um grupo de WhatsApp.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://zapgrupos.site/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="ZapGrupos — Grupos e comunidades por tema">
-  <meta property="og:description" content="Diretório independente para encontrar e divulgar grupos e comunidades por categoria.">
+  <meta property="og:title" content="ZapGrupos - Links de Grupos de WhatsApp">
+  <meta property="og:description" content="A melhor lista de links de grupos de WhatsApp que você já conheceu. É grátis, simples e fácil você encontrar e entrar em um grupo de WhatsApp.">
   <meta property="og:url" content="https://zapgrupos.site/">
   <meta property="og:image" content="https://zapgrupos.site/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -235,7 +235,7 @@
     <div class="secao-titulo">
       <div>
         <span class="home-secao-label" id="label-secao">Diretório</span>
-        <h1 id="titulo-secao">Todos os grupos e comunidades</h1>
+        <h1 id="titulo-secao">Links de grupos de WhatsApp</h1>
       </div>
     </div>
 
@@ -264,19 +264,17 @@
   <section class="seo-home" aria-labelledby="seo-home-titulo">
     <span class="home-secao-label">Sobre o ZapGrupos</span>
 
-    <h2 id="seo-home-titulo">Encontre grupos e comunidades por categoria</h2>
+    <h2 id="seo-home-titulo">Links de grupos de WhatsApp</h2>
 
     <p>
-      O ZapGrupos é um diretório independente para encontrar grupos e comunidades
-      organizados por tema, cidade ou interesse. Você pode explorar categorias como
-      amizade, relacionamento, tecnologia, empregos, educação, esportes, divulgação,
-      negócios, receitas, turismo e muito mais.
+      A melhor lista de links de grupos de WhatsApp que você já conheceu. É grátis,
+      simples e fácil você encontrar e entrar em um grupo de WhatsApp.
     </p>
 
     <p>
-      Os grupos enviados passam por análise antes de aparecer no site. O objetivo é
-      facilitar a busca por comunidades públicas e ajudar administradores a divulgar
-      seus grupos de forma organizada.
+      No ZapGrupos você encontra grupos separados por categorias como amizade,
+      relacionamento, tecnologia, empregos, educação, esportes, divulgação, negócios,
+      receitas, turismo e muito mais.
     </p>
 
     <nav class="seo-home-links" aria-label="Categorias populares do ZapGrupos">
@@ -600,19 +598,19 @@
     const ogUrl = document.querySelector('meta[property="og:url"]');
 
     if (!categoria) {
-      document.title = 'ZapGrupos — Grupos e comunidades por tema';
+      document.title = 'ZapGrupos - Links de Grupos de WhatsApp';
       if (metaDescription) {
-        metaDescription.setAttribute('content', 'Encontre grupos e comunidades por tema, cidade ou interesse no ZapGrupos. Explore categorias, veja grupos em destaque e divulgue sua comunidade gratuitamente.');
+        metaDescription.setAttribute('content', 'A melhor lista de links de grupos de WhatsApp que você já conheceu. É grátis, simples e fácil você encontrar e entrar em um grupo de WhatsApp.');
       }
       if (canonical) canonical.setAttribute('href', 'https://zapgrupos.site/');
-      if (ogTitle) ogTitle.setAttribute('content', 'ZapGrupos — Grupos e comunidades por tema');
-      if (ogDescription) ogDescription.setAttribute('content', 'Diretório independente para encontrar e divulgar grupos e comunidades por categoria.');
+      if (ogTitle) ogTitle.setAttribute('content', 'ZapGrupos - Links de Grupos de WhatsApp');
+      if (ogDescription) ogDescription.setAttribute('content', 'A melhor lista de links de grupos de WhatsApp que você já conheceu. É grátis, simples e fácil você encontrar e entrar em um grupo de WhatsApp.');
       if (ogUrl) ogUrl.setAttribute('content', 'https://zapgrupos.site/');
       return;
     }
 
-    const tituloCategoria = `Grupos de ${categoria.nome} — ZapGrupos`;
-    const descricaoCategoria = `${categoria.descricao} Veja grupos atualizados, entre em comunidades públicas e divulgue seu grupo no ZapGrupos.`;
+    const tituloCategoria = `Links de grupos de WhatsApp de ${categoria.nome} - ZapGrupos`;
+    const descricaoCategoria = `Encontre links de grupos de WhatsApp de ${categoria.nome} no ZapGrupos. É grátis, simples e fácil encontrar e entrar em comunidades públicas por categoria.`;
     const urlCategoria = `https://zapgrupos.site/${categoria.slug}`;
 
     document.title = tituloCategoria;
@@ -794,7 +792,7 @@
       return;
     }
 
-    titulo.textContent = 'Todos os grupos';
+    titulo.textContent = 'Links de grupos de WhatsApp';
     label.textContent = 'Diretório';
   }
 
