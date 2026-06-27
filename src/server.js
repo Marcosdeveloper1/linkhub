@@ -40,7 +40,6 @@ function enviarHome(req, res) {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 }
 
-
 function siteBaseUrl() {
   return (process.env.SITE_URL || 'https://zapgrupos.site').replace(/\/+$/, '');
 }
@@ -62,8 +61,8 @@ function formatarDataSitemap(valor) {
 }
 
 function linhaSitemap(loc, lastmod, changefreq = 'weekly', priority = '0.7') {
-  return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;}
-
+  return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+}
 
 app.set('trust proxy', 1);
 
@@ -71,93 +70,18 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        'https://sdk.mercadopago.com',
-        'https://*.mercadopago.com',
-        'https://*.mercadopago.com.br',
-        'https://*.mlstatic.com',
-
-        // Adsterra
-        'https://www.highperformanceformat.com',
-        'https://highperformanceformat.com',
-        'https://pl29902612.effectivecpmnetwork.com',
-        'https://*.effectivecpmnetwork.com'
-      ],
-
-      scriptSrcElem: [
-        "'self'",
-        "'unsafe-inline'",
-        'https://sdk.mercadopago.com',
-        'https://*.mercadopago.com',
-        'https://*.mercadopago.com.br',
-        'https://*.mlstatic.com',
-
-        // Adsterra
-        'https://www.highperformanceformat.com',
-        'https://highperformanceformat.com',
-        'https://pl29902612.effectivecpmnetwork.com',
-        'https://*.effectivecpmnetwork.com'
-      ],
-
-      styleSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        'fonts.googleapis.com'
-      ],
-
-      fontSrc: [
-        "'self'",
-        'fonts.gstatic.com'
-      ],
-
-      imgSrc: [
-        "'self'",
-        'data:',
-        'https:',
-        'https://*.mercadopago.com',
-        'https://*.mercadopago.com.br',
-        'https://*.mlstatic.com',
-
-        // Adsterra / redes de anúncios
-        'https://*.effectivecpmnetwork.com',
-        'https://*.highperformanceformat.com'
-      ],
-
-      connectSrc: [
-        "'self'",
-        'https://api.mercadopago.com',
-        'https://*.mercadopago.com',
-        'https://*.mercadopago.com.br',
-        'https://*.mlstatic.com',
-
-        // Adsterra
-        'https://www.highperformanceformat.com',
-        'https://highperformanceformat.com',
-        'https://pl29902612.effectivecpmnetwork.com',
-        'https://*.effectivecpmnetwork.com'
-      ],
-
-      frameSrc: [
-        "'self'",
-        'https://*.mercadopago.com',
-        'https://*.mercadopago.com.br',
-
-        // Adsterra
-        'https://www.highperformanceformat.com',
-        'https://highperformanceformat.com',
-        'https://*.effectivecpmnetwork.com'
-      ],
-
-      childSrc: [
-        "'self'",
-        'https://www.highperformanceformat.com',
-        'https://highperformanceformat.com',
-        'https://*.effectivecpmnetwork.com'
-      ],
-
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https:'],
+      scriptSrcElem: ["'self'", "'unsafe-inline'", 'https:'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https:', 'fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https:', 'data:', 'fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'", 'https:'],
+      frameSrc: ["'self'", 'https:'],
+      childSrc: ["'self'", 'https:'],
+      mediaSrc: ["'self'", 'https:', 'data:'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'", 'https:'],
       upgradeInsecureRequests: null
     }
   },
@@ -236,7 +160,6 @@ app.use('/api/zapcoins', require('./routes/zapcoins'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-
 
 // URLs públicas de categorias, ex: /dinheiro, /turismo, /religiao.
 // A rota fica depois dos arquivos estáticos e da API para não quebrar /css, /js, /img, /pages ou /api.
