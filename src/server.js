@@ -62,8 +62,7 @@ function formatarDataSitemap(valor) {
 }
 
 function linhaSitemap(loc, lastmod, changefreq = 'weekly', priority = '0.7') {
-  return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
-}
+  return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;}
 
 
 app.set('trust proxy', 1);
@@ -72,12 +71,93 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://sdk.mercadopago.com', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
-      fontSrc: ["'self'", 'fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https:', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
-      connectSrc: ["'self'", 'https://api.mercadopago.com', 'https://*.mercadopago.com', 'https://*.mercadopago.com.br', 'https://*.mlstatic.com'],
-      frameSrc: ["'self'", 'https://*.mercadopago.com', 'https://*.mercadopago.com.br'],
+
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://sdk.mercadopago.com',
+        'https://*.mercadopago.com',
+        'https://*.mercadopago.com.br',
+        'https://*.mlstatic.com',
+
+        // Adsterra
+        'https://www.highperformanceformat.com',
+        'https://highperformanceformat.com',
+        'https://pl29902612.effectivecpmnetwork.com',
+        'https://*.effectivecpmnetwork.com'
+      ],
+
+      scriptSrcElem: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://sdk.mercadopago.com',
+        'https://*.mercadopago.com',
+        'https://*.mercadopago.com.br',
+        'https://*.mlstatic.com',
+
+        // Adsterra
+        'https://www.highperformanceformat.com',
+        'https://highperformanceformat.com',
+        'https://pl29902612.effectivecpmnetwork.com',
+        'https://*.effectivecpmnetwork.com'
+      ],
+
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'fonts.googleapis.com'
+      ],
+
+      fontSrc: [
+        "'self'",
+        'fonts.gstatic.com'
+      ],
+
+      imgSrc: [
+        "'self'",
+        'data:',
+        'https:',
+        'https://*.mercadopago.com',
+        'https://*.mercadopago.com.br',
+        'https://*.mlstatic.com',
+
+        // Adsterra / redes de anúncios
+        'https://*.effectivecpmnetwork.com',
+        'https://*.highperformanceformat.com'
+      ],
+
+      connectSrc: [
+        "'self'",
+        'https://api.mercadopago.com',
+        'https://*.mercadopago.com',
+        'https://*.mercadopago.com.br',
+        'https://*.mlstatic.com',
+
+        // Adsterra
+        'https://www.highperformanceformat.com',
+        'https://highperformanceformat.com',
+        'https://pl29902612.effectivecpmnetwork.com',
+        'https://*.effectivecpmnetwork.com'
+      ],
+
+      frameSrc: [
+        "'self'",
+        'https://*.mercadopago.com',
+        'https://*.mercadopago.com.br',
+
+        // Adsterra
+        'https://www.highperformanceformat.com',
+        'https://highperformanceformat.com',
+        'https://*.effectivecpmnetwork.com'
+      ],
+
+      childSrc: [
+        "'self'",
+        'https://www.highperformanceformat.com',
+        'https://highperformanceformat.com',
+        'https://*.effectivecpmnetwork.com'
+      ],
+
       upgradeInsecureRequests: null
     }
   },
