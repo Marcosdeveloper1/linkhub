@@ -66,6 +66,8 @@
             </a>
           </div>
         </article>
+
+        <div class="adsterra-slot adsterra-slot-box" id="ad-grupo-lateral"></div>
       </aside>
 
       <article class="detalhe-info-painel">
@@ -130,6 +132,10 @@
     <p>Carregando detalhes do grupo...</p>
   </div>
 </main>
+
+<section class="container" aria-label="Publicidade">
+  <div class="adsterra-slot adsterra-slot-footer" id="ad-grupo-rodape"></div>
+</section>
 
 <footer class="footer site-footer">
   <div class="site-footer-inner">
@@ -609,5 +615,17 @@
   montarCategorias('');
   carregarDetalhes();
 </script>
+<script src="/js/adsterra.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    if (!window.ZapAds) return;
+
+    ZapAds.loadMobileBox('ad-grupo-lateral');
+    ZapAds.loadResponsiveBanner('ad-grupo-rodape', { mobileType: 'mobile320x50' });
+  });
+</script>
+
 </body>
 </html>
+
+

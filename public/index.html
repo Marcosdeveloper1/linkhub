@@ -91,11 +91,9 @@
 
 <header class="navbar" id="navbar"></header>
 
-<section class="home-anuncio-topo" aria-label="Espaço de anúncio superior">
+<section class="home-anuncio-topo" aria-label="Publicidade">
   <div class="container">
-    <div class="ad-slot ad-slot-horizontal ad-slot-home-topo" id="ad-home-topo">
-      <span>Publicidade</span>
-    </div>
+    <div class="adsterra-slot adsterra-slot-top" id="ad-home-topo"></div>
   </div>
 </section>
 
@@ -247,6 +245,8 @@
     </div>
 
     <div class="paginacao" id="paginacao"></div>
+
+    <div class="adsterra-slot adsterra-slot-middle" id="ad-home-meio"></div>
   </section>
 
   <section class="secao-destaque-categoria" id="secao-destaque-categoria">
@@ -359,6 +359,10 @@
     <button class="btn btn-sm btn-perigo" type="button" id="btn-admin-lote-deletar">Apagar</button>
   </div>
 </div>
+
+<section class="container" aria-label="Publicidade">
+  <div class="adsterra-slot adsterra-slot-footer" id="ad-home-rodape"></div>
+</section>
 
 <footer class="footer site-footer">
   <div class="site-footer-inner">
@@ -1168,5 +1172,18 @@
 
   montar();
 </script>
+<script src="/js/adsterra.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    if (!window.ZapAds) return;
+
+    ZapAds.loadResponsiveBanner('ad-home-topo', { mobileType: 'mobile320x50' });
+    ZapAds.loadNative('ad-home-meio');
+    ZapAds.loadResponsiveBanner('ad-home-rodape', { mobileType: 'mobile320x50' });
+  });
+</script>
+
 </body>
 </html>
+
+

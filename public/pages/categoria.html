@@ -160,6 +160,10 @@
   </div>
 </section>
 
+<section class="container" aria-label="Publicidade">
+  <div class="adsterra-slot adsterra-slot-top" id="ad-categoria-topo"></div>
+</section>
+
 <main class="container categoria-corpo">
 
   <div class="categoria-topo">
@@ -175,6 +179,8 @@
   </div>
 
   <div class="paginacao" id="paginacao"></div>
+
+  <div class="adsterra-slot adsterra-slot-middle" id="ad-categoria-meio"></div>
 
   <section class="outras-categorias" id="secao-outras-cats" style="display:none">
     <h2>Explorar outras categorias</h2>
@@ -374,5 +380,17 @@
 
   montar();
 </script>
+<script src="/js/adsterra.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    if (!window.ZapAds) return;
+
+    ZapAds.loadResponsiveBanner('ad-categoria-topo', { mobileType: 'mobile320x50' });
+    ZapAds.loadMobileBox('ad-categoria-meio');
+  });
+</script>
+
 </body>
 </html>
+
+
