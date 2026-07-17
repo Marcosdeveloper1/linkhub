@@ -41,9 +41,27 @@ function tentar(sql, params = [], mensagemOk = null, mensagemErro = null) {
 }
 
 function migrar() {
+  tentar('ALTER TABLE users ADD COLUMN whatsapp_contato TEXT');
+  tentar('ALTER TABLE users ADD COLUMN whatsapp_atualizado_em TEXT');
+  tentar('ALTER TABLE users ADD COLUMN ultimo_login_em TEXT');
+  tentar(`
+    CREATE INDEX IF NOT EXISTS idx_users_whatsapp_contato
+    ON users(whatsapp_contato)
+  `);
+  tentar(`
+    CREATE INDEX IF NOT EXISTS idx_users_ultimo_login_em
+    ON users(ultimo_login_em)
+  `);
+
   tentar('ALTER TABLE groups ADD COLUMN foto_url TEXT');
   tentar('ALTER TABLE groups ADD COLUMN regras TEXT');
   tentar('ALTER TABLE groups ADD COLUMN total_acessos INTEGER NOT NULL DEFAULT 0');
+
+  tentar('ALTER TABLE groups ADD COLUMN link_ultima_tentativa_em TEXT');
+  tentar('ALTER TABLE groups ADD COLUMN link_verificado_em TEXT');
+  tentar("ALTER TABLE groups ADD COLUMN link_verificacao_resultado TEXT NOT NULL DEFAULT 'pendente'");
+  tentar('ALTER TABLE groups ADD COLUMN link_verificacao_motivo TEXT');
+  tentar('ALTER TABLE groups ADD COLUMN link_verificacao_http_status INTEGER');
 
   tentar('ALTER TABLE groups ADD COLUMN owner_email TEXT');
   tentar('ALTER TABLE groups ADD COLUMN owner_user_id INTEGER');
@@ -51,6 +69,14 @@ function migrar() {
   tentar('ALTER TABLE groups ADD COLUMN ownership_claimed_at TEXT');
   tentar('ALTER TABLE groups ADD COLUMN owner_assigned_at TEXT');
   tentar('ALTER TABLE groups ADD COLUMN owner_assigned_by INTEGER');
+  tentar(`
+    CREATE INDEX IF NOT EXISTS idx_groups_owner_user_id
+    ON groups(owner_user_id)
+  `);
+  tentar(`
+    CREATE INDEX IF NOT EXISTS idx_groups_usuario_id
+    ON groups(usuario_id)
+  `);
 
   tentar(`
     UPDATE groups
@@ -158,6 +184,12 @@ function migrar() {
   tentar('CREATE INDEX IF NOT EXISTS idx_zapcoin_orders_user_id ON zapcoin_orders(user_id)', [], '[db] Índice idx_zapcoin_orders_user_id verificado.');
   tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_group_id ON group_boosts(group_id)', [], '[db] Índice idx_group_boosts_group_id verificado.');
   tentar('CREATE INDEX IF NOT EXISTS idx_group_boosts_user_id ON group_boosts(user_id)', [], '[db] Índice idx_group_boosts_user_id verificado.');
+  tentar('CREATE INDEX IF NOT EXISTS idx_groups_link_verificacao ON groups(categoria_id, status, link_verificado_em)', [], '[db] Índice idx_groups_link_verificacao verificado.');
+  tentar(
+    'CREATE INDEX IF NOT EXISTS idx_groups_verificacao_filas ON groups(categoria_id, link_verificacao_resultado, link_verificado_em, status)',
+    [],
+    '[db] Índice idx_groups_verificacao_filas verificado.'
+  );
 
   const pacotesZapCoin = [
     ['avulso', 'Avulso', 1, 799, '1 ZapCoin para testar ou completar saldo. Valor base: R$ 7,99 por ZapCoin.', 0, 1],

@@ -243,6 +243,114 @@
       max-width: 480px;
     }
 
+    .usuarios-toolbar-info {
+      margin-left: auto;
+      color: var(--cinza-texto);
+      font-size: 0.82rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .usuario-admin-card {
+      align-items: stretch;
+    }
+
+    .usuario-admin-cabecalho {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .usuario-admin-cabecalho strong {
+      margin-right: 2px;
+    }
+
+    .usuario-role {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475569;
+      border: 1px solid #dbe3ec;
+      font-size: 0.66rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .usuario-role.admin {
+      background: #fff3cd;
+      color: #806000;
+      border-color: rgba(255, 193, 7, .38);
+    }
+
+    .usuario-admin-dados {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 4px 0 8px;
+    }
+
+    .usuario-admin-dado {
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid #e4eaf1;
+      border-radius: 11px;
+      background: #f8fafc;
+    }
+
+    .usuario-admin-dado span {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--cinza-texto);
+      font-size: 0.66rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .usuario-admin-dado strong,
+    .usuario-admin-dado a {
+      display: block;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: var(--preto);
+      font-size: 0.80rem;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+
+    .usuario-admin-dado.grupos strong {
+      color: var(--verde-escuro);
+      font-size: 1.05rem;
+      font-weight: 950;
+    }
+
+    .usuario-admin-sem-login {
+      color: #8a5a00 !important;
+    }
+
+    @media (max-width: 900px) {
+      .usuario-admin-dados {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .usuario-admin-dados {
+        grid-template-columns: 1fr;
+      }
+
+      .usuarios-toolbar-info {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+
 
     .admin-resumo-grid {
       display: grid;
@@ -556,9 +664,439 @@
       max-width: 520px;
     }
 
+    /* revisão assistida de links */
+    .modal-verificar-links .modal-caixa {
+      max-width: 940px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(53, 190, 114, 0.24);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+    }
+
+    .revisao-cabecalho {
+      padding: 22px 24px 18px;
+      background:
+        radial-gradient(circle at top right, rgba(53, 190, 114, 0.18), transparent 18rem),
+        linear-gradient(135deg, #f8fffb, #ffffff);
+      border-bottom: 1px solid var(--cinza-borda);
+    }
+
+    .revisao-cabecalho .modal-titulo {
+      margin: 0 42px 6px 0;
+      color: var(--preto);
+      font-size: 1.35rem;
+      font-weight: 950;
+      letter-spacing: -0.45px;
+    }
+
+    .revisao-cabecalho p {
+      margin: 0;
+      color: var(--cinza-texto);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .revisao-corpo {
+      padding: 18px 24px;
+      max-height: calc(92vh - 162px);
+      overflow-y: auto;
+    }
+
+    .revisao-seletor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .revisao-seletor .btn {
+      min-height: 43px;
+      white-space: nowrap;
+    }
+
+    .revisao-resumo {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .revisao-resumo-card {
+      padding: 12px 14px;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .revisao-resumo-card span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cinza-texto);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .revisao-resumo-card strong {
+      display: block;
+      color: var(--preto);
+      font-size: 1.4rem;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .revisao-resumo-card.aguardando { background: #fffaf0; border-color: #f1d39a; }
+    .revisao-resumo-card.validados { background: #effbf4; border-color: rgba(53, 190, 114, .34); }
+    .revisao-resumo-card.invalidos { background: #fff7f7; border-color: rgba(220, 53, 69, .26); }
+
+    .revisao-area {
+      border: 1px solid #dfe7ef;
+      border-radius: 18px;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+
+    .revisao-estado-vazio {
+      padding: 42px 20px;
+      text-align: center;
+      color: var(--cinza-texto);
+      line-height: 1.55;
+    }
+
+    .revisao-estado-vazio strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--preto);
+      font-size: 1rem;
+      font-weight: 950;
+    }
+
+    .revisao-sessao-topo {
+      padding: 14px 16px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .revisao-sessao-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 9px;
+      color: var(--cinza-texto);
+      font-size: 0.77rem;
+      font-weight: 850;
+    }
+
+    .revisao-sessao-linha strong { color: var(--preto); font-size: 0.9rem; }
+
+    .revisao-progresso {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7edf3;
+    }
+
+    .revisao-progresso > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--verde-claro);
+      transition: width .22s ease;
+    }
+
+    .revisao-card {
+      padding: 20px;
+      background: #fff;
+    }
+
+    .revisao-card-grupo {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .revisao-card-foto,
+    .revisao-card-icone {
+      width: 74px;
+      height: 74px;
+      border-radius: 18px;
+      object-fit: cover;
+    }
+
+    .revisao-card-icone {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef2f7;
+      color: #64748b;
+      font-size: 1.6rem;
+      font-weight: 950;
+    }
+
+    .revisao-card-nome {
+      margin: 0 0 6px;
+      color: var(--preto);
+      font-size: 1.1rem;
+      line-height: 1.25;
+      font-weight: 950;
+      overflow-wrap: anywhere;
+    }
+
+    .revisao-card-meta {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--cinza-texto);
+      font-size: 0.76rem;
+      line-height: 1.4;
+    }
+
+    .revisao-chip {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475569;
+      font-size: 0.66rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .revisao-chip.indisponivel { background: #fde7e9; color: #a61b2b; }
+    .revisao-chip.aberto { background: #dff7e9; color: var(--verde-escuro); }
+
+    .revisao-instrucao {
+      margin-top: 16px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: var(--cinza-texto);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .revisao-instrucao strong { color: var(--preto); }
+
+    .revisao-acoes {
+      display: grid;
+      grid-template-columns: minmax(150px, 1.2fr) repeat(3, minmax(115px, 1fr));
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .revisao-acoes .btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .revisao-acoes a.desabilitado {
+      pointer-events: none;
+      opacity: .58;
+    }
+
+    .revisao-btn-valido {
+      border-color: rgba(53, 190, 114, .7) !important;
+      background: #eefbf4 !important;
+      color: var(--verde-escuro) !important;
+    }
+
+    .revisao-btn-invalido {
+      border-color: rgba(220, 53, 69, .42) !important;
+      background: #fff5f5 !important;
+      color: #a61b2b !important;
+    }
+
+    .revisao-atalhos {
+      margin-top: 10px;
+      color: #7b8798;
+      font-size: 0.7rem;
+      text-align: center;
+    }
+
+    .revisao-concluida {
+      padding: 30px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #f1fcf6, #fff);
+    }
+
+    .revisao-concluida h4 {
+      margin: 0 0 5px;
+      color: var(--preto);
+      font-size: 1.12rem;
+      font-weight: 950;
+    }
+
+    .revisao-concluida p { margin: 0; color: var(--cinza-texto); font-size: .82rem; }
+
+    .revisao-concluida-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      max-width: 520px;
+      margin: 16px auto;
+    }
+
+    .revisao-concluida-item {
+      padding: 11px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #dfe7ef;
+    }
+
+    .revisao-concluida-item strong { display: block; color: var(--preto); font-size: 1.2rem; font-weight: 950; }
+    .revisao-concluida-item span { color: var(--cinza-texto); font-size: .7rem; font-weight: 800; }
+
+    .revisao-historico {
+      margin-top: 14px;
+      border: 1px solid #dfe7ef;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .revisao-historico-abas {
+      display: flex;
+      gap: 6px;
+      padding: 10px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .revisao-historico-aba {
+      flex: 1;
+      border: 1px solid #dfe7ef;
+      background: #fff;
+      color: var(--cinza-texto);
+      border-radius: 11px;
+      padding: 9px 10px;
+      font-family: var(--font);
+      font-size: .76rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .revisao-historico-aba.ativa {
+      border-color: var(--verde-claro);
+      background: #eefbf4;
+      color: var(--verde-escuro);
+    }
+
+    .revisao-historico-aba.invalido.ativa {
+      border-color: rgba(220, 53, 69, .38);
+      background: #fff5f5;
+      color: #a61b2b;
+    }
+
+    .revisao-historico-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 90px;
+      padding: 10px;
+    }
+
+    .revisao-historico-card {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .revisao-historico-card img,
+    .revisao-historico-icone {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      object-fit: cover;
+    }
+
+    .revisao-historico-icone {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef2f7;
+      color: #64748b;
+      font-weight: 950;
+    }
+
+    .revisao-historico-nome {
+      display: block;
+      color: var(--preto);
+      font-size: .8rem;
+      font-weight: 900;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .revisao-historico-meta {
+      margin-top: 3px;
+      color: var(--cinza-texto);
+      font-size: .68rem;
+      line-height: 1.4;
+    }
+
+    .revisao-historico-acoes {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .revisao-historico-acoes .btn { padding: 6px 8px; font-size: .68rem; }
+
+    .revisao-historico-paginacao {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .revisao-historico-paginacao span {
+      min-width: 84px;
+      text-align: center;
+      color: var(--cinza-texto);
+      font-size: .72rem;
+      font-weight: 850;
+    }
+
+    .revisao-rodape {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 24px;
+      border-top: 1px solid var(--cinza-borda);
+      background: #fff;
+    }
+
+    .revisao-rodape-info {
+      color: var(--cinza-texto);
+      font-size: .75rem;
+      line-height: 1.4;
+    }
+
     @media (max-width: 900px) {
       .admin-resumo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .lista-solicitacoes.admin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .revisao-acoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 680px) {
@@ -568,17 +1106,40 @@
       .admin-aprovados-topo { flex-direction: column; }
       .admin-importar-box { justify-content: stretch; }
       .admin-importar-box .btn { width: 100%; }
-      .zap-admin-card {
+      .zap-admin-card { grid-template-columns: 1fr; }
+      .zap-admin-acoes { justify-content: stretch; }
+      .zap-admin-acoes .btn { flex: 1; }
+
+      .revisao-cabecalho,
+      .revisao-corpo,
+      .revisao-rodape {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      .revisao-seletor,
+      .revisao-resumo,
+      .revisao-concluida-grid {
         grid-template-columns: 1fr;
       }
 
-      .zap-admin-acoes {
-        justify-content: stretch;
+      .revisao-card-grupo {
+        grid-template-columns: 58px minmax(0, 1fr);
       }
 
-      .zap-admin-acoes .btn {
-        flex: 1;
+      .revisao-card-foto,
+      .revisao-card-icone {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
       }
+
+      .revisao-acoes { grid-template-columns: 1fr; }
+      .revisao-historico-card { grid-template-columns: 40px minmax(0, 1fr); }
+      .revisao-historico-acoes { grid-column: 1 / -1; justify-content: stretch; }
+      .revisao-historico-acoes .btn { flex: 1; }
+      .revisao-rodape { align-items: stretch; flex-direction: column; }
+      .revisao-rodape .btn { width: 100%; }
     }
 
   </style>
@@ -617,7 +1178,7 @@
     <button class="admin-aba" data-status="aprovado">Aprovados</button>
     <button class="admin-aba" data-status="rejeitado">Rejeitados</button>
     <button class="admin-aba" data-status="erros">Erros relatados</button>
-    <button class="admin-aba" data-status="zapcoins">ZapCoins</button>
+    <button class="admin-aba" data-status="usuarios">Usuários</button>
   </div>
 
   <!-- Painel da aba Aprovados -->
@@ -634,7 +1195,7 @@
 
     <div class="admin-categorias-box">
       <div class="admin-categorias-head">
-        <h3>Categorias aprovadas</h3>
+        <h3>Grupos cadastrados por categoria</h3>
         <input class="admin-categorias-busca" id="busca-categoria-aprovados" type="search" placeholder="Buscar categoria..." autocomplete="off">
       </div>
       <select class="form-select" id="filtro-categoria-aprovados" hidden>
@@ -646,7 +1207,7 @@
     <div class="barra-ferramentas" id="barra-ferramentas-aprovados">
       <input type="search" class="form-input" id="busca-nome-aprovados" placeholder="Buscar grupo por nome...">
       <div class="barra-ferramentas-acoes">
-        <button class="btn btn-contorno btn-sm" id="btn-verificar-links">Verificar links</button>
+        <button class="btn btn-contorno btn-sm" id="btn-verificar-links">Revisar links</button>
       </div>
     </div>
   </section>
@@ -656,10 +1217,11 @@
     <button class="btn btn-perigo btn-sm" id="btn-limpar-rejeitados">Limpar todos os rejeitados</button>
   </div>
 
-  <!-- Ferramentas de ZapCoin: só aparece na aba ZapCoins -->
+  <!-- Ferramentas da aba Usuários -->
   <div class="admin-zapcoins-toolbar" id="barra-zapcoins-admin">
-    <input type="search" class="form-input" id="busca-zapcoin-usuarios" placeholder="Buscar usuário por nome ou email...">
+    <input type="search" class="form-input" id="busca-zapcoin-usuarios" placeholder="Buscar por nome, email ou WhatsApp...">
     <button class="btn btn-contorno btn-sm" id="btn-atualizar-zapcoins" type="button">Atualizar</button>
+    <span class="usuarios-toolbar-info" id="usuarios-toolbar-info">0 usuários</span>
   </div>
 
   <!-- Barra de seleção múltipla: só aparece quando há cards marcados na aba Aprovados -->
@@ -673,6 +1235,12 @@
 
   <div id="lista-area" class="lista-solicitacoes">
     <p style="color:var(--cinza-texto);">Carregando...</p>
+  </div>
+
+  <div id="usuarios-paginacao" class="admin-paginacao">
+    <button class="btn btn-contorno btn-sm" id="usuarios-pagina-anterior" type="button">Anterior</button>
+    <span class="admin-paginacao-info" id="usuarios-paginacao-info">Página 1 de 1</span>
+    <button class="btn btn-contorno btn-sm" id="usuarios-pagina-proxima" type="button">Próxima</button>
   </div>
 
   <div id="admin-paginacao" class="admin-paginacao">
@@ -695,6 +1263,117 @@
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
       <button class="btn btn-contorno" id="cancelar-rejeitar">Cancelar</button>
       <button class="btn btn-perigo" id="confirmar-rejeitar" style="border-color:var(--vermelho); background:var(--vermelho); color:#fff;">Confirmar rejeição</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de revisão assistida de links -->
+<div class="modal-fundo modal-verificar-links" id="modal-verificar-links">
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-verificar-links">
+    <div class="revisao-cabecalho">
+      <button class="modal-fechar" id="fechar-modal-verificar-links" type="button" aria-label="Fechar">&times;</button>
+      <h3 class="modal-titulo" id="titulo-modal-verificar-links">Revisar links dos grupos</h3>
+      <p>Abra cada convite no navegador, confira o grupo e registre o resultado. A VPS não consulta o WhatsApp, portanto não há bloqueio HTTP 429.</p>
+    </div>
+
+    <div class="revisao-corpo">
+      <div id="aviso-verificar-links" class="aviso"></div>
+
+      <div class="revisao-seletor">
+        <div class="form-grupo">
+          <label class="form-label" for="categoria-verificar-links">Categoria dos grupos</label>
+          <select class="form-select" id="categoria-verificar-links">
+            <option value="">Selecione uma categoria...</option>
+          </select>
+        </div>
+        <button class="btn btn-primario" id="iniciar-revisao-links" type="button" disabled>Iniciar revisão</button>
+      </div>
+
+      <div class="revisao-resumo" id="resumo-revisao-links" hidden>
+        <article class="revisao-resumo-card aguardando">
+          <span>Aguardando revisão</span>
+          <strong id="revisao-total-aguardando">0</strong>
+        </article>
+        <article class="revisao-resumo-card validados">
+          <span>Validados nos últimos 5 dias</span>
+          <strong id="revisao-total-validados">0</strong>
+        </article>
+        <article class="revisao-resumo-card invalidos">
+          <span>Inválidos nos últimos 5 dias</span>
+          <strong id="revisao-total-invalidos">0</strong>
+        </article>
+      </div>
+
+      <section class="revisao-area" id="area-revisao-links">
+        <div class="revisao-estado-vazio" id="estado-inicial-revisao-links">
+          <strong>Selecione uma categoria</strong>
+          Carregaremos no máximo 10 grupos. Nenhuma consulta automática será feita ao WhatsApp.
+        </div>
+
+        <div id="painel-item-revisao-links" hidden>
+          <div class="revisao-sessao-topo">
+            <div class="revisao-sessao-linha">
+              <strong id="revisao-posicao">Grupo 1 de 10</strong>
+              <span id="revisao-sessao-contadores">0 funcionando · 0 inválidos · 0 pulados</span>
+            </div>
+            <div class="revisao-progresso"><span id="barra-progresso-revisao"></span></div>
+          </div>
+
+          <article class="revisao-card">
+            <div class="revisao-card-grupo">
+              <div id="revisao-grupo-imagem"></div>
+              <div>
+                <h4 class="revisao-card-nome" id="revisao-grupo-nome">Grupo</h4>
+                <div class="revisao-card-meta" id="revisao-grupo-meta"></div>
+              </div>
+            </div>
+
+            <div class="revisao-instrucao" id="revisao-instrucao">
+              <strong>1.</strong> Clique em “Abrir convite”. <strong>2.</strong> Confira o grupo na nova aba. <strong>3.</strong> Volte e registre o resultado.
+            </div>
+
+            <div class="revisao-acoes">
+              <a class="btn btn-primario" id="abrir-convite-revisao" href="#" target="_blank" rel="noopener">Abrir convite</a>
+              <button class="btn btn-contorno revisao-btn-valido" id="marcar-revisao-valida" type="button" disabled>✓ Funcionando</button>
+              <button class="btn btn-contorno revisao-btn-invalido" id="marcar-revisao-invalida" type="button" disabled>✕ Link inválido</button>
+              <button class="btn btn-contorno" id="pular-revisao-link" type="button">Pular</button>
+            </div>
+
+            <div class="revisao-atalhos">Atalhos: Enter abre · 1 funcionando · 2 inválido · 3 pular</div>
+          </article>
+        </div>
+
+        <div class="revisao-concluida" id="revisao-concluida" hidden>
+          <h4>Revisão concluída</h4>
+          <p id="revisao-concluida-texto">A sessão foi finalizada.</p>
+          <div class="revisao-concluida-grid">
+            <div class="revisao-concluida-item"><strong id="revisao-final-validos">0</strong><span>Funcionando</span></div>
+            <div class="revisao-concluida-item"><strong id="revisao-final-invalidos">0</strong><span>Inválidos</span></div>
+            <div class="revisao-concluida-item"><strong id="revisao-final-pulados">0</strong><span>Pulados</span></div>
+          </div>
+          <button class="btn btn-primario" id="revisar-mais-links" type="button">Carregar próximos grupos</button>
+        </div>
+      </section>
+
+      <section class="revisao-historico" id="historico-revisao-links" hidden>
+        <div class="revisao-historico-abas">
+          <button class="revisao-historico-aba" type="button" data-historico-revisao="valido">Validados recentes</button>
+          <button class="revisao-historico-aba invalido" type="button" data-historico-revisao="invalido">Inválidos recentes</button>
+        </div>
+        <div class="revisao-historico-lista" id="lista-historico-revisao">
+          <div class="revisao-estado-vazio" style="padding:24px 16px;">Escolha uma aba para consultar o histórico recente.</div>
+        </div>
+        <div class="revisao-historico-paginacao" id="paginacao-historico-revisao" hidden>
+          <button class="btn btn-contorno btn-sm" id="historico-revisao-anterior" type="button">Anterior</button>
+          <span id="historico-revisao-info">Página 1 de 1</span>
+          <button class="btn btn-contorno btn-sm" id="historico-revisao-proxima" type="button">Próxima</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="revisao-rodape">
+      <div class="revisao-rodape-info" id="texto-rodape-verificacao">Selecione uma categoria para começar.</div>
+      <button class="btn btn-contorno" id="cancelar-verificar-links" type="button">Fechar</button>
     </div>
   </div>
 </div>
@@ -839,12 +1518,26 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   let idsSelecionados = new Set();
   let gruposCarregados = []; // cache da última lista renderizada, usado pra "selecionar todos" etc.
   let buscaZapCoinUsuarios = '';
+  let paginaUsuariosAdmin = 1;
+  let paginacaoUsuariosAdmin = null;
+  const USUARIOS_POR_PAGINA_ADMIN = 15;
   let usuarioZapCoinSelecionado = null;
   let grupoDonoSelecionado = null;
   let resumoAdmin = null;
   let buscaCategoriaAprovados = '';
   let paginaAtualAdmin = 1;
   const ITENS_POR_PAGINA_ADMIN = 15;
+  let categoriaVerificacaoLinks = '';
+  let categoriasVerificacaoCarregadas = false;
+  let revisaoLinksOcupada = false;
+  let filaRevisaoLinks = [];
+  let indiceRevisaoLinks = 0;
+  let itemRevisaoLinkAberto = false;
+  let resumoRevisaoLinks = null;
+  let sessaoRevisaoLinks = { validos: 0, invalidos: 0, pulados: 0 };
+  let historicoRevisaoLinks = { tipo: '', pagina: 1, dados: null };
+  let painelAdminPrecisaAtualizar = false;
+  let relogioVerificacaoLinks = null;
 
 
   function numeroSeguro(valor) {
@@ -865,12 +1558,21 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     const status = obterStatusDonoGrupo(g);
     const email = g.owner_usuario_email || g.owner_email || '';
     const nome = g.owner_nome || '';
+    const whatsapp = normalizarWhatsappContato(g.owner_whatsapp_contato || '');
+    const whatsappFormatado = formatarWhatsappContato(whatsapp);
 
     if (status === 'vinculado') {
       return `
         <div class="dono-grupo-box">
           <span class="dono-grupo-status vinculado">Dono vinculado</span><br>
           <strong>${escaparHtml(nome || 'Usuário')}</strong>${email ? ` — ${escaparHtml(email)}` : ''}
+          ${whatsapp
+            ? `<div class="admin-whatsapp-contato">
+                 <span>WhatsApp: ${escaparHtml(whatsappFormatado)}</span>
+                 <a href="https://wa.me/${whatsapp}" target="_blank" rel="noopener">Abrir conversa</a>
+               </div>`
+            : `<div class="admin-whatsapp-contato sem-numero">WhatsApp ainda não cadastrado.</div>`
+          }
         </div>`;
     }
 
@@ -879,6 +1581,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
         <div class="dono-grupo-box">
           <span class="dono-grupo-status pendente">Aguardando login</span><br>
           E-mail reservado: <strong>${escaparHtml(email)}</strong>
+          <div class="admin-whatsapp-contato sem-numero">O WhatsApp aparecerá depois que o usuário entrar e cadastrar o número.</div>
         </div>`;
     }
 
@@ -892,7 +1595,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   function obterCategoriaResumo(slug) {
     const categorias = resumoAdmin?.categorias || [];
     if (!slug) {
-      const total = numeroSeguro(resumoAdmin?.totais?.aprovados);
+      const total = numeroSeguro(resumoAdmin?.totais?.cadastrados ?? resumoAdmin?.totais?.aprovados);
       return { slug: '', nome: 'Todas as categorias', total };
     }
     return categorias.find(cat => String(cat.slug) === String(slug)) || { slug, nome: slug, total: 0 };
@@ -937,7 +1640,7 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     const termo = String(buscaCategoriaAprovados || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const categoriasBase = resumoAdmin?.categorias || [];
     const categorias = [
-      { slug: '', nome: 'Todas as categorias', total: numeroSeguro(resumoAdmin?.totais?.aprovados) },
+      { slug: '', nome: 'Todas as categorias', total: numeroSeguro(resumoAdmin?.totais?.cadastrados ?? resumoAdmin?.totais?.aprovados) },
       ...categoriasBase
     ].filter(cat => {
       const base = `${cat.nome || ''} ${cat.slug || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -988,6 +1691,33 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
 
   function esconderPaginacao() {
     document.getElementById('admin-paginacao').classList.remove('visivel');
+  }
+
+  function esconderPaginacaoUsuarios() {
+    document.getElementById('usuarios-paginacao').classList.remove('visivel');
+  }
+
+  function renderizarPaginacaoUsuarios(paginacao) {
+    const container = document.getElementById('usuarios-paginacao');
+    const info = document.getElementById('usuarios-paginacao-info');
+    const anterior = document.getElementById('usuarios-pagina-anterior');
+    const proxima = document.getElementById('usuarios-pagina-proxima');
+    const total = Number(paginacao?.total_itens || 0);
+    const pagina = Number(paginacao?.pagina || 1);
+    const totalPaginas = Number(paginacao?.total_paginas || 1);
+
+    document.getElementById('usuarios-toolbar-info').textContent =
+      `${total} usuário${total === 1 ? '' : 's'}`;
+
+    if (total === 0) {
+      container.classList.remove('visivel');
+      return;
+    }
+
+    container.classList.add('visivel');
+    info.textContent = `Página ${pagina} de ${totalPaginas} · ${total} usuário${total === 1 ? '' : 's'}`;
+    anterior.disabled = !paginacao?.tem_anterior;
+    proxima.disabled = !paginacao?.tem_proxima;
   }
 
 
@@ -1131,8 +1861,9 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     // mostra/esconde as ferramentas certas pra cada aba
     document.getElementById('painel-aprovados').classList.toggle('visivel', abaAtual === 'aprovado');
     document.getElementById('barra-rejeitados').style.display = abaAtual === 'rejeitado' ? 'block' : 'none';
-    document.getElementById('barra-zapcoins-admin').classList.toggle('visivel', abaAtual === 'zapcoins');
+    document.getElementById('barra-zapcoins-admin').classList.toggle('visivel', abaAtual === 'usuarios');
     if (abaAtual === 'aprovado') atualizarResumoCategoriaAtual();
+    if (abaAtual !== 'usuarios') esconderPaginacaoUsuarios();
 
     if (abaAtual !== 'aprovado') {
       idsSelecionados.clear();
@@ -1146,11 +1877,16 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
         return;
       }
 
-      if (abaAtual === 'zapcoins') {
-        const paramsZap = new URLSearchParams();
-        if (buscaZapCoinUsuarios) paramsZap.set('busca', buscaZapCoinUsuarios);
-        const usuarios = await apiFetch(`/admin/zapcoins/usuarios?${paramsZap.toString()}`);
-        renderizarZapcoins(usuarios);
+      if (abaAtual === 'usuarios') {
+        esconderPaginacao();
+        const paramsUsuarios = new URLSearchParams({
+          pagina: String(paginaUsuariosAdmin),
+          limite: String(USUARIOS_POR_PAGINA_ADMIN)
+        });
+        if (buscaZapCoinUsuarios) paramsUsuarios.set('busca', buscaZapCoinUsuarios);
+
+        const respostaUsuarios = await apiFetch(`/admin/usuarios?${paramsUsuarios.toString()}`);
+        renderizarUsuarios(respostaUsuarios);
         return;
       }
 
@@ -1222,37 +1958,78 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
   }
 
 
-  function renderizarZapcoins(usuarios) {
+
+  function renderizarUsuarios(resposta) {
     const area = document.getElementById('lista-area');
+    const usuarios = Array.isArray(resposta?.usuarios) ? resposta.usuarios : [];
+    paginacaoUsuariosAdmin = resposta?.paginacao || null;
+
     area.classList.remove('admin-grid');
     esconderPaginacao();
+    renderizarPaginacaoUsuarios(paginacaoUsuariosAdmin);
 
-    if (!usuarios || usuarios.length === 0) {
+    if (usuarios.length === 0) {
       area.innerHTML = `
         <div class="estado-vazio">
           <h3>Nenhum usuário encontrado</h3>
-          <p>Busque por nome ou email para ajustar ZapCoins com segurança.</p>
+          <p>Não há perfis correspondentes à busca informada.</p>
         </div>
       `;
       return;
     }
 
-    area.innerHTML = usuarios.map((u) => `
-      <div class="card solicitacao-card zap-admin-card" data-user-id="${u.id}">
-        <div class="zap-admin-user">
-          <strong>${escaparHtml(u.nome || 'Usuário')}</strong>
-          <span>${escaparHtml(u.email || '')}</span>
-          <span>Cadastrado em ${formatarData(u.criado_em)}</span>
-        </div>
+    area.innerHTML = usuarios.map((u) => {
+      const whatsapp = normalizarWhatsappContato(u.whatsapp_contato);
+      const ultimoLogin = u.ultimo_login_em
+        ? formatarData(u.ultimo_login_em)
+        : 'Ainda não registrado';
+      const roleLabel = u.role === 'admin' ? 'Administrador' : 'Usuário';
 
-        <div class="zap-admin-acoes">
-          <span class="zap-admin-saldo">${Number(u.saldo || 0)} ZapCoins</span>
-          <button class="btn btn-contorno btn-sm" data-acao="zapcoin-ajustar" data-user-id="${u.id}" data-nome="${escaparHtml(u.nome || 'Usuário')}" data-email="${escaparHtml(u.email || '')}" data-saldo="${Number(u.saldo || 0)}" type="button">
-            Ajustar saldo
-          </button>
+      return `
+        <div class="card solicitacao-card zap-admin-card usuario-admin-card" data-user-id="${u.id}">
+          <div class="zap-admin-user">
+            <div class="usuario-admin-cabecalho">
+              <strong>${escaparHtml(u.nome || 'Usuário')}</strong>
+              <span class="usuario-role ${u.role === 'admin' ? 'admin' : ''}">${roleLabel}</span>
+            </div>
+
+            <div class="usuario-admin-dados">
+              <div class="usuario-admin-dado">
+                <span>Email</span>
+                <a href="mailto:${escaparHtml(u.email || '')}">${escaparHtml(u.email || '')}</a>
+              </div>
+              <div class="usuario-admin-dado grupos">
+                <span>Grupos cadastrados</span>
+                <strong>${Number(u.total_grupos || 0)}</strong>
+              </div>
+              <div class="usuario-admin-dado">
+                <span>Último login</span>
+                <strong class="${u.ultimo_login_em ? '' : 'usuario-admin-sem-login'}">${escaparHtml(ultimoLogin)}</strong>
+              </div>
+              <div class="usuario-admin-dado">
+                <span>Registrado no site</span>
+                <strong>${escaparHtml(formatarData(u.criado_em) || 'Data indisponível')}</strong>
+              </div>
+            </div>
+
+            ${whatsapp
+              ? `<div class="admin-whatsapp-contato">
+                   <span>WhatsApp: ${escaparHtml(formatarWhatsappContato(whatsapp))}</span>
+                   <a href="https://wa.me/${whatsapp}" target="_blank" rel="noopener">Abrir conversa</a>
+                 </div>`
+              : `<div class="admin-whatsapp-contato sem-numero">WhatsApp não cadastrado</div>`
+            }
+          </div>
+
+          <div class="zap-admin-acoes">
+            <span class="zap-admin-saldo">${Number(u.saldo || 0)} ZapCoins</span>
+            <button class="btn btn-contorno btn-sm" data-acao="zapcoin-ajustar" data-user-id="${u.id}" data-nome="${escaparHtml(u.nome || 'Usuário')}" data-email="${escaparHtml(u.email || '')}" data-saldo="${Number(u.saldo || 0)}" type="button">
+              Ajustar saldo
+            </button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   function renderizarLista(grupos) {
@@ -1429,18 +2206,493 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     }
   });
 
-  document.getElementById('btn-verificar-links').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-verificar-links');
-    btnCarregando(btn, true);
+  function imagemRevisaoGrupo(grupo, classeFoto = 'revisao-card-foto', classeIcone = 'revisao-card-icone') {
+    if (!grupo?.foto_url) {
+      return `<span class="${classeIcone}" aria-hidden="true">○</span>`;
+    }
+
+    return `
+      <img class="${classeFoto}" src="${escaparHtml(grupo.foto_url)}" alt="" loading="lazy"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+      <span class="${classeIcone}" aria-hidden="true" style="display:none;">○</span>
+    `;
+  }
+
+  function textoTempoRestante(expiraEm) {
+    const expiraEmMs = Date.parse(expiraEm || '');
+    const restanteMs = expiraEmMs - Date.now();
+
+    if (!Number.isFinite(expiraEmMs) || restanteMs <= 0) {
+      return 'Voltará à fila na próxima atualização';
+    }
+
+    const diaMs = 24 * 60 * 60 * 1000;
+    const horaMs = 60 * 60 * 1000;
+    const dias = Math.floor(restanteMs / diaMs);
+    const horas = Math.floor((restanteMs % diaMs) / horaMs);
+
+    if (dias > 0) return `Volta à fila em ${dias}d ${horas}h`;
+    if (horas > 0) return `Volta à fila em ${horas}h`;
+
+    const minutos = Math.max(1, Math.ceil(restanteMs / (60 * 1000)));
+    return `Volta à fila em ${minutos}min`;
+  }
+
+  function atualizarContagensRegressivas() {
+    document.querySelectorAll('[data-expira-verificacao]').forEach((elemento) => {
+      elemento.textContent = textoTempoRestante(elemento.dataset.expiraVerificacao);
+    });
+  }
+
+  function iniciarRelogioVerificacaoLinks() {
+    if (relogioVerificacaoLinks) clearInterval(relogioVerificacaoLinks);
+    atualizarContagensRegressivas();
+    relogioVerificacaoLinks = setInterval(atualizarContagensRegressivas, 60 * 1000);
+  }
+
+  function pararRelogioVerificacaoLinks() {
+    if (!relogioVerificacaoLinks) return;
+    clearInterval(relogioVerificacaoLinks);
+    relogioVerificacaoLinks = null;
+  }
+
+  function itemAtualRevisaoLinks() {
+    return filaRevisaoLinks[indiceRevisaoLinks] || null;
+  }
+
+  function totalProcessadoRevisaoLinks() {
+    return sessaoRevisaoLinks.validos + sessaoRevisaoLinks.invalidos + sessaoRevisaoLinks.pulados;
+  }
+
+  function atualizarResumoRevisaoLinks(totais = resumoRevisaoLinks?.totais) {
+    if (!totais) return;
+    resumoRevisaoLinks = { ...(resumoRevisaoLinks || {}), totais };
+
+    document.getElementById('resumo-revisao-links').hidden = false;
+    document.getElementById('revisao-total-aguardando').textContent = numeroSeguro(totais.aguardando);
+    document.getElementById('revisao-total-validados').textContent = numeroSeguro(totais.validados);
+    document.getElementById('revisao-total-invalidos').textContent = numeroSeguro(totais.invalidos);
+
+    document.querySelector('[data-historico-revisao="valido"]').textContent = `Validados recentes (${numeroSeguro(totais.validados)})`;
+    document.querySelector('[data-historico-revisao="invalido"]').textContent = `Inválidos recentes (${numeroSeguro(totais.invalidos)})`;
+    document.getElementById('historico-revisao-links').hidden = false;
+  }
+
+  function definirRevisaoOcupada(ocupada) {
+    revisaoLinksOcupada = ocupada;
+    document.getElementById('iniciar-revisao-links').disabled = ocupada || !categoriaVerificacaoLinks;
+    document.getElementById('revisar-mais-links').disabled = ocupada;
+    document.getElementById('categoria-verificar-links').disabled = ocupada;
+    document.getElementById('cancelar-verificar-links').disabled = ocupada;
+    document.getElementById('fechar-modal-verificar-links').disabled = ocupada;
+    document.getElementById('abrir-convite-revisao').classList.toggle('desabilitado', ocupada);
+    document.getElementById('pular-revisao-link').disabled = ocupada;
+
+    const podeConfirmar = !ocupada && itemRevisaoLinkAberto && Boolean(itemAtualRevisaoLinks());
+    document.getElementById('marcar-revisao-valida').disabled = !podeConfirmar;
+    document.getElementById('marcar-revisao-invalida').disabled = !podeConfirmar;
+
+    const paginacaoHistorico = historicoRevisaoLinks.dados?.paginacao;
+    if (paginacaoHistorico) {
+      document.getElementById('historico-revisao-anterior').disabled = ocupada || !paginacaoHistorico.tem_anterior;
+      document.getElementById('historico-revisao-proxima').disabled = ocupada || !paginacaoHistorico.tem_proxima;
+    }
+  }
+
+  function renderizarItemRevisaoLinks() {
+    const grupo = itemAtualRevisaoLinks();
+    const estadoInicial = document.getElementById('estado-inicial-revisao-links');
+    const painel = document.getElementById('painel-item-revisao-links');
+    const concluida = document.getElementById('revisao-concluida');
+
+    if (!grupo) {
+      painel.hidden = true;
+      estadoInicial.hidden = true;
+      concluida.hidden = false;
+      document.getElementById('barra-progresso-revisao').style.width = '100%';
+
+      const processados = totalProcessadoRevisaoLinks();
+      document.getElementById('revisao-concluida-texto').textContent = processados
+        ? `${processados} grupo${processados === 1 ? '' : 's'} processado${processados === 1 ? '' : 's'} nesta sessão.`
+        : 'Não havia grupos aguardando revisão nesta categoria.';
+      document.getElementById('revisao-final-validos').textContent = sessaoRevisaoLinks.validos;
+      document.getElementById('revisao-final-invalidos').textContent = sessaoRevisaoLinks.invalidos;
+      document.getElementById('revisao-final-pulados').textContent = sessaoRevisaoLinks.pulados;
+      document.getElementById('texto-rodape-verificacao').textContent = 'Sessão concluída. Você pode carregar os próximos grupos.';
+      return;
+    }
+
+    estadoInicial.hidden = true;
+    concluida.hidden = true;
+    painel.hidden = false;
+    itemRevisaoLinkAberto = false;
+
+    const total = filaRevisaoLinks.length;
+    const posicao = indiceRevisaoLinks + 1;
+    const progresso = total ? Math.round((indiceRevisaoLinks / total) * 100) : 0;
+
+    document.getElementById('revisao-posicao').textContent = `Grupo ${posicao} de ${total}`;
+    document.getElementById('revisao-sessao-contadores').textContent = `${sessaoRevisaoLinks.validos} funcionando · ${sessaoRevisaoLinks.invalidos} inválidos · ${sessaoRevisaoLinks.pulados} pulados`;
+    document.getElementById('barra-progresso-revisao').style.width = `${progresso}%`;
+    document.getElementById('revisao-grupo-imagem').innerHTML = imagemRevisaoGrupo(grupo);
+    document.getElementById('revisao-grupo-nome').textContent = grupo.nome_grupo || 'Grupo sem nome';
+    document.getElementById('revisao-grupo-meta').innerHTML = `
+      <span class="revisao-chip">${escaparHtml(grupo.categoria_nome || '')}</span>
+      ${grupo.status === 'indisponivel' ? '<span class="revisao-chip indisponivel">Indisponível no site</span>' : ''}
+      ${grupo.link_verificado_em ? `<span>Última revisão: ${formatarData(grupo.link_verificado_em)}</span>` : '<span>Nunca revisado</span>'}
+    `;
+
+    const abrir = document.getElementById('abrir-convite-revisao');
+    abrir.href = grupo.link_whatsapp;
+    abrir.dataset.grupoId = grupo.id;
+
+    document.getElementById('revisao-instrucao').innerHTML = '<strong>1.</strong> Clique em “Abrir convite”. <strong>2.</strong> Confira o grupo na nova aba. <strong>3.</strong> Volte e registre o resultado.';
+    document.getElementById('texto-rodape-verificacao').textContent = `${numeroSeguro(resumoRevisaoLinks?.totais?.aguardando)} grupo(s) aguardando nesta categoria.`;
+    definirRevisaoOcupada(false);
+  }
+
+  async function carregarFilaRevisaoLinks() {
+    if (!categoriaVerificacaoLinks || revisaoLinksOcupada) return;
+
+    definirRevisaoOcupada(true);
+    limparAviso('aviso-verificar-links');
+    document.getElementById('estado-inicial-revisao-links').hidden = false;
+    document.getElementById('estado-inicial-revisao-links').innerHTML = '<strong>Carregando fila...</strong>Aguarde alguns instantes.';
+    document.getElementById('painel-item-revisao-links').hidden = true;
+    document.getElementById('revisao-concluida').hidden = true;
 
     try {
-      const resp = await apiFetch('/admin/grupos/verificar-links', { method: 'POST' });
-      alert(`Verificação concluída: ${resp.verificados} grupo(s) checado(s), ${resp.indisponiveis} marcado(s) como indisponível.`);
-      carregarLista();
+      const params = new URLSearchParams({ categoria: categoriaVerificacaoLinks, limite: '10' });
+      const dados = await apiFetch(`/admin/grupos/revisao-links?${params.toString()}`);
+
+      resumoRevisaoLinks = dados;
+      filaRevisaoLinks = Array.isArray(dados.fila) ? dados.fila : [];
+      indiceRevisaoLinks = 0;
+      sessaoRevisaoLinks = { validos: 0, invalidos: 0, pulados: 0 };
+      itemRevisaoLinkAberto = false;
+      atualizarResumoRevisaoLinks(dados.totais);
+      renderizarItemRevisaoLinks();
     } catch (err) {
-      alert(err.message);
+      mostrarAviso('aviso-verificar-links', err.message);
+      document.getElementById('estado-inicial-revisao-links').innerHTML = '<strong>Não foi possível carregar a fila</strong>Tente novamente.';
     } finally {
-      btnCarregando(btn, false);
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  async function registrarResultadoRevisaoLinks(resultado) {
+    const grupo = itemAtualRevisaoLinks();
+    if (!grupo || revisaoLinksOcupada || !itemRevisaoLinkAberto) return;
+
+    definirRevisaoOcupada(true);
+    limparAviso('aviso-verificar-links');
+
+    try {
+      await apiFetch(`/admin/grupos/${grupo.id}/confirmar-verificacao-link`, {
+        method: 'POST',
+        body: JSON.stringify({ resultado })
+      });
+
+      if (resultado === 'valido') {
+        sessaoRevisaoLinks.validos += 1;
+        resumoRevisaoLinks.totais.validados += 1;
+      } else {
+        sessaoRevisaoLinks.invalidos += 1;
+        resumoRevisaoLinks.totais.invalidos += 1;
+      }
+      resumoRevisaoLinks.totais.aguardando = Math.max(0, numeroSeguro(resumoRevisaoLinks.totais.aguardando) - 1);
+      atualizarResumoRevisaoLinks(resumoRevisaoLinks.totais);
+
+      indiceRevisaoLinks += 1;
+      renderizarItemRevisaoLinks();
+      historicoRevisaoLinks.dados = null;
+      painelAdminPrecisaAtualizar = true;
+    } catch (err) {
+      mostrarAviso('aviso-verificar-links', err.message);
+    } finally {
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  async function pularItemRevisaoLinks() {
+    const grupo = itemAtualRevisaoLinks();
+    if (!grupo || revisaoLinksOcupada) return;
+
+    definirRevisaoOcupada(true);
+    limparAviso('aviso-verificar-links');
+
+    try {
+      await apiFetch(`/admin/grupos/${grupo.id}/pular-verificacao-link`, { method: 'POST' });
+      sessaoRevisaoLinks.pulados += 1;
+      indiceRevisaoLinks += 1;
+      renderizarItemRevisaoLinks();
+    } catch (err) {
+      mostrarAviso('aviso-verificar-links', err.message);
+    } finally {
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  function marcarConviteComoAberto() {
+    const grupo = itemAtualRevisaoLinks();
+    if (!grupo || revisaoLinksOcupada) return;
+
+    itemRevisaoLinkAberto = true;
+    document.getElementById('revisao-instrucao').innerHTML = '<span class="revisao-chip aberto">Convite aberto</span> Confira a nova aba e registre abaixo se o link está funcionando ou inválido.';
+    definirRevisaoOcupada(false);
+  }
+
+  async function carregarCategoriasRevisaoLinks() {
+    const select = document.getElementById('categoria-verificar-links');
+    const valorAtual = select.value || categoriaVerificacaoLinks || '';
+
+    if (!resumoAdmin) await carregarResumoAdmin();
+
+    select.innerHTML = '<option value="">Selecione uma categoria...</option>';
+    (resumoAdmin?.categorias || []).forEach((categoria) => {
+      const option = document.createElement('option');
+      option.value = categoria.slug;
+      option.textContent = `${categoria.nome} (${numeroSeguro(categoria.total)})`;
+      select.appendChild(option);
+    });
+
+    select.value = valorAtual;
+    categoriasVerificacaoCarregadas = true;
+  }
+
+  async function sincronizarPainelAdminAposRevisao() {
+    if (!painelAdminPrecisaAtualizar) return;
+
+    try {
+      await carregarResumoAdmin();
+      if (abaAtual === 'aprovado') await carregarLista();
+      painelAdminPrecisaAtualizar = false;
+    } catch (err) {
+      console.warn('[admin] Não foi possível atualizar o painel após a revisão:', err.message);
+    }
+  }
+
+  async function abrirModalVerificarLinks() {
+    limparAviso('aviso-verificar-links');
+    document.getElementById('modal-verificar-links').classList.add('aberto');
+    document.getElementById('resumo-revisao-links').hidden = true;
+    document.getElementById('historico-revisao-links').hidden = true;
+    document.getElementById('painel-item-revisao-links').hidden = true;
+    document.getElementById('revisao-concluida').hidden = true;
+    document.getElementById('estado-inicial-revisao-links').hidden = false;
+    document.getElementById('estado-inicial-revisao-links').innerHTML = '<strong>Selecione uma categoria</strong>Carregaremos no máximo 10 grupos. Nenhuma consulta automática será feita ao WhatsApp.';
+    document.getElementById('texto-rodape-verificacao').textContent = 'Selecione uma categoria para começar.';
+
+    // Recarrega os totais antes de abrir para manter a lista principal e
+    // o seletor do modal sempre com a mesma quantidade de grupos.
+    await carregarResumoAdmin();
+    await carregarCategoriasRevisaoLinks();
+
+    const select = document.getElementById('categoria-verificar-links');
+    categoriaVerificacaoLinks = categoriaFiltro || '';
+    select.value = categoriaVerificacaoLinks;
+    document.getElementById('iniciar-revisao-links').disabled = !categoriaVerificacaoLinks;
+    iniciarRelogioVerificacaoLinks();
+
+    if (categoriaVerificacaoLinks) await carregarFilaRevisaoLinks();
+  }
+
+  function fecharModalVerificarLinks() {
+    if (revisaoLinksOcupada) return;
+    pararRelogioVerificacaoLinks();
+    document.getElementById('modal-verificar-links').classList.remove('aberto');
+    sincronizarPainelAdminAposRevisao();
+  }
+
+  function renderizarHistoricoRevisao(dados) {
+    historicoRevisaoLinks.dados = dados;
+    historicoRevisaoLinks.pagina = numeroSeguro(dados.paginacao?.pagina) || 1;
+
+    document.querySelectorAll('[data-historico-revisao]').forEach((botao) => {
+      botao.classList.toggle('ativa', botao.dataset.historicoRevisao === dados.tipo);
+    });
+
+    const lista = document.getElementById('lista-historico-revisao');
+    if (!dados.itens?.length) {
+      lista.innerHTML = `<div class="revisao-estado-vazio" style="padding:24px 16px;"><strong>Nenhum grupo ${dados.tipo === 'valido' ? 'validado' : 'inválido'} recente</strong>Os resultados dos últimos 5 dias aparecerão aqui.</div>`;
+    } else {
+      lista.innerHTML = dados.itens.map((grupo) => `
+        <article class="revisao-historico-card" data-grupo-historico="${grupo.id}">
+          <div>${imagemRevisaoGrupo(grupo, 'revisao-card-foto', 'revisao-historico-icone')}</div>
+          <div style="min-width:0;">
+            <strong class="revisao-historico-nome" title="${escaparHtml(grupo.nome_grupo)}">${escaparHtml(grupo.nome_grupo)}</strong>
+            <div class="revisao-historico-meta">
+              ${dados.tipo === 'valido' ? 'Validado' : 'Marcado inválido'} em ${formatarData(grupo.link_verificado_em)} ·
+              <span data-expira-verificacao="${escaparHtml(grupo.expira_em || '')}"></span>
+            </div>
+          </div>
+          <div class="revisao-historico-acoes">
+            <a class="btn btn-contorno btn-sm" href="${escaparHtml(grupo.link_whatsapp)}" target="_blank" rel="noopener">Abrir</a>
+            <button class="btn btn-contorno btn-sm" type="button" data-corrigir-historico="${dados.tipo === 'valido' ? 'invalido' : 'valido'}" data-grupo-id="${grupo.id}">${dados.tipo === 'valido' ? 'Marcar inválido' : 'Link funciona'}</button>
+            ${dados.tipo === 'invalido' ? `<button class="btn btn-perigo btn-sm" type="button" data-excluir-historico="${grupo.id}">Excluir</button>` : ''}
+          </div>
+        </article>
+      `).join('');
+    }
+
+    const paginacao = dados.paginacao || {};
+    document.getElementById('paginacao-historico-revisao').hidden = false;
+    document.getElementById('historico-revisao-info').textContent = `Página ${numeroSeguro(paginacao.pagina) || 1} de ${numeroSeguro(paginacao.total_paginas) || 1}`;
+    document.getElementById('historico-revisao-anterior').disabled = revisaoLinksOcupada || !paginacao.tem_anterior;
+    document.getElementById('historico-revisao-proxima').disabled = revisaoLinksOcupada || !paginacao.tem_proxima;
+    atualizarContagensRegressivas();
+  }
+
+  async function carregarHistoricoRevisao(tipo, pagina = 1) {
+    if (!categoriaVerificacaoLinks || revisaoLinksOcupada) return;
+
+    definirRevisaoOcupada(true);
+    historicoRevisaoLinks.tipo = tipo;
+    historicoRevisaoLinks.pagina = pagina;
+    document.getElementById('lista-historico-revisao').innerHTML = '<div class="revisao-estado-vazio" style="padding:24px 16px;"><strong>Carregando histórico...</strong></div>';
+
+    try {
+      const params = new URLSearchParams({
+        categoria: categoriaVerificacaoLinks,
+        tipo,
+        pagina: String(pagina)
+      });
+      const dados = await apiFetch(`/admin/grupos/revisao-links/historico?${params.toString()}`);
+      renderizarHistoricoRevisao(dados);
+    } catch (err) {
+      mostrarAviso('aviso-verificar-links', err.message);
+    } finally {
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  async function atualizarResumoEHistoricoRevisao() {
+    const paramsResumo = new URLSearchParams({ categoria: categoriaVerificacaoLinks, limite: '10' });
+    const dadosResumo = await apiFetch(`/admin/grupos/revisao-links?${paramsResumo.toString()}`);
+    resumoRevisaoLinks = { ...(resumoRevisaoLinks || {}), ...dadosResumo, fila: filaRevisaoLinks };
+    atualizarResumoRevisaoLinks(dadosResumo.totais);
+
+    if (historicoRevisaoLinks.tipo) {
+      const paramsHistorico = new URLSearchParams({
+        categoria: categoriaVerificacaoLinks,
+        tipo: historicoRevisaoLinks.tipo,
+        pagina: String(historicoRevisaoLinks.pagina || 1)
+      });
+      const dadosHistorico = await apiFetch(`/admin/grupos/revisao-links/historico?${paramsHistorico.toString()}`);
+      renderizarHistoricoRevisao(dadosHistorico);
+    }
+  }
+
+  async function corrigirHistoricoRevisao(id, resultado) {
+    if (revisaoLinksOcupada) return;
+    const texto = resultado === 'valido' ? 'confirmar que este link funciona' : 'marcar este link como inválido';
+    if (!confirm(`Deseja ${texto}?`)) return;
+
+    definirRevisaoOcupada(true);
+    try {
+      await apiFetch(`/admin/grupos/${id}/confirmar-verificacao-link`, {
+        method: 'POST',
+        body: JSON.stringify({ resultado })
+      });
+      await atualizarResumoEHistoricoRevisao();
+      painelAdminPrecisaAtualizar = true;
+    } catch (err) {
+      mostrarAviso('aviso-verificar-links', err.message);
+    } finally {
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  async function excluirGrupoHistoricoRevisao(id) {
+    const grupo = historicoRevisaoLinks.dados?.itens?.find((item) => String(item.id) === String(id));
+    const nome = grupo?.nome_grupo || 'este grupo';
+    if (!confirm(`Excluir “${nome}” permanentemente do site? Esta ação não pode ser desfeita.`)) return;
+
+    definirRevisaoOcupada(true);
+    try {
+      await apiFetch(`/admin/grupos/${id}`, { method: 'DELETE' });
+      await atualizarResumoEHistoricoRevisao();
+      painelAdminPrecisaAtualizar = true;
+    } catch (err) {
+      mostrarAviso('aviso-verificar-links', err.message);
+    } finally {
+      definirRevisaoOcupada(false);
+    }
+  }
+
+  document.getElementById('btn-verificar-links').addEventListener('click', abrirModalVerificarLinks);
+  document.getElementById('fechar-modal-verificar-links').addEventListener('click', fecharModalVerificarLinks);
+  document.getElementById('cancelar-verificar-links').addEventListener('click', fecharModalVerificarLinks);
+  document.getElementById('iniciar-revisao-links').addEventListener('click', carregarFilaRevisaoLinks);
+  document.getElementById('revisar-mais-links').addEventListener('click', carregarFilaRevisaoLinks);
+  document.getElementById('abrir-convite-revisao').addEventListener('click', marcarConviteComoAberto);
+  document.getElementById('marcar-revisao-valida').addEventListener('click', () => registrarResultadoRevisaoLinks('valido'));
+  document.getElementById('marcar-revisao-invalida').addEventListener('click', () => registrarResultadoRevisaoLinks('invalido'));
+  document.getElementById('pular-revisao-link').addEventListener('click', pularItemRevisaoLinks);
+
+  document.getElementById('categoria-verificar-links').addEventListener('change', async (e) => {
+    categoriaVerificacaoLinks = e.target.value;
+    historicoRevisaoLinks = { tipo: '', pagina: 1, dados: null };
+    document.getElementById('iniciar-revisao-links').disabled = !categoriaVerificacaoLinks;
+    document.getElementById('resumo-revisao-links').hidden = true;
+    document.getElementById('historico-revisao-links').hidden = true;
+    document.getElementById('painel-item-revisao-links').hidden = true;
+    document.getElementById('revisao-concluida').hidden = true;
+    document.getElementById('estado-inicial-revisao-links').hidden = false;
+    document.getElementById('estado-inicial-revisao-links').innerHTML = categoriaVerificacaoLinks
+      ? '<strong>Carregando categoria...</strong>Aguarde alguns instantes.'
+      : '<strong>Selecione uma categoria</strong>Carregaremos no máximo 10 grupos.';
+    document.getElementById('texto-rodape-verificacao').textContent = categoriaVerificacaoLinks
+      ? 'Carregando a fila de revisão.'
+      : 'Selecione uma categoria para começar.';
+
+    if (categoriaVerificacaoLinks) await carregarFilaRevisaoLinks();
+  });
+
+  document.querySelectorAll('[data-historico-revisao]').forEach((botao) => {
+    botao.addEventListener('click', () => carregarHistoricoRevisao(botao.dataset.historicoRevisao, 1));
+  });
+
+  document.getElementById('historico-revisao-anterior').addEventListener('click', () => {
+    carregarHistoricoRevisao(historicoRevisaoLinks.tipo, Math.max(1, historicoRevisaoLinks.pagina - 1));
+  });
+
+  document.getElementById('historico-revisao-proxima').addEventListener('click', () => {
+    carregarHistoricoRevisao(historicoRevisaoLinks.tipo, historicoRevisaoLinks.pagina + 1);
+  });
+
+  document.getElementById('lista-historico-revisao').addEventListener('click', async (e) => {
+    const corrigir = e.target.closest('[data-corrigir-historico]');
+    if (corrigir) {
+      await corrigirHistoricoRevisao(corrigir.dataset.grupoId, corrigir.dataset.corrigirHistorico);
+      return;
+    }
+
+    const excluir = e.target.closest('[data-excluir-historico]');
+    if (excluir) await excluirGrupoHistoricoRevisao(excluir.dataset.excluirHistorico);
+  });
+
+  document.getElementById('modal-verificar-links').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) fecharModalVerificarLinks();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('modal-verificar-links').classList.contains('aberto')) return;
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+    if (revisaoLinksOcupada || !itemAtualRevisaoLinks()) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('abrir-convite-revisao').click();
+    } else if (e.key === '1' && itemRevisaoLinkAberto) {
+      e.preventDefault();
+      registrarResultadoRevisaoLinks('valido');
+    } else if (e.key === '2' && itemRevisaoLinkAberto) {
+      e.preventDefault();
+      registrarResultadoRevisaoLinks('invalido');
+    } else if (e.key === '3') {
+      e.preventDefault();
+      pularItemRevisaoLinks();
     }
   });
 
@@ -1596,9 +2848,13 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
       document.getElementById('busca-nome-aprovados').value = '';
       atualizarResumoCategoriaAtual();
       renderizarCategoriasAprovados();
-      if (abaAtual !== 'zapcoins') {
+      if (abaAtual !== 'usuarios') {
         buscaZapCoinUsuarios = '';
+        paginaUsuariosAdmin = 1;
         document.getElementById('busca-zapcoin-usuarios').value = '';
+        document.getElementById('usuarios-toolbar-info').textContent = '0 usuários';
+      } else {
+        paginaUsuariosAdmin = 1;
       }
       carregarLista();
     });
@@ -1727,15 +2983,32 @@ https://chat.whatsapp.com/XYZ789..."></textarea>
     if (e.target === e.currentTarget) fecharModalZapCoin();
   });
 
-  document.getElementById('btn-atualizar-zapcoins').addEventListener('click', () => carregarLista());
+  document.getElementById('btn-atualizar-zapcoins').addEventListener('click', () => {
+    if (abaAtual === 'usuarios') carregarLista();
+  });
 
   let timeoutBuscaZap = null;
   document.getElementById('busca-zapcoin-usuarios').addEventListener('input', (e) => {
     clearTimeout(timeoutBuscaZap);
     timeoutBuscaZap = setTimeout(() => {
       buscaZapCoinUsuarios = e.target.value.trim();
-      if (abaAtual === 'zapcoins') carregarLista();
+      paginaUsuariosAdmin = 1;
+      if (abaAtual === 'usuarios') carregarLista();
     }, 350);
+  });
+
+  document.getElementById('usuarios-pagina-anterior').addEventListener('click', () => {
+    if (!paginacaoUsuariosAdmin?.tem_anterior) return;
+    paginaUsuariosAdmin = Math.max(1, paginaUsuariosAdmin - 1);
+    carregarLista();
+    document.getElementById('lista-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('usuarios-pagina-proxima').addEventListener('click', () => {
+    if (!paginacaoUsuariosAdmin?.tem_proxima) return;
+    paginaUsuariosAdmin += 1;
+    carregarLista();
+    document.getElementById('lista-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   async function carregarCategoriasFiltro() {

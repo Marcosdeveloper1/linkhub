@@ -58,37 +58,59 @@ function dormir(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Wrapper de fetch com timeout e respeito ao limitador de velocidade global.
-async function fetchControlado(url, opcoes = {}) {
+// Faz a requisição e consome o corpo dentro da mesma janela de timeout.
+// Antes, o temporizador era cancelado assim que os cabeçalhos chegavam; se o
+// WhatsApp demorasse ou travasse ao enviar o HTML, `resp.text()` podia ficar
+// pendurado indefinidamente e o modal nunca terminava.
+async function fetchControlado(url, opcoes = {}, configuracao = {}) {
   await aguardarProximaJanela();
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_REQUISICAO_MS);
+  const timeoutMs = Number(configuracao.timeoutMs || TIMEOUT_REQUISICAO_MS);
+  const tipoCorpo = configuracao.tipoCorpo || 'text';
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, { ...opcoes, signal: controller.signal });
+    const resp = await fetch(url, { ...opcoes, signal: controller.signal });
+    const corpo = tipoCorpo === 'arrayBuffer'
+      ? await resp.arrayBuffer()
+      : await resp.text();
+
+    return {
+      ok: resp.ok,
+      status: resp.status,
+      statusText: resp.statusText,
+      url: resp.url,
+      headers: resp.headers,
+      corpo
+    };
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-// Igual ao fetchControlado, mas com retry automático e backoff exponencial
-// especificamente para erro 429 (rate limit do WhatsApp).
-async function fetchComRetry429(url, opcoes = {}, contexto = '') {
-  for (let tentativa = 0; tentativa <= MAX_TENTATIVAS_429; tentativa++) {
-    const resp = await fetchControlado(url, opcoes);
+// Retry configurável para 429. Na verificação manual usamos zero retries:
+// 429 é tratado como inconclusivo e o lote continua, em vez de ficar vários
+// minutos aguardando backoff de 5s, 10s e 20s para cada grupo.
+async function fetchComRetry429(url, opcoes = {}, contexto = '', configuracao = {}) {
+  const maxTentativas429 = Number.isInteger(configuracao.maxTentativas429)
+    ? Math.max(0, configuracao.maxTentativas429)
+    : MAX_TENTATIVAS_429;
+
+  for (let tentativa = 0; tentativa <= maxTentativas429; tentativa++) {
+    const resp = await fetchControlado(url, opcoes, configuracao);
 
     if (resp.status !== 429) {
       return resp;
     }
 
-    if (tentativa === MAX_TENTATIVAS_429) {
-      console.warn(`[whatsappPreview] ${contexto} esgotou tentativas após 429 repetido: ${url}`);
+    if (tentativa === maxTentativas429) {
+      console.warn(`[whatsappPreview] ${contexto} encerrou após HTTP 429: ${url}`);
       return resp;
     }
 
     const espera = ESPERA_BASE_429_MS * Math.pow(2, tentativa);
-    console.warn(`[whatsappPreview] ${contexto} recebeu 429 (tentativa ${tentativa + 1}/${MAX_TENTATIVAS_429}), aguardando ${espera}ms antes de tentar de novo: ${url}`);
+    console.warn(`[whatsappPreview] ${contexto} recebeu 429 (tentativa ${tentativa + 1}/${maxTentativas429}), aguardando ${espera}ms antes de tentar de novo: ${url}`);
     await dormir(espera);
   }
 }
@@ -98,14 +120,14 @@ async function buscarPreviewGrupo(link) {
     const resp = await fetchComRetry429(link, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)' },
       redirect: 'follow'
-    }, 'buscarPreviewGrupo');
+    }, 'buscarPreviewGrupo', { tipoCorpo: 'text' });
 
     if (!resp.ok) {
       console.warn(`[whatsappPreview] página do link retornou ${resp.status}: ${link}`);
       return { foto: null, nome: null };
     }
 
-    const html = await resp.text();
+    const html = resp.corpo;
 
     const fotoBruta = extrairMetaTag(html, 'og:image');
     const nomeBruto = extrairMetaTag(html, 'og:title');
@@ -139,14 +161,14 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
         'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)',
         'Referer': 'https://chat.whatsapp.com/'
       }
-    }, `baixarFotoGrupo grupo ${idGrupo}`);
+    }, `baixarFotoGrupo grupo ${idGrupo}`, { tipoCorpo: 'arrayBuffer' });
 
     if (!resp.ok) {
       console.warn(`[whatsappPreview] grupo ${idGrupo}: download da foto retornou ${resp.status} ${resp.statusText}`);
       return null;
     }
 
-    const buffer = Buffer.from(await resp.arrayBuffer());
+    const buffer = Buffer.from(resp.corpo);
     console.log(`[whatsappPreview] grupo ${idGrupo}: ${buffer.length} bytes baixados, processando com sharp...`);
 
     if (!fs.existsSync(PASTA_FOTOS)) {
@@ -175,50 +197,161 @@ async function baixarFotoGrupo(urlImagem, idGrupo) {
   }
 }
 
-// Verifica se um link de convite de grupo do WhatsApp ainda está ativo.
-// Quando o administrador do grupo revoga o link (gera um novo) ou o grupo
-// atinge o limite de membros, o WhatsApp deixa de servir a página normal
-// de convite (com og:title/og:image do grupo) e passa a mostrar uma página
-// genérica de erro/redirecionamento. Usamos isso como sinal de link inválido,
-// já que não existe endpoint oficial para checar "este grupo ainda existe?".
-async function linkAindaValido(link) {
+// Verifica o estado de um link de convite do WhatsApp e diferencia uma
+// resposta conclusiva de uma falha temporária da rede/servidor. Isso evita
+// retirar grupos do site por timeout, bloqueio 429 ou instabilidade do WhatsApp.
+async function verificarStatusLink(link) {
   try {
     const resp = await fetchComRetry429(link, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkHubBot/1.0)' },
+      headers: {
+        // Cabeçalhos semelhantes aos de um navegador real. Isso não burla um
+        // bloqueio 429, mas evita respostas genéricas causadas por um user-agent
+        // de bot quando o WhatsApp aceita a consulta normalmente.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Upgrade-Insecure-Requests': '1'
+      },
       redirect: 'follow'
-    }, 'linkAindaValido');
+    }, 'verificarStatusLink', {
+      tipoCorpo: 'text',
+      timeoutMs: 10000,
+      maxTentativas429: 0
+    });
+
+    const httpStatus = Number(resp.status || 0) || null;
+
+    if (resp.status === 429) {
+      console.warn(`[whatsappPreview] verificação inconclusiva: ${link} retornou 429`);
+      return {
+        resultado: 'inconclusivo',
+        motivo: 'O WhatsApp bloqueou temporariamente as consultas da VPS (HTTP 429). Abra o convite e confirme manualmente.',
+        httpStatus
+      };
+    }
+
+    if (resp.status >= 500) {
+      console.warn(`[whatsappPreview] verificação inconclusiva: ${link} retornou ${resp.status}`);
+      return {
+        resultado: 'inconclusivo',
+        motivo: `WhatsApp respondeu temporariamente com HTTP ${resp.status}.`,
+        httpStatus
+      };
+    }
+
+    if (resp.status === 404 || resp.status === 410) {
+      console.warn(`[whatsappPreview] link inválido: ${link} retornou ${resp.status}`);
+      return {
+        resultado: 'invalido',
+        motivo: `Convite não encontrado pelo WhatsApp (HTTP ${resp.status}).`,
+        httpStatus
+      };
+    }
 
     if (!resp.ok) {
-      console.warn(`[whatsappPreview] verificação: ${link} retornou ${resp.status}`);
-      return false;
+      console.warn(`[whatsappPreview] verificação inconclusiva: ${link} retornou ${resp.status}`);
+      return {
+        resultado: 'inconclusivo',
+        motivo: `Resposta HTTP ${resp.status} não permitiu confirmar o convite.`,
+        httpStatus
+      };
     }
 
-    const html = await resp.text();
+    const html = String(resp.corpo || '');
+    const textoPagina = normalizarTextoPagina(html);
+    const nomeOg = decodificarEntidadesHtml(extrairMetaTag(html, 'og:title'));
+    const imagemOg = extrairMetaTag(html, 'og:image');
+    const nomeEstruturado = extrairNomeEstruturado(html);
 
-    // Link revogado/expirado geralmente não tem mais a tag og:title
-    // específica do grupo (ou a página vem vazia/genérica).
-    const nome = extrairMetaTag(html, 'og:title');
+    // Só classificamos como inválido quando há evidência explícita. A ausência
+    // de og:title pode ser apenas uma página carregada por JavaScript ou uma
+    // resposta genérica, portanto agora é inconclusiva e não falsa invalidação.
+    const indicaInvalido = /convite\s+(?:do\s+grupo\s+)?inv[aá]lido|link\s+(?:do\s+convite\s+)?expirou|este\s+convite\s+n[aã]o\s+est[aá]\s+mais\s+dispon[ií]vel|invite\s+link\s+is\s+invalid|invite\s+link\s+has\s+expired|couldn['’]?t\s+load\s+group\s+info|this\s+invite\s+link\s+is\s+no\s+longer\s+available/i.test(textoPagina);
 
-    if (!nome) {
-      console.warn(`[whatsappPreview] verificação: ${link} sem og:title — provável link morto`);
-      return false;
-    }
-
-    // Heurística adicional: o WhatsApp mostra textos assim quando o convite
-    // não é mais válido, mesmo retornando 200 OK.
-    const indicaInvalido = /convite inv[aá]lido|link expirou|n[aã]o est[aá] mais dispon[ií]vel/i.test(html);
     if (indicaInvalido) {
-      console.warn(`[whatsappPreview] verificação: ${link} contém texto de convite inválido`);
-      return false;
+      console.warn(`[whatsappPreview] link inválido: ${link} contém aviso explícito de convite indisponível`);
+      return {
+        resultado: 'invalido',
+        motivo: 'O WhatsApp informou explicitamente que o convite está inválido, expirado ou indisponível.',
+        httpStatus
+      };
     }
 
-    return true;
+    const nomeEspecifico = [nomeOg, nomeEstruturado]
+      .find((nome) => nome && !/^(whatsapp|whatsapp group invite|convite para grupo|join whatsapp group)$/i.test(String(nome).trim()));
+
+    const fraseConviteAtivo = /convite\s+para\s+conversa\s+em\s+grupo|invite\s+to\s+group\s+chat/i.test(textoPagina);
+    const botoesConviteAtivo = /abrir\s+app|continuar\s+para\s+o\s+whatsapp\s+web|open\s+app|continue\s+to\s+whatsapp\s+web/i.test(textoPagina);
+
+    // Nome específico é o sinal mais forte. Nome estruturado + foto ou a
+    // combinação da frase e dos botões da tela de convite também confirmam a
+    // página ativa quando o HTML não usa mais exatamente a antiga og:title.
+    if (nomeEspecifico || (imagemOg && fraseConviteAtivo) || (fraseConviteAtivo && botoesConviteAtivo)) {
+      return {
+        resultado: 'valido',
+        motivo: nomeEspecifico
+          ? `Convite ativo; dados do grupo encontrados${nomeEspecifico ? ` (${nomeEspecifico})` : ''}.`
+          : 'Convite ativo; a página normal de entrada do grupo foi encontrada.',
+        httpStatus
+      };
+    }
+
+    console.warn(`[whatsappPreview] verificação inconclusiva: ${link} respondeu 200 sem sinais suficientes`);
+    return {
+      resultado: 'inconclusivo',
+      motivo: 'O WhatsApp respondeu, mas a página não trouxe sinais suficientes para confirmar se o convite está ativo. Abra o link e confirme manualmente.',
+      httpStatus
+    };
   } catch (err) {
-    console.warn(`[whatsappPreview] falha ao verificar link ${link}:`, err.message);
-    // Erro de rede/timeout não é prova de que o link morreu — evita marcar
-    // como indisponível por instabilidade temporária. Mantém como estava.
-    return true;
+    const motivo = err?.name === 'AbortError'
+      ? 'Tempo limite excedido ao consultar o WhatsApp.'
+      : `Falha temporária ao consultar o WhatsApp: ${err.message || 'erro de rede'}.`;
+
+    console.warn(`[whatsappPreview] verificação inconclusiva para ${link}:`, err.message);
+    return {
+      resultado: 'inconclusivo',
+      motivo,
+      httpStatus: null
+    };
   }
+}
+
+function normalizarTextoPagina(html) {
+  return decodificarEntidadesHtml(String(html || '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => String.fromCharCode(parseInt(codigo, 16)))
+    .replace(/\\\//g, '/')
+    .replace(/\s+/g, ' ')
+    .trim());
+}
+
+function extrairNomeEstruturado(html) {
+  const padroes = [
+    /["'](?:groupName|group_name|subject)["']\s*:\s*["']([^"']{2,160})["']/i,
+    /["'](?:groupName|group_name|subject)["']\s*,\s*["']([^"']{2,160})["']/i
+  ];
+
+  for (const padrao of padroes) {
+    const match = String(html || '').match(padrao);
+    if (match?.[1]) {
+      return decodificarEntidadesHtml(match[1]
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => String.fromCharCode(parseInt(codigo, 16)))
+        .replace(/\\\//g, '/'));
+    }
+  }
+
+  return null;
+}
+
+// Mantém compatibilidade com chamadas antigas. Resultado inconclusivo não é
+// tratado como link morto: somente uma resposta conclusiva "invalido" retorna false.
+async function linkAindaValido(link) {
+  const verificacao = await verificarStatusLink(link);
+  return verificacao.resultado !== 'invalido';
 }
 
 function extrairMetaTag(html, propriedade) {
@@ -245,4 +378,4 @@ function decodificarEntidadesHtml(texto) {
     .replace(/&gt;/g, '>');
 }
 
-module.exports = { buscarPreviewGrupo, baixarFotoGrupo, linkAindaValido };
+module.exports = { buscarPreviewGrupo, baixarFotoGrupo, verificarStatusLink, linkAindaValido };

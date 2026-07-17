@@ -846,6 +846,29 @@
 
   <div id="aviso-meus" class="aviso"></div>
 
+  <nav class="meus-painel-abas" aria-label="Áreas do painel">
+    <a class="meus-painel-aba ativa" href="#secao-meus-grupos">Meus grupos</a>
+    <a class="meus-painel-aba" href="#secao-whatsapp-contato">WhatsApp de contato</a>
+  </nav>
+
+  <section class="whatsapp-perfil-card" id="secao-whatsapp-contato">
+    <div class="whatsapp-perfil-info">
+      <span class="whatsapp-perfil-label">Contato administrativo</span>
+      <h2>WhatsApp do seu perfil</h2>
+      <p>Esse número fica vinculado ao seu Gmail e será visível somente para os administradores do ZapGrupos.</p>
+      <span class="whatsapp-perfil-status" id="status-whatsapp-perfil">Carregando...</span>
+    </div>
+
+    <form class="whatsapp-perfil-form" id="form-whatsapp-perfil" novalidate>
+      <div class="form-grupo">
+        <label class="form-label" for="input-whatsapp-perfil">Número com DDD</label>
+        <input class="form-input" id="input-whatsapp-perfil" type="tel" inputmode="numeric" autocomplete="tel" maxlength="16" placeholder="(61) 99999-9999">
+      </div>
+      <button class="btn btn-primario" id="btn-salvar-whatsapp-perfil" type="submit">Salvar número</button>
+      <div class="aviso whatsapp-perfil-aviso" id="aviso-whatsapp-perfil"></div>
+    </form>
+  </section>
+
   <section class="zap-section" id="secao-meus-grupos">
     <div class="zap-section-head">
       <div>
@@ -1017,6 +1040,68 @@
   let gruposExpandidos = false;
   let termoBuscaGrupos = '';
   let resizeTimerGrupos = null;
+
+  function atualizarPainelWhatsappPerfil(dados = {}) {
+    const input = document.getElementById('input-whatsapp-perfil');
+    const status = document.getElementById('status-whatsapp-perfil');
+    const btn = document.getElementById('btn-salvar-whatsapp-perfil');
+
+    const numero = dados.whatsapp_contato || null;
+    const formatado = dados.whatsapp_formatado || formatarWhatsappContato(numero);
+    const temNumero = Boolean(normalizarWhatsappContato(numero));
+
+    input.value = formatado ? formatado.replace(/^\+55\s*/, '') : '';
+    status.textContent = temNumero ? `Cadastrado: ${formatado}` : 'Nenhum número cadastrado';
+    status.classList.toggle('cadastrado', temNumero);
+    btn.textContent = temNumero ? 'Alterar número' : 'Salvar número';
+  }
+
+  async function carregarWhatsappPerfil() {
+    try {
+      const dados = await obterWhatsappContato();
+      atualizarPainelWhatsappPerfil(dados);
+    } catch (err) {
+      mostrarAviso('aviso-whatsapp-perfil', err.message);
+      document.getElementById('status-whatsapp-perfil').textContent = 'Não foi possível carregar';
+    }
+  }
+
+  async function salvarWhatsappPerfil(evento) {
+    evento.preventDefault();
+    limparAviso('aviso-whatsapp-perfil');
+
+    const input = document.getElementById('input-whatsapp-perfil');
+    const btn = document.getElementById('btn-salvar-whatsapp-perfil');
+
+    if (!normalizarWhatsappContato(input.value)) {
+      mostrarAviso('aviso-whatsapp-perfil', 'Informe um número válido com DDD. Exemplo: (61) 99999-9999.');
+      input.focus();
+      return;
+    }
+
+    btnCarregando(btn, true);
+
+    try {
+      const resposta = await salvarWhatsappContato(input.value);
+      atualizarPainelWhatsappPerfil(resposta);
+      mostrarAviso('aviso-whatsapp-perfil', resposta.mensagem || 'WhatsApp salvo com sucesso.', 'ok');
+
+      if (window.zapgruposSessaoAtual?.usuario) {
+        window.zapgruposSessaoAtual.usuario.whatsapp_contato = resposta.whatsapp_contato;
+        window.zapgruposSessaoAtual.usuario.whatsapp_formatado = resposta.whatsapp_formatado;
+      }
+
+      window.dispatchEvent(new CustomEvent('zapgrupos:whatsappAtualizado', {
+        detail: resposta
+      }));
+    } catch (err) {
+      mostrarAviso('aviso-whatsapp-perfil', err.message);
+    } finally {
+      btnCarregando(btn, false, 'Salvar número');
+      const temNumero = Boolean(normalizarWhatsappContato(input.value));
+      btn.textContent = temNumero ? 'Alterar número' : 'Salvar número';
+    }
+  }
 
   function escaparHtml(str) {
     const d = document.createElement('div');
@@ -1456,6 +1541,30 @@
     criarPedidoZapCoin(quantidade, btn);
   });
 
+  document.querySelectorAll('.meus-painel-aba').forEach((aba) => {
+    aba.addEventListener('click', () => {
+      document.querySelectorAll('.meus-painel-aba').forEach((item) => item.classList.remove('ativa'));
+      aba.classList.add('ativa');
+    });
+  });
+
+  if (window.location.hash === '#secao-whatsapp-contato') {
+    document.querySelectorAll('.meus-painel-aba').forEach((item) => {
+      item.classList.toggle('ativa', item.getAttribute('href') === '#secao-whatsapp-contato');
+    });
+  }
+
+  document.getElementById('input-whatsapp-perfil').addEventListener('input', (e) => {
+    e.target.value = aplicarMascaraWhatsappContato(e.target.value);
+    limparAviso('aviso-whatsapp-perfil');
+  });
+
+  document.getElementById('form-whatsapp-perfil').addEventListener('submit', salvarWhatsappPerfil);
+
+  window.addEventListener('zapgrupos:whatsappAtualizado', (evento) => {
+    if (evento.detail) atualizarPainelWhatsappPerfil(evento.detail);
+  });
+
   function rolarParaZapCoinsSeNecessario() {
     if (window.location.hash !== '#zapcoin-area') return;
 
@@ -1468,9 +1577,15 @@
   }
 
   async function montar() {
-    await iniciarPagina({ requerLogin: true });
-    await carregarZapCoins();
-    await carregarMeusGrupos();
+    const sessao = await iniciarPagina({ requerLogin: true });
+    if (!sessao) return;
+
+    await Promise.all([
+      carregarWhatsappPerfil(),
+      carregarZapCoins(),
+      carregarMeusGrupos()
+    ]);
+
     calcularCompraPersonalizada();
     rolarParaZapCoinsSeNecessario();
   }

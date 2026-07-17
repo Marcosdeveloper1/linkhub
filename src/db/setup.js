@@ -17,8 +17,21 @@ async function createDatabase() {
       senha TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'user',
       ativo INTEGER NOT NULL DEFAULT 1,
+      whatsapp_contato TEXT,
+      whatsapp_atualizado_em TEXT,
+      ultimo_login_em TEXT,
       criado_em TEXT NOT NULL DEFAULT (datetime('now'))
     )
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_users_whatsapp_contato
+    ON users(whatsapp_contato)
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_users_ultimo_login_em
+    ON users(ultimo_login_em)
   `);
 
   db.run(`
@@ -51,6 +64,11 @@ async function createDatabase() {
       foto_url TEXT,
       regras TEXT,
       total_acessos INTEGER NOT NULL DEFAULT 0,
+      link_ultima_tentativa_em TEXT,
+      link_verificado_em TEXT,
+      link_verificacao_resultado TEXT NOT NULL DEFAULT 'pendente',
+      link_verificacao_motivo TEXT,
+      link_verificacao_http_status INTEGER,
       criado_em TEXT NOT NULL DEFAULT (datetime('now')),
       aprovado_em TEXT,
       FOREIGN KEY (categoria_id) REFERENCES categories(id),
@@ -58,6 +76,21 @@ async function createDatabase() {
       FOREIGN KEY (owner_user_id) REFERENCES users(id),
       FOREIGN KEY (owner_assigned_by) REFERENCES users(id)
     )
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_groups_verificacao_filas
+    ON groups(categoria_id, link_verificacao_resultado, link_verificado_em, status)
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_groups_owner_user_id
+    ON groups(owner_user_id)
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_groups_usuario_id
+    ON groups(usuario_id)
   `);
 
   db.run(`

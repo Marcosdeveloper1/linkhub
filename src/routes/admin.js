@@ -37,6 +37,61 @@ function traduzirTipoRelato(tipo) {
 
 router.use(requireAdmin);
 
+const DIAS_ATE_NOVA_VERIFICACAO = 5;
+const TAMANHO_SESSAO_REVISAO = 10;
+const ITENS_POR_PAGINA_HISTORICO_REVISAO = 5;
+const JANELA_VERIFICACAO_MS = DIAS_ATE_NOVA_VERIFICACAO * 24 * 60 * 60 * 1000;
+
+function dataSqliteParaTimestamp(valor) {
+  if (!valor) return null;
+  const texto = String(valor).trim();
+  const normalizado = texto.includes('T') ? texto : texto.replace(' ', 'T');
+  const comFuso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalizado) ? normalizado : `${normalizado}Z`;
+  const timestamp = Date.parse(comFuso);
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function enriquecerGrupoVerificacao(grupo, agora = Date.now()) {
+  const resultado = grupo.link_verificacao_resultado || 'pendente';
+  const verificadoEmMs = dataSqliteParaTimestamp(grupo.link_verificado_em);
+  const expiraEmMs = verificadoEmMs ? verificadoEmMs + JANELA_VERIFICACAO_MS : null;
+  const resultadoConclusivo = resultado === 'valido' || resultado === 'invalido';
+  const verificadoRecentemente = Boolean(resultadoConclusivo && expiraEmMs && expiraEmMs > agora);
+  const restanteMs = verificadoRecentemente ? Math.max(0, expiraEmMs - agora) : 0;
+  const diasRestantes = Math.floor(restanteMs / (24 * 60 * 60 * 1000));
+  const horasRestantes = Math.floor((restanteMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+
+  return {
+    ...grupo,
+    link_verificacao_resultado: resultado,
+    verificado_recentemente: verificadoRecentemente,
+    dias_restantes: diasRestantes,
+    horas_restantes: horasRestantes,
+    expira_em: expiraEmMs ? new Date(expiraEmMs).toISOString() : null
+  };
+}
+
+function paginaPositiva(valor, padrao = 1) {
+  const numero = Number.parseInt(valor, 10);
+  return Number.isInteger(numero) && numero > 0 ? numero : padrao;
+}
+
+function criarPaginacao(totalItens, paginaSolicitada, porPagina) {
+  const total = Math.max(0, Number(totalItens || 0));
+  const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+  const pagina = Math.min(paginaPositiva(paginaSolicitada), totalPaginas);
+
+  return {
+    pagina,
+    por_pagina: porPagina,
+    total_itens: total,
+    total_paginas: totalPaginas,
+    tem_anterior: pagina > 1,
+    tem_proxima: pagina < totalPaginas,
+    offset: (pagina - 1) * porPagina
+  };
+}
+
 
 // Resumo geral do painel admin: totais por status, erros e grupos aprovados por categoria.
 router.get('/resumo', (req, res) => {
@@ -51,6 +106,8 @@ router.get('/resumo', (req, res) => {
 
     const totais = {
       aprovados: 0,
+      indisponiveis: 0,
+      cadastrados: 0,
       pendentes: 0,
       rejeitados: 0,
       erros_relatados: 0
@@ -58,16 +115,21 @@ router.get('/resumo', (req, res) => {
 
     porStatus.forEach((linha) => {
       if (linha.status === 'aprovado') totais.aprovados = Number(linha.total || 0);
+      if (linha.status === 'indisponivel') totais.indisponiveis = Number(linha.total || 0);
       if (linha.status === 'pendente') totais.pendentes = Number(linha.total || 0);
       if (linha.status === 'rejeitado') totais.rejeitados = Number(linha.total || 0);
     });
+
+    // "Cadastrados" representa os grupos que pertencem ao catálogo administrativo:
+    // aprovados e os que foram aprovados anteriormente, mas estão indisponíveis.
+    totais.cadastrados = totais.aprovados + totais.indisponiveis;
 
     const erros = db.queryOne(`SELECT COUNT(*) as total FROM error_reports`);
     totais.erros_relatados = Number(erros?.total || 0);
 
     const categorias = db.query(`
       SELECT c.id, c.nome, c.slug,
-             COUNT(CASE WHEN g.status = 'aprovado' THEN 1 END) as total
+             COUNT(CASE WHEN g.status IN ('aprovado', 'indisponivel') THEN 1 END) as total
       FROM categories c
       LEFT JOIN groups g ON g.categoria_id = c.id
       GROUP BY c.id, c.nome, c.slug
@@ -105,6 +167,104 @@ function registrarAjusteZapCoinAdmin({ usuarioId, adminId, quantidade, saldoAnte
   );
 }
 
+
+// Lista paginada de usuários para administração.
+// A paginação é feita no banco com LIMIT/OFFSET para não carregar todos os perfis na memória.
+router.get('/usuarios', (req, res) => {
+  try {
+    const busca = sanitizeString(req.query.busca, 120);
+    const paginaSolicitada = paginaPositiva(req.query.pagina, 1);
+    const limiteSolicitado = Number.parseInt(req.query.limite, 10);
+    const porPagina = Number.isInteger(limiteSolicitado)
+      ? Math.min(50, Math.max(5, limiteSolicitado))
+      : 15;
+
+    const filtros = [];
+    const paramsFiltro = [];
+
+    if (busca) {
+      const buscaDigitos = String(busca).replace(/\D/g, '');
+      const partes = ['u.nome LIKE ?', 'u.email LIKE ?'];
+      paramsFiltro.push(`%${busca}%`, `%${busca}%`);
+
+      if (buscaDigitos) {
+        partes.push("COALESCE(u.whatsapp_contato, '') LIKE ?");
+        paramsFiltro.push(`%${buscaDigitos}%`);
+      }
+
+      filtros.push(`(${partes.join(' OR ')})`);
+    }
+
+    const whereSql = filtros.length ? `WHERE ${filtros.join(' AND ')}` : '';
+
+    const totalLinha = db.queryOne(
+      `SELECT COUNT(*) as total
+       FROM users u
+       ${whereSql}`,
+      paramsFiltro
+    );
+
+    const paginacao = criarPaginacao(
+      Number(totalLinha?.total || 0),
+      paginaSolicitada,
+      porPagina
+    );
+
+    const usuarios = db.query(
+      `SELECT
+         u.id,
+         u.nome,
+         u.email,
+         u.role,
+         u.ativo,
+         u.criado_em,
+         u.ultimo_login_em,
+         u.whatsapp_contato,
+         COALESCE(w.balance, 0) as saldo,
+         (
+           SELECT COUNT(*)
+           FROM groups g
+           WHERE g.owner_user_id = u.id
+         ) + (
+           SELECT COUNT(*)
+           FROM groups g
+           WHERE g.owner_user_id IS NULL
+             AND g.usuario_id = u.id
+         ) as total_grupos
+       FROM users u
+       LEFT JOIN user_wallets w ON w.user_id = u.id
+       ${whereSql}
+       ORDER BY
+         CASE WHEN u.ultimo_login_em IS NULL THEN 1 ELSE 0 END ASC,
+         u.ultimo_login_em DESC,
+         u.criado_em DESC,
+         u.id DESC
+       LIMIT ? OFFSET ?`,
+      [...paramsFiltro, paginacao.por_pagina, paginacao.offset]
+    ).map((usuario) => ({
+      ...usuario,
+      saldo: Number(usuario.saldo || 0),
+      total_grupos: Number(usuario.total_grupos || 0)
+    }));
+
+    res.json({
+      ok: true,
+      usuarios,
+      paginacao: {
+        pagina: paginacao.pagina,
+        por_pagina: paginacao.por_pagina,
+        total_itens: paginacao.total_itens,
+        total_paginas: paginacao.total_paginas,
+        tem_anterior: paginacao.tem_anterior,
+        tem_proxima: paginacao.tem_proxima
+      }
+    });
+  } catch (err) {
+    console.error('[admin/usuarios]', err);
+    res.status(500).json({ erro: 'Erro ao carregar usuários.' });
+  }
+});
+
 // Lista usuários para ajuste administrativo de ZapCoins.
 router.get('/zapcoins/usuarios', (req, res) => {
   try {
@@ -112,6 +272,7 @@ router.get('/zapcoins/usuarios', (req, res) => {
 
     let sql = `
       SELECT u.id, u.nome, u.email, u.role, u.ativo, u.criado_em,
+             u.whatsapp_contato,
              COALESCE(w.balance, 0) as saldo
       FROM users u
       LEFT JOIN user_wallets w ON w.user_id = u.id
@@ -119,8 +280,16 @@ router.get('/zapcoins/usuarios', (req, res) => {
     const params = [];
 
     if (busca) {
-      sql += ' WHERE u.nome LIKE ? OR u.email LIKE ?';
+      const buscaDigitos = String(busca).replace(/\D/g, '');
+      sql += ' WHERE (u.nome LIKE ? OR u.email LIKE ?';
       params.push(`%${busca}%`, `%${busca}%`);
+
+      if (buscaDigitos) {
+        sql += ' OR COALESCE(u.whatsapp_contato, \'\') LIKE ?';
+        params.push(`%${buscaDigitos}%`);
+      }
+
+      sql += ')';
     }
 
     sql += ' ORDER BY u.criado_em DESC LIMIT 80';
@@ -205,7 +374,9 @@ router.get('/pendentes', (req, res) => {
   try {
     const pendentes = db.query(`
       SELECT g.*, c.nome as categoria_nome,
-             u.nome as owner_nome, u.email as owner_usuario_email
+             u.nome as owner_nome,
+             u.email as owner_usuario_email,
+             u.whatsapp_contato as owner_whatsapp_contato
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
       LEFT JOIN users u ON u.id = COALESCE(g.owner_user_id, g.usuario_id)
@@ -229,7 +400,9 @@ router.get('/grupos', (req, res) => {
 
     let sql = `
       SELECT g.*, c.nome as categoria_nome, c.slug as categoria_slug,
-             u.nome as owner_nome, u.email as owner_usuario_email
+             u.nome as owner_nome,
+             u.email as owner_usuario_email,
+             u.whatsapp_contato as owner_whatsapp_contato
       FROM groups g
       JOIN categories c ON c.id = g.categoria_id
       LEFT JOIN users u ON u.id = COALESCE(g.owner_user_id, g.usuario_id)
@@ -238,8 +411,14 @@ router.get('/grupos', (req, res) => {
     const params = [];
 
     if (status) {
-      condicoes.push('g.status = ?');
-      params.push(status);
+      // A aba "Aprovados" também precisa exibir os grupos que já foram
+      // aprovados, mas estão temporariamente com link indisponível.
+      if (status === 'aprovado') {
+        condicoes.push("g.status IN ('aprovado', 'indisponivel')");
+      } else {
+        condicoes.push('g.status = ?');
+        params.push(status);
+      }
     }
     if (categoriaSlug) {
       condicoes.push('c.slug = ?');
@@ -510,48 +689,255 @@ router.post('/grupos/remover-em-lote', (req, res) => {
   }
 });
 
-// Verifica se os links dos grupos aprovados ainda estão ativos.
-// Um link de convite de grupo do WhatsApp que foi revogado/expirado pelo
-// administrador do grupo retorna uma página diferente (sem og:image/og:title
-// de grupo válido, ou um redirecionamento para a home do WhatsApp).
-// Como não existe uma API oficial de "grupo existe?", a verificação é feita
-// checando se a página de convite ainda responde com conteúdo de grupo válido
-// (mesma técnica já usada em whatsappPreview.js para buscar nome/foto).
-router.post('/grupos/verificar-links', async (req, res) => {
+// Painel de revisão assistida. Nenhuma consulta ao WhatsApp é feita pela VPS.
+// O servidor entrega somente até 10 grupos; o administrador abre cada convite
+// no próprio navegador e registra o resultado observado.
+router.get('/grupos/revisao-links', (req, res) => {
   try {
-    const grupos = db.query(`
-      SELECT id, nome_grupo, link_whatsapp
-      FROM groups
-      WHERE status = 'aprovado'
-    `);
+    const categoriaSlug = sanitizeString(req.query.categoria, 50);
+    const limiteSolicitado = Number.parseInt(req.query.limite, 10);
+    const limite = Math.min(
+      TAMANHO_SESSAO_REVISAO,
+      Math.max(1, Number.isInteger(limiteSolicitado) ? limiteSolicitado : TAMANHO_SESSAO_REVISAO)
+    );
 
-    if (grupos.length === 0) {
-      return res.json({ verificados: 0, indisponiveis: 0, resultados: [] });
+    if (!categoriaSlug) {
+      return res.status(400).json({ erro: 'Selecione uma categoria.' });
     }
 
-    const { linkAindaValido } = require('../utils/whatsappPreview');
-    const resultados = [];
+    const categoria = db.queryOne(
+      'SELECT id, nome, slug FROM categories WHERE slug = ?',
+      [categoriaSlug]
+    );
 
-    for (const grupo of grupos) {
-      const valido = await linkAindaValido(grupo.link_whatsapp);
-
-      if (!valido) {
-        db.run("UPDATE groups SET status = 'indisponivel' WHERE id = ?", [grupo.id]);
-      }
-
-      resultados.push({ id: grupo.id, nome: grupo.nome_grupo, valido });
+    if (!categoria) {
+      return res.status(404).json({ erro: 'Categoria não encontrada.' });
     }
 
-    const indisponiveis = resultados.filter(r => !r.valido).length;
+    const condicaoRecente = `
+      g.link_verificado_em IS NOT NULL
+      AND COALESCE(g.link_verificacao_resultado, 'pendente') IN ('valido', 'invalido')
+      AND datetime(g.link_verificado_em, '+${DIAS_ATE_NOVA_VERIFICACAO} days') > datetime('now')
+    `;
+
+    const condicaoAguardando = `
+      g.link_verificado_em IS NULL
+      OR COALESCE(g.link_verificacao_resultado, 'pendente') NOT IN ('valido', 'invalido')
+      OR datetime(g.link_verificado_em, '+${DIAS_ATE_NOVA_VERIFICACAO} days') <= datetime('now')
+    `;
+
+    const totaisLinha = db.queryOne(`
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN (${condicaoAguardando}) THEN 1 ELSE 0 END) AS aguardando,
+        SUM(CASE WHEN (${condicaoRecente}) AND g.link_verificacao_resultado = 'valido' THEN 1 ELSE 0 END) AS validados,
+        SUM(CASE WHEN (${condicaoRecente}) AND g.link_verificacao_resultado = 'invalido' THEN 1 ELSE 0 END) AS invalidos
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE c.slug = ?
+        AND g.status IN ('aprovado', 'indisponivel')
+    `, [categoriaSlug]) || {};
+
+    const fila = db.query(`
+      SELECT
+        g.id, g.nome_grupo, g.link_whatsapp, g.foto_url, g.status,
+        g.link_ultima_tentativa_em, g.link_verificado_em,
+        g.link_verificacao_resultado, g.link_verificacao_motivo,
+        c.nome AS categoria_nome, c.slug AS categoria_slug
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE c.slug = ?
+        AND g.status IN ('aprovado', 'indisponivel')
+        AND (${condicaoAguardando})
+      ORDER BY
+        COALESCE(
+          datetime(g.link_ultima_tentativa_em),
+          datetime(g.link_verificado_em),
+          datetime(g.criado_em)
+        ) ASC,
+        g.id ASC
+      LIMIT ?
+    `, [categoriaSlug, limite]);
 
     res.json({
-      verificados: resultados.length,
-      indisponiveis,
-      resultados
+      ok: true,
+      categoria,
+      configuracao: {
+        tamanho_sessao: TAMANHO_SESSAO_REVISAO,
+        dias_ate_nova_verificacao: DIAS_ATE_NOVA_VERIFICACAO
+      },
+      totais: {
+        total: Number(totaisLinha.total || 0),
+        aguardando: Number(totaisLinha.aguardando || 0),
+        validados: Number(totaisLinha.validados || 0),
+        invalidos: Number(totaisLinha.invalidos || 0)
+      },
+      fila: fila.map((grupo) => enriquecerGrupoVerificacao(grupo))
     });
   } catch (err) {
-    console.error('[admin/verificar-links]', err);
-    res.status(500).json({ erro: 'Erro ao verificar links dos grupos.' });
+    console.error('[admin/revisao-links]', err);
+    res.status(500).json({ erro: 'Erro ao carregar a fila de revisão.' });
+  }
+});
+
+// Histórico recente é carregado sob demanda e paginado no banco.
+// Isso mantém o modal leve mesmo quando houver milhares de grupos.
+router.get('/grupos/revisao-links/historico', (req, res) => {
+  try {
+    const categoriaSlug = sanitizeString(req.query.categoria, 50);
+    const tipo = sanitizeString(req.query.tipo, 20);
+
+    if (!categoriaSlug) {
+      return res.status(400).json({ erro: 'Selecione uma categoria.' });
+    }
+
+    if (!['valido', 'invalido'].includes(tipo)) {
+      return res.status(400).json({ erro: 'Tipo de histórico inválido.' });
+    }
+
+    const categoria = db.queryOne(
+      'SELECT id, nome, slug FROM categories WHERE slug = ?',
+      [categoriaSlug]
+    );
+
+    if (!categoria) {
+      return res.status(404).json({ erro: 'Categoria não encontrada.' });
+    }
+
+    const condicao = `
+      c.slug = ?
+      AND g.status IN ('aprovado', 'indisponivel')
+      AND g.link_verificado_em IS NOT NULL
+      AND g.link_verificacao_resultado = ?
+      AND datetime(g.link_verificado_em, '+${DIAS_ATE_NOVA_VERIFICACAO} days') > datetime('now')
+    `;
+
+    const totalLinha = db.queryOne(`
+      SELECT COUNT(*) AS total
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE ${condicao}
+    `, [categoriaSlug, tipo]) || {};
+
+    const paginacao = criarPaginacao(
+      Number(totalLinha.total || 0),
+      req.query.pagina,
+      ITENS_POR_PAGINA_HISTORICO_REVISAO
+    );
+
+    const itens = db.query(`
+      SELECT
+        g.id, g.nome_grupo, g.link_whatsapp, g.foto_url, g.status,
+        g.link_ultima_tentativa_em, g.link_verificado_em,
+        g.link_verificacao_resultado, g.link_verificacao_motivo,
+        c.nome AS categoria_nome, c.slug AS categoria_slug
+      FROM groups g
+      JOIN categories c ON c.id = g.categoria_id
+      WHERE ${condicao}
+      ORDER BY datetime(g.link_verificado_em) DESC, g.id DESC
+      LIMIT ? OFFSET ?
+    `, [
+      categoriaSlug,
+      tipo,
+      paginacao.por_pagina,
+      paginacao.offset
+    ]);
+
+    delete paginacao.offset;
+
+    res.json({
+      ok: true,
+      categoria,
+      tipo,
+      itens: itens.map((grupo) => enriquecerGrupoVerificacao(grupo)),
+      paginacao
+    });
+  } catch (err) {
+    console.error('[admin/revisao-links/historico]', err);
+    res.status(500).json({ erro: 'Erro ao carregar o histórico de revisão.' });
+  }
+});
+
+// Registra o resultado observado pelo administrador no navegador.
+router.post('/grupos/:id/confirmar-verificacao-link', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const resultado = sanitizeString(req.body.resultado, 20);
+
+    if (!id) {
+      return res.status(400).json({ erro: 'ID do grupo inválido.' });
+    }
+
+    if (!['valido', 'invalido'].includes(resultado)) {
+      return res.status(400).json({ erro: 'Resultado deve ser "valido" ou "invalido".' });
+    }
+
+    const grupo = db.queryOne(
+      'SELECT id, nome_grupo, status FROM groups WHERE id = ?',
+      [id]
+    );
+
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+
+    const status = resultado === 'valido' ? 'aprovado' : 'indisponivel';
+    const motivo = resultado === 'valido'
+      ? 'Convite confirmado manualmente como funcionando pelo administrador.'
+      : 'Convite confirmado manualmente como inválido pelo administrador.';
+
+    db.run(`
+      UPDATE groups
+      SET status = ?,
+          link_ultima_tentativa_em = datetime('now'),
+          link_verificado_em = datetime('now'),
+          link_verificacao_resultado = ?,
+          link_verificacao_motivo = ?,
+          link_verificacao_http_status = NULL
+      WHERE id = ?
+    `, [status, resultado, motivo, id]);
+
+    res.json({
+      ok: true,
+      id,
+      nome: grupo.nome_grupo,
+      resultado,
+      status,
+      mensagem: resultado === 'valido'
+        ? 'Grupo validado e mantido público por 5 dias.'
+        : 'Grupo marcado como inválido e removido das páginas públicas.'
+    });
+  } catch (err) {
+    console.error('[admin/confirmar-verificacao-link]', err);
+    res.status(500).json({ erro: 'Erro ao registrar o resultado da revisão.' });
+  }
+});
+
+// Pular não altera a classificação do grupo. Apenas coloca o item no fim da
+// fila, evitando que ele reapareça imediatamente ao carregar a próxima sessão.
+router.post('/grupos/:id/pular-verificacao-link', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+
+    if (!id) {
+      return res.status(400).json({ erro: 'ID do grupo inválido.' });
+    }
+
+    const grupo = db.queryOne('SELECT id, nome_grupo FROM groups WHERE id = ?', [id]);
+    if (!grupo) {
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+
+    db.run(`
+      UPDATE groups
+      SET link_ultima_tentativa_em = datetime('now')
+      WHERE id = ?
+    `, [id]);
+
+    res.json({ ok: true, id, nome: grupo.nome_grupo });
+  } catch (err) {
+    console.error('[admin/pular-verificacao-link]', err);
+    res.status(500).json({ erro: 'Erro ao pular o grupo.' });
   }
 });
 
@@ -692,14 +1078,39 @@ router.put('/grupos/:id', (req, res) => {
       }
     }
 
+    const linkMudou = link !== grupo.link_whatsapp;
+
     db.run(
-      `UPDATE groups 
-       SET nome_grupo = ?, link_whatsapp = ?, descricao = ?, categoria_id = ?, regras = ?, status = ?
+      `UPDATE groups
+       SET nome_grupo = ?,
+           link_whatsapp = ?,
+           descricao = ?,
+           categoria_id = ?,
+           regras = ?,
+           status = ?,
+           link_ultima_tentativa_em = CASE WHEN ? = 1 THEN NULL ELSE link_ultima_tentativa_em END,
+           link_verificado_em = CASE WHEN ? = 1 THEN NULL ELSE link_verificado_em END,
+           link_verificacao_resultado = CASE WHEN ? = 1 THEN 'pendente' ELSE link_verificacao_resultado END,
+           link_verificacao_motivo = CASE WHEN ? = 1 THEN NULL ELSE link_verificacao_motivo END,
+           link_verificacao_http_status = CASE WHEN ? = 1 THEN NULL ELSE link_verificacao_http_status END
        WHERE id = ?`,
-      [nomeGrupo, link, descricao, categoriaId, regras, status || grupo.status, id]
+      [
+        nomeGrupo,
+        link,
+        descricao,
+        categoriaId,
+        regras,
+        status || grupo.status,
+        linkMudou ? 1 : 0,
+        linkMudou ? 1 : 0,
+        linkMudou ? 1 : 0,
+        linkMudou ? 1 : 0,
+        linkMudou ? 1 : 0,
+        id
+      ]
     );
 
-    res.json({ ok: true });
+    res.json({ ok: true, verificacao_link_resetada: linkMudou });
   } catch (err) {
     console.error('[admin/editar-grupo]', err);
     res.status(500).json({ erro: 'Erro ao editar o grupo.' });
